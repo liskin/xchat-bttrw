@@ -94,4 +94,21 @@ namespace xchat {
 	    last_recv = time(0);
 	}
     }
+
+    /*
+     * Check if given user is admin
+     */
+    bool XChat::isadmin(const string &rid, string nick) {
+	strtolower(nick);
+
+	if (rooms[rid].admin == nick)
+	    return true;
+
+	for (vector<string>::iterator i = rooms[rid].admins.begin();
+		i != rooms[rid].admins.end(); i++)
+	    if (*i == nick)
+		return true;
+
+	return false;
+    }
 }

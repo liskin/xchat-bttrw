@@ -204,12 +204,14 @@ main_accept:
 
 			    fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
 				    getsexhost(nick), chan.c_str());
+			    fprintf(*c, ":%s 332 %s #%s :%s\n", me, nick.c_str(), chan.c_str(),
+				    (x->rooms[chan].name + " - " + x->rooms[chan].desc).c_str());
 
 			    // output userlist (NAMES)
 			    string tmp; int i; nicklist_t::iterator j;
 			    for (i = 1, j = x->rooms[chan].nicklist.begin();
 				    j != x->rooms[chan].nicklist.end(); j++, i++) {
-				tmp += ((j->first == x->rooms[chan].admin)?"@":"") +
+				tmp += ((x->isadmin(chan, j->first))?"@":"") +
 				    j->second.nick + " ";
 				if (i % 5 == 0) {
 				    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
@@ -304,8 +306,7 @@ main_accept:
 			    fprintf(*c, ":%s 352 %s #%s %s %s %s %s %s :%d %s\n", me,
 				    nick.c_str(), cmd[1].c_str(), hash(i->second.nick).c_str(),
 				    sexhost[i->second.sex], me, i->second.nick.c_str(), 
-				    (i->first == x->rooms[cmd[1]].admin)?"H@":"H",
-				    0,
+				    (x->isadmin(cmd[1], i->first))?"H@":"H", 0,
 				    "xchat.cz user");
 			}
 			cmd[1] = "#" + cmd[1];
@@ -347,11 +348,56 @@ main_accept:
 		    fprintf(*c, ":%s 318 %s %s :End of /WHOIS list.\n", me,
 			    nick.c_str(), cmd[1].c_str());
 		} else if (cmd[0] == "KICK" && cmd.size() >= 3) {
+		    /*
+		     * Kick user.
+		     */
 		    if (cmd[1][0] == '#') {
 			cmd[1].erase(cmd[1].begin());
 		    }
 
 		    x->kick(cmd[1], cmd[2], (cmd.size() > 3)?cmd[3]:"");
+		} else if (cmd[0] == "TOPIC" && cmd.size() == 2) {
+		    /*
+		     * Output topic
+		     */
+		    if (cmd[1][0] == '#')
+			cmd[1].erase(cmd[1].begin());
+
+		    if (x->rooms.find(cmd[1]) == x->rooms.end())
+			fprintf(*c, ":%s 403 %s #%s :No such channel\n", me, nick.c_str(),
+				cmd[1].c_str());
+		    else
+			fprintf(*c, ":%s 332 %s #%s :%s\n", me, nick.c_str(), cmd[1].c_str(),
+				(x->rooms[cmd[1]].name + " - " + x->rooms[cmd[1]].desc).c_str());
+		} else if (cmd[0] == "NAMES" && cmd.size() == 2) {
+		    /*
+		     * Output names reply
+		     */
+		    if (cmd[1][0] == '#')
+			cmd[1].erase(cmd[1].begin());
+
+		    if (x->rooms.find(cmd[1]) == x->rooms.end())
+			fprintf(*c, ":%s 403 %s #%s :No such channel\n", me, nick.c_str(),
+				cmd[1].c_str());
+		    else {
+			string tmp; int i; nicklist_t::iterator j;
+			for (i = 1, j = x->rooms[cmd[1]].nicklist.begin();
+				j != x->rooms[cmd[1]].nicklist.end(); j++, i++) {
+			    tmp += ((x->isadmin(cmd[1], j->first))?"@":"") +
+				j->second.nick + " ";
+			    if (i % 5 == 0) {
+				fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
+					cmd[1].c_str(), tmp.c_str());
+				tmp.clear();
+			    }
+			}
+			if (tmp.length()) {
+			    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
+				    cmd[1].c_str(), tmp.c_str());
+			}
+			fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
+				nick.c_str(), cmd[1].c_str());
+		    }
 		} else {
 		    cout << l << endl;
 		    fprintf(*c, ":%s NOTICE %s :Unknown command\n", me, nick.c_str());
@@ -442,9 +488,13 @@ main_accept:
 		} else if (dynamic_cast<EvRoomAdminChange*>(e.get())) {
 		    auto_ptr<EvRoomAdminChange> f((EvRoomAdminChange*)e.release());
 
-		    fprintf(*c, ":%s MODE #%s -o+o %s %s\n", me,
-			    f->getrid().c_str(), f->getbefore().c_str(),
-			    f->getnow().c_str());
+		    if (x->isadmin(f->getrid(), f->getbefore())) // SS
+			fprintf(*c, ":%s MODE #%s +o %s\n", me,
+				f->getrid().c_str(), f->getnow().c_str());
+		    else
+			fprintf(*c, ":%s MODE #%s -o+o %s %s\n", me,
+				f->getrid().c_str(), f->getbefore().c_str(),
+				f->getnow().c_str());
 		} else if (dynamic_cast<EvRoomLockChange*>(e.get())) {
 		    auto_ptr<EvRoomLockChange> f((EvRoomLockChange*)e.release());
 

@@ -29,6 +29,8 @@ namespace xchat {
 	time_t last_sent;
 	string admin;
 	bool locked;
+	string name, desc;
+	vector<string> admins;
     };
     typedef map<string,room> rooms_t;
 }
@@ -100,6 +102,7 @@ namespace xchat {
 	    void kick(const string &room, const string &user, const string &reason);
 
 	    x_nick* findnick(string src, room **r);
+	    bool isadmin(const string &rid, string nick);
     };
 
     inline void XChat::sendq_push(const string& a, const string& b) {

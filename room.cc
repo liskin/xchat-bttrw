@@ -102,6 +102,39 @@ namespace xchat {
 	    }
 	}
 
+	ret = s.GET(makeurl2("modchat?op=roominfo&skin=2&cid=0&rid="+rid),0);
+	if (ret != 200)
+	    throw runtime_error("Not HTTP 200 Ok while joining channel");
+
+	while (s.getline(l)) {
+	    chomp(l);
+
+	    string pat = "název místnosti:</th><td width=260>";
+	    unsigned int pos = l.find(pat);
+	    if (pos != string::npos) {
+		r.name = wstrip_nr(string(l,pos+pat.length()));
+		continue;
+	    }
+	    
+	    pat = "popis místnosti:</th><td>";
+	    pos = l.find(pat);
+	    if (pos != string::npos) {
+		r.desc = wstrip_nr(string(l,pos+pat.length()));
+		unsmilize(r.desc);
+		continue;
+	    }
+	    
+	    pat = "stálý správce:</th><td>";
+	    pos = l.find(pat);
+	    if (pos != string::npos) {
+		stringstream ss(string(l,pos+pat.length()));
+		string admin;
+		while (ss >> admin)
+		    r.admins.push_back(strtolower_nr(admin));
+		continue;
+	    }
+	}
+
 	if (r.l != -1) {
 	    rooms[rid] = r;
 	    return;
