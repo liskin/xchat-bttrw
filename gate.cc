@@ -806,8 +806,8 @@ main_accept:
 	log(tomi_ntop(c->rname) + " - Disconnected (" + nick + ")");
 #endif
 
-	c.reset(0);
 	x.reset(0);
+	c.reset(0);
 #ifdef WIN32
 	goto main_accept;
 #endif
