@@ -626,8 +626,8 @@ main_accept:
 				f->getrid().c_str(), nick.c_str(),
 				f->str().c_str());
 		    } else {
-			fprintf(*c, ":%s NOTICE %s :Error: %s: %s\n", me,
-				nick.c_str(), f->getrid().c_str(), f->str().c_str());
+			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+				nick.c_str(), f->str().c_str());
 		    }
 		} else if (dynamic_cast<EvRoomMsg*>(e.get())) {
 		    auto_ptr<EvRoomMsg> f((EvRoomMsg*)e.release());
