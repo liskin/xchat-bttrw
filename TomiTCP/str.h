@@ -84,6 +84,17 @@ namespace std {
 	s << a;
 	return s.str();
     }
+    
+    /*
+     * And an opposite, a string to something converter.
+     */
+    template <typename T> inline T strto(const string &a)
+    {
+	stringstream s(a);
+	T b;
+       	s >> b;
+	return b;
+    }
 
     /*
      * These are considered deprecated and are subject to remove during next
