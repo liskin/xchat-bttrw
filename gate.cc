@@ -743,6 +743,9 @@ main_accept:
 #endif
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
+#ifdef LOG_ENABLED
+	log(tomi_ntop(c->rname) + " - Disconnected - " + e.what());
+#endif
     }
 
     return 0;
