@@ -159,10 +159,10 @@ namespace xchat {
 	    friend class XChat;
 	protected:
 	    x_nick src;
-	    string target;
+	    x_nick target;
 	public:
 	    virtual const x_nick & getsrc() { return src; }
-	    virtual const string & gettarget() { return target; }
+	    virtual const x_nick & gettarget() { return target; }
 	    virtual ~EvWhisper() {}
     };
 }

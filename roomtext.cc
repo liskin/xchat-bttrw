@@ -414,7 +414,7 @@ namespace xchat {
 		EvWhisper *e = new EvWhisper;
 		e->s = recode_to_client(m);
 		e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
-		e->target = target;
+		e->target = (struct x_nick){ target, (n = findnick(target, 0))?n->sex:2 };
 		if (!whisper_in_queue(e->s, e->src.nick))
 		    recvq_push(e);
 	    } else if (strtolower_nr(src) != strtolower_nr(nick)) {

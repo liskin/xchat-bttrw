@@ -727,7 +727,7 @@ main_accept:
 
 		    fprintf(*c, ":%s %s %s :%s\n",
 			    mask(f->getsrc().nick, f->getsrc().sex).c_str(),
-			    notice?"NOTICE":"PRIVMSG", f->gettarget().c_str(),
+			    notice?"NOTICE":"PRIVMSG", f->gettarget().nick.c_str(),
 			    str.c_str());
 		} else if (dynamic_cast<EvRoomJoin*>(e.get())) {
 		    auto_ptr<EvRoomJoin> f((EvRoomJoin*)e.release());
