@@ -198,6 +198,8 @@ namespace xchat {
 
 	vector<string> dbg;
 	string kicker, kickmsg;
+	EvRoomAdminChange *erac = 0;
+	EvRoomLockChange *erlc = 0;
 
 	r.l = -1;
 	string l;
@@ -266,8 +268,7 @@ namespace xchat {
 	    }
 
 	    /*
-	     * Check for current admin and locked status, and eventually emit
-	     * appropiate events.
+	     * Check for current admin and locked status
 	     */
 	    {
 		static string pat = "update_info('";
@@ -277,21 +278,23 @@ namespace xchat {
 		    bool locked;
 		    parse_updateinfo(string(l,pos+pat.length()), admin, locked);
 		    if (r.admin != admin) {
-			EvRoomAdminChange *e = new EvRoomAdminChange;
-			e->rid = r.rid;
-			e->before = r.admin;
-			e->now = admin;
+			if (erac)
+			    delete erac;
+			erac = new EvRoomAdminChange;
+			erac->rid = r.rid;
+			erac->before = r.admin;
+			erac->now = admin;
 			r.admin = admin;
-			recvq_push(e);
 		    }
 
 		    if (r.locked != locked) {
-			EvRoomLockChange *e = new EvRoomLockChange;
-			e->rid = r.rid;
-			e->before = r.locked;
-			e->now = locked;
+			if (erlc)
+			    delete erlc;
+			erlc = new EvRoomLockChange;
+			erlc->rid = r.rid;
+			erlc->before = r.locked;
+			erlc->now = locked;
 			r.locked = locked;
-			recvq_push(e);
 		    }
 		}
 	    }
@@ -353,6 +356,13 @@ namespace xchat {
 	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++)
 	    recvq_parse_push(*i, r);
 
+	/*
+	 * Emit Admin/LockChange
+	 */
+	if (erac)
+	    recvq_push(erac);
+	if (erlc)
+	    recvq_push(erlc);
 
 	/*
 	 * Look if we should emit a kick/error message
