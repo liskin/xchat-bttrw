@@ -28,8 +28,9 @@ string striphtml(string a)
     return out;
 }
 
-string hash(const string& s)
+string hash(string s)
 {
+    strtolower(s);
     unsigned char mdbuf[16]; char tmp[10];
     MD5_CTX md5;
     MD5_Init(&md5);
@@ -52,11 +53,24 @@ const char *sexhost[] = {
     "boys.xchat.cz"
 };
 
-const char * getsexhost(const string& src)
+x_nick* findnick(string nick)
 {
+    strtolower(nick);
+    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
+	nicklist_t::iterator n = i->second.nicklist.find(nick);
+	if (n != i->second.nicklist.end())
+	    return &n->second;
+    }
+
+    return 0;
+}
+
+const char * getsexhost(string src)
+{
+    strtolower(src);
     for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++)
 	if (i->second.nicklist.find(src) != i->second.nicklist.end())
-	    return sexhost[i->second.nicklist[src]];
+	    return sexhost[i->second.nicklist[src].sex];
 
     return userhost;
 }
@@ -129,14 +143,15 @@ int main(int argc, char *argv[])
 				cmd[1].c_str(), e.what());
 		    }
 
-		    rooms[cmd[1]].nicklist[nick] = 1;
+		    rooms[cmd[1]].nicklist[strtolower_nr(nick)] =
+			(struct x_nick){nick, 1};
 
 		    fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
 			    getsexhost(nick), cmd[1].c_str());
 		    string tmp; int i; nicklist_t::iterator j;
 		    for (i = 1, j = rooms[cmd[1]].nicklist.begin();
 			    j != rooms[cmd[1]].nicklist.end(); j++, i++) {
-			tmp += j->first + " ";
+			tmp += j->second.nick + " ";
 			if (i % 5 == 0) {
 			    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
 				    cmd[1].c_str(), tmp.c_str());
@@ -175,14 +190,19 @@ int main(int argc, char *argv[])
 			if (rooms.size()) {
 			    try {
 				bool global = 1;
+				rooms_t::iterator r;
 				for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++)
-				    if (i->second.nicklist.find(cmd[1]) != i->second.nicklist.end())
+				    if (i->second.nicklist.find(strtolower_nr(cmd[1]))
+					    != i->second.nicklist.end()) {
 					global = 0;
+					r = i;
+					break;
+				    }
 
 				if (global)
 				    sendq_push(rooms.begin()->first, "/m " + cmd[1] + " " + cmd[2]);
 				else
-				    sendq_push(rooms.begin()->first, "/s " + cmd[1] + " " + cmd[2]);
+				    sendq_push(r->first, "/s " + cmd[1] + " " + cmd[2]);
 			    } catch (runtime_error e) {
 				fprintf(*c, ":%s 401 %s %s :%s\n", me, nick.c_str(),
 					cmd[1].c_str(), e.what());
@@ -203,16 +223,18 @@ int main(int argc, char *argv[])
 			for (nicklist_t::iterator i = rooms[cmd[1]].nicklist.begin();
 				i != rooms[cmd[1]].nicklist.end(); i++) {
 			    fprintf(*c, ":%s 352 %s #%s %s %s %s %s %s :%d %s\n", me,
-				    nick.c_str(), cmd[1].c_str(), hash(i->first).c_str(),
-				    sexhost[i->second], me, i->first.c_str(), "H", 0,
+				    nick.c_str(), cmd[1].c_str(), hash(i->second.nick).c_str(),
+				    sexhost[i->second.sex], me, i->second.nick.c_str(), "H", 0,
 				    "xchat.cz user");
 			}
 			cmd[1] = "#" + cmd[1];
 		    } else {
-			fprintf(*c, ":%s 352 %s %s %s %s %s %s %s :%d %s\n", me,
-				nick.c_str(), "*", hash(cmd[1]).c_str(),
-				getsexhost(cmd[1]), me, cmd[1].c_str(), "H", 0,
-				"xchat.cz user");
+			x_nick *n = findnick(cmd[1]);
+			if (n)
+			    fprintf(*c, ":%s 352 %s %s %s %s %s %s %s :%d %s\n", me,
+				    nick.c_str(), "*", hash(n->nick).c_str(),
+				    sexhost[n->sex], me, n->nick.c_str(), "H", 0,
+				    "xchat.cz user");
 		    }
 		    fprintf(*c, ":%s 315 %s %s :End of /WHO list.\n", me,
 			    nick.c_str(), cmd[1].c_str());
@@ -259,7 +281,7 @@ int main(int argc, char *argv[])
 				fprintf(*c, ":%s!%s@%s PART #%s :No reason\n", src.c_str(),
 					hash(src).c_str(), getsexhost(src),
 					j->first.c_str());
-				j->second.nicklist.erase(src);
+				j->second.nicklist.erase(strtolower_nr(src));
 			    } else if (src == me && XChat::iskick(m, rooms, src, reason, who)) {
 				if (who.empty())
 				    fprintf(*c, ":%s!%s@%s PART #%s :%s\n", src.c_str(),
@@ -269,8 +291,12 @@ int main(int argc, char *argv[])
 				    fprintf(*c, ":%s!%s@%s KICK #%s %s :%s\n", who.c_str(),
 					    hash(who).c_str(), getsexhost(who),
 					    j->first.c_str(), src.c_str(), reason.c_str());
-				j->second.nicklist.erase(src);
-			    } else if (src != nick)
+				j->second.nicklist.erase(strtolower_nr(src));
+			    } else if (strtolower_nr(src) == "system" && 
+				    strtolower_nr(target) == strtolower_nr(nick)) {
+				fprintf(*c, ":%s NOTICE %s :System: %s\n", me,
+					target.c_str(), m.c_str());
+			    } else if (strtolower_nr(src) != strtolower_nr(nick))
 				fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", src.c_str(),
 					hash(src).c_str(), getsexhost(src),
 					target.c_str(), m.c_str());

@@ -42,7 +42,7 @@ namespace xchat {
 		    }
 
 		    if (nick != "~" && nick != "!")
-			r.nicklist[nick] = muz;
+			r.nicklist[strtolower_nr(nick)] = (struct x_nick){nick, muz};
 		}
 	    }
 	}

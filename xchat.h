@@ -13,10 +13,10 @@ namespace xchat {
 
     struct x_nick {
 	string nick;
-	bool muz;
+	bool sex;
     };
 
-    typedef map<string,bool> nicklist_t;
+    typedef map<string,x_nick> nicklist_t;
     struct room {
 	int l;
 	nicklist_t nicklist;

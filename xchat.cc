@@ -87,11 +87,11 @@ namespace xchat {
 	    if (m.find("Uzivatelka") != string::npos) {
 		src = string(m, a + sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 1);
 		wstrip(src);
-		rooms[room].nicklist[src] = 0;
+		rooms[room].nicklist[strtolower_nr(src)] = (struct x_nick){src, 0};
 	    } else {
 		src = string(m, a + sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 1);
 		wstrip(src);
-		rooms[room].nicklist[src] = 1;
+		rooms[room].nicklist[strtolower_nr(src)] = (struct x_nick){src, 1};
 	    }
 	    return 1;
 	}
