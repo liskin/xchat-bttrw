@@ -160,8 +160,17 @@ int main(int argc, char *argv[])
 			}
 		    } else {
 			if (rooms.size()) {
-			    try { x->putmsg(rooms.begin()->first, "/s " + cmd[1] + " " + cmd[2]); }
-			    catch (runtime_error e) {
+			    try {
+				bool global = 1;
+				for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++)
+				    if (i->second.nicklist.find(cmd[1]) != i->second.nicklist.end())
+					global = 0;
+
+				if (global)
+				    x->putmsg(rooms.begin()->first, "/m " + cmd[1] + " " + cmd[2]);
+				else
+				    x->putmsg(rooms.begin()->first, "/s " + cmd[1] + " " + cmd[2]);
+			    } catch (runtime_error e) {
 				fprintf(*c, ":%s 401 %s %s :%s\n", me, nick.c_str(),
 					cmd[1].c_str(), e.what());
 			    }
