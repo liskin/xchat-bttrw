@@ -19,7 +19,7 @@ namespace net {
 	    typedef map<string,TomiCookie> cookies_t;
 	    cookies_t cookies;
 
-	    void http_setcookie(string cookie);
+	    void http_setcookie(const string& cookie);
 	    void http_getcookies(string& out);
 
 	    void save(const string& file);

@@ -22,4 +22,5 @@ libTomiTCP.a: net.o http.o cookies.o
 net.o: net.cc net.h
 http.o: http.cc http.h net.h str.h
 cookies.o: cookies.cc cookies.h
+pok.o: pok.cc http.h cookies.h net.h
 pok: pok.o libTomiTCP.a

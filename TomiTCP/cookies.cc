@@ -13,7 +13,7 @@ namespace net {
     {
     }
 
-    void TomiCookies::http_setcookie(string cookie)
+    void TomiCookies::http_setcookie(const string& cookie)
     {
 	stringstream s(cookie);
 	TomiCookie c;

@@ -115,7 +115,7 @@ namespace net {
 	return ret;
     }
 
-    int TomiHTTP::POST(string address, string data, TomiCookies* cookies)
+    int TomiHTTP::POST(string address, const string& data, TomiCookies* cookies)
     {
 	string host, path;
 	int port = 0;
