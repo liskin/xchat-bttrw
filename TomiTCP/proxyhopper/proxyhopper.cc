@@ -174,6 +174,7 @@ void socks(TomiTCP &c, char *host, bool last)
 int main(int argc, char *argv[])
 {
     signal(SIGCHLD, SIG_IGN);
+    signal(SIGPIPE, SIG_IGN);
 
     if (argc < 3) {
 	cerr << "Usage: proxyhopper <port> [proxy:port] [-sh] [proxy:port...] [-sh] <host>:<port>"
@@ -352,10 +353,9 @@ void goon(int a, int b)
 	    if (sz == -1)
 		throw runtime_error("error in read: " + string(strerror(errno)));
 	    else if (!sz) {
-		if (a == 0)
-		    a = -1;
-		else
-		    break;
+		if (b >= 0)
+		    shutdown(b, SHUT_WR);
+		a = -1;
 	    }
 
 	    sz = sendall(b, buffer, sz);
