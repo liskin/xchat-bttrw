@@ -26,7 +26,7 @@ dep:
 
 clean:
 	$(RM) *.{o,so,a} pok
-libTomiTCP.a: net.o http.o cookies.o
+libTomiTCP.a: net.o http.o cookies.o str.o
 	$(AR) rsv $@ $?
 
 pok: pok.o libTomiTCP.a

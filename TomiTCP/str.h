@@ -1,6 +1,7 @@
 #ifndef STR_H_INCLUDED
 #define STR_H_INCLUDED
 
+#pragma interface
 #include <string>
 #include <ctype.h>
 
@@ -32,6 +33,11 @@ namespace std {
 	    *i = toupper(*i);
 	return str;
     }
+
+    int len(string s, int ini = 0, int tab = 8);
+    int ntokens(string s);
+    string justify(string in, int width, int maxspaces = 3, int tab = 8);
+    string reformat(string ins, int width, string firstline = "", int tab = 8);
 }
 
 #endif /* STR_H_INCLUDED */
