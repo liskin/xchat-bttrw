@@ -28,7 +28,8 @@ int main(int argc, char *argv[], char *envp[])
 	s.listen(atol(argv[2]), argv[1]);
 
 	while ((c = s.accept())) {
-	    if (!fork()) {
+	    pid_t p = fork(); if (p < 0) throw runtime_error(strerror(errno));
+	    if (!p) {
 		dup2(c->sock, 0);
 		dup2(c->sock, 1);
 		dup2(c->sock, 2);
