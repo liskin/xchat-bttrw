@@ -13,7 +13,7 @@ else
 endif
 
 ifeq ($(TARGET),i386-mingw32msvc)
- LDLIBS += -liconv -lwsock32
+ LDLIBS += -liconv -lws2_32
 endif
 
 COMPONENTS=net http cookies str

@@ -19,6 +19,8 @@
 # define EAFNOSUPPORT WSAEAFNOSUPPORT
 # define TEMP_FAILURE_RETRY(a) (a)
 # define strerror wsock_strerror
+# undef gai_strerror
+# define gai_strerror wsock_strerror
 int winsock_init() {
     WORD wVersionRequested;
     WSADATA wsaData;
