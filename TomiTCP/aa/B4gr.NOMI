@@ -1,6 +1,6 @@
 #!../irc
-#server	irc.nomi.cz
-server irc.smoula.net
+server	irc.nomi.cz
+#server irc.smoula.net
 port	6667
 nick	B4gr
 password	nomi-team

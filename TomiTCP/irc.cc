@@ -11,6 +11,8 @@ using namespace std;
 
 namespace std {
 
+char **my_argv;
+
 string server = ""; int port = 6667;
 string nick = "B4gr";
 string password = "";
@@ -471,6 +473,20 @@ void docmd(FILE *f, string &snick, string &cmd)
 	}
 	return;
     }
+
+    if (cl[0] == ".restart") {
+	if (cl.size() != 1) {
+	    S(f,"PRIVMSG %s :Need no parameters\n",snick.c_str());
+	} else {
+	    S(f,"PRIVMSG %s :Restarting...\n",snick.c_str());
+	    S(f,"QUIT\n");
+	    fclose(f);
+	    sleep(1);
+	    execv(my_argv[0],my_argv);
+	    throw runtime_error("Could not restart :(");
+	}
+	return;
+    }
 }
 
 void processbuf(FILE *f, char *buf)
@@ -593,6 +609,8 @@ void body(FILE *f)
 
 int main(int argc, char *argv[])
 {
+    my_argv = argv;
+
     if (argc != 2) {
 	cout << "need config file as parameter" << endl;
 	return -1;
