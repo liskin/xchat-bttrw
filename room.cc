@@ -117,23 +117,37 @@ namespace xchat {
 	while (s.getline(l)) {
 	    chomp(l);
 
-	    static string pat1 = "název místnosti:</th><td width=260>";
+	    static string pat1 = "název místnosti:</td>";
 	    unsigned int pos;
 	    if ((pos = l.find(pat1)) != string::npos) {
-		r.name = recode_to_client(wstrip_nr(string(l, pos + pat1.length())));
+		string st(l, pos + pat1.length());
+		striphtml(st);
+		striphtmlent(st);
+		wstrip(st);
+		r.name = recode_to_client(st);
 		continue;
 	    }
 	    
-	    static string pat2 = "popis místnosti:</th><td>";
+	    static string pat2 = "popis místnosti:</td>";
 	    if ((pos = l.find(pat2)) != string::npos) {
-		r.desc = recode_to_client(wstrip_nr(string(l, pos + pat2.length())));
-		unsmilize(r.desc);
+		string st(l, pos + pat2.length());
+		striphtml(st);
+		striphtmlent(st);
+		wstrip(st);
+		unsmilize(st);
+		r.desc = recode_to_client(st);
 		continue;
 	    }
 	    
-	    static string pat3 = "stálý správce:</th><td>";
+	    static string pat3 = "stálý správce:</td>", pat4 = "</td>";
 	    if ((pos = l.find(pat3)) != string::npos) {
-		stringstream ss(string(l, pos + pat3.length()));
+		s.getline(l);
+		if ((pos = l.find(pat4)) != string::npos)
+		    l.erase(pos);
+		striphtml(l);
+		striphtmlent(l);
+		wstrip(l);
+		stringstream ss(l);
 		string admin;
 		while (ss >> admin)
 		    r.admins.push_back(strtolower_nr(admin));
