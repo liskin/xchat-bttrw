@@ -39,7 +39,7 @@ const char *smiles[] = {
     [31] "*slunicko*",
     [32] "*oblizovak*",
     [33] "*telefon*",
-    [34] "*paranoidni*",
+    [34] "*rozhledne se a pak :)*",
     [35] "*kafe*",
     [36] "*cwok*", // toci ocima
     [37] ":-E",

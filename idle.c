@@ -18,7 +18,7 @@ const char *idle_msgs[] = {
     "Floating point exception.",
     "Banik pyco!",
     "Racek racku posral packu.",
-    "Doplnuj smajly, nebo ti odeberu licenci to pouzivat!",
+    "Obcas kontrolujte smajle, at to mame zupa dokonaly.",
     "Hej, tohle je posledni idle zprava, tzn. (rand() + 1) % idle_msgs == 0, mazec!"
 };
 
