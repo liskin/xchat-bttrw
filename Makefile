@@ -4,7 +4,7 @@ DEBUG=yes
 
 CFLAGS=-Wall -D_GNU_SOURCE
 CXXFLAGS=$(CFLAGS)
-LDLIBS=-lrecode
+LDLIBS=
 LDFLAGS=
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
@@ -15,7 +15,7 @@ else
 endif
 
 ifeq ($(TARGET),i386-mingw32msvc)
- LDLIBS += -liconv -lws2_32 -lintl
+ LDLIBS += -liconv -lws2_32
 endif
 
 .PHONY: all clean dep dummy
