@@ -26,8 +26,20 @@ namespace net {
 
     void TomiCookies::http_getcookies(string& out)
     {
-	for (cookies_t::iterator i = cookies.begin(); i != cookies.end(); i++)
-	    out += "Cookie: " + i->first + "=" + i->second.value + "\r\n";
+	for (cookies_t::iterator i = cookies.begin(); i != cookies.end();) {
+	    if (i == cookies.begin()) {
+		out += "Cookie: ";
+	    }
+	    out += i->first + "=" + i->second.value;
+
+	    i++;
+
+	    if (i == cookies.end()) {
+		out += "\r\n";
+	    } else {
+		out += "; ";
+	    }
+	}
     }
 
     void TomiCookies::save(const string& file)
