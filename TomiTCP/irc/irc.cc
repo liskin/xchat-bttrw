@@ -65,6 +65,35 @@ void S(FILE *f, const char* fmt, ...)
     va_end(ap);
 }
 
+void addslave(string host, int port, string pass)
+{
+    slave s;
+    s.dead = 0;
+    s.maskd = 0;
+    s.s = new net::TomiTCP(host,port);
+    slaves.push_back(s);
+    fprintf(*(s.s),"%s\n",pass.c_str());
+}
+
+bool rehashing = false;
+// host port pass
+void confslave(string l)
+{
+    if (rehashing)
+	return;
+
+    string host,port,pass;
+    stringstream s(l);
+    s >> host >> port >> pass;
+
+    if (!host.length() || !port.length()  || !pass.length()) {
+	cerr << "Error on line \""+l+"\"" << endl;
+	return;
+    }
+
+    addslave(host,atol(port.c_str()),pass);
+}
+
 void loadconfig(const char *fname, ostream &out)
 {
     ifstream in(fname);
@@ -117,6 +146,8 @@ void loadconfig(const char *fname, ostream &out)
 		    slave_pass = b;
 		else if (!strcasecmp(a.c_str(),"module"))
 		    loadmodule(b);
+		else if (!strcasecmp(a.c_str(),"slave"))
+		    confslave(b);
 		else {
 		    bool ok = 0;
 		    for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
@@ -151,6 +182,8 @@ void loadconfig(const char *fname, ostream &out)
 	out << "some_time = 0, safe mode may not work properly" << endl;
     if (safe_mode)
 	out << "Using safe mode" << endl;
+
+    rehashing = true;
 }
 
 void unloadmodule(string name)
@@ -421,12 +454,7 @@ void docmd(FILE *f, string &snick, string &cmd)
 	    S(f,"PRIVMSG %s :Need 3 parameters\n",snick.c_str());
 	else {
 	    try {
-		slave s;
-		s.dead = 0;
-		s.maskd = 0;
-		s.s = new net::TomiTCP(cl[1],atol(cl[2].c_str()));
-		slaves.push_back(s);
-		fprintf(*(s.s),"%s\n",cl[3].c_str());
+		addslave(cl[1],atol(cl[2].c_str()),cl[3]);
 		S(f,"PRIVMSG %s :slave added\n",snick.c_str());
 	    } catch (runtime_error e) {
 		S(f,"PRIVMSG %s :addslave error: %s\n",snick.c_str(),e.what());
@@ -732,12 +760,16 @@ void body(net::TomiTCP &f)
 	for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
 	    if (FD_ISSET(i->s->sock, &set)) {
 		if (! i->s->getline(buf)) { // closed
+		    cout << "[1mSlave " << tomi_ntop(i->s->rname) << ":" <<
+			(int)ntohs(PORT_SOCKADDR(i->s->rname)) << " dropped[0m" << endl;
 		    i->dead = 1;
 		} else {
 		    chomp(buf);
 		    if (! i->maskd) { // has not told his hostmask
 			i->mask = strtolower(buf);
 			i->maskd = 1;
+			cout << "[1mSlave " << tomi_ntop(i->s->rname) << ":" <<
+			    (int)ntohs(PORT_SOCKADDR(i->s->rname)) << " ready[0m" << endl;
 		    } else {
 			cout << "slave said: " << buf << endl;
 		    }
