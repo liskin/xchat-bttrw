@@ -43,6 +43,7 @@ namespace xchat {
 	if (m.length() && m[0] == ' ')
 	    m.erase(m.begin());
 
+	t.erase(0, t.find_first_not_of(" "));
 	src = string(t, 0, t.find("->"));
 	if (src.length() != t.length())
 	    target = string(t, src.length() + 2);
