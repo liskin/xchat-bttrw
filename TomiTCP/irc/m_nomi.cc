@@ -49,8 +49,7 @@ void m_nomi_mode(FILE *f, string snick, string shost, string chan,
 	if (string(*i,0,3) == "+b ") {
 	    string ban = string(*i,3);
 	    if (!fnmatch(ban.c_str(),(nick+"!"+myhost).c_str(),FNM_CASEFOLD)) {
-		S(f,"OMODE %s -o %s\n",chan.c_str(),snick.c_str());
-		S(f,"OMODE %s -b %s\n",chan.c_str(),ban.c_str());
+		S(f,"OMODE %s -ob %s %s\n",chan.c_str(),snick.c_str(),ban.c_str());
 	    }
 	}
     }
