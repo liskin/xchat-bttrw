@@ -26,19 +26,22 @@ namespace std {
 	str.erase(str.find_last_not_of(" \f\n\r\t\v")+1);
 	return str;
     }
-    
+
     /*
      * Case modifying functions
      */
+    char char_toupper(char c) { return toupper(c); }
+    char char_tolower(char c) { return tolower(c); }
+    
     inline string& strtolower(string &str)
     {
-	transform(str.begin(), str.end(), str.begin(), tolower);
+	transform(str.begin(), str.end(), str.begin(), char_tolower);
 	return str;
     }
 
     inline string& strtoupper(string &str)
     {
-	transform(str.begin(), str.end(), str.begin(), toupper);
+	transform(str.begin(), str.end(), str.begin(), char_toupper);
 	return str;
     }
 

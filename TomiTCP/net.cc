@@ -352,7 +352,7 @@ namespace net {
 	return f;
     }
 
-    int TomiTCP::getline(string& s, char delim = '\n')
+    int TomiTCP::getline(string& s, char delim)
     {
 	char c;
 	int ret;
