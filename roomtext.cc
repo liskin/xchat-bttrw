@@ -200,7 +200,8 @@ namespace xchat {
     {
 	unsigned int a,b;
 	if ((a = m.find("Uživatel")) != string::npos &&
-		(b = m.find("vstoupil")) != string::npos) {
+		(((b = m.find("vstoupil  do místnosti")) != string::npos) || 
+		 ((b = m.find("vstoupila do místnosti")) != string::npos))) {
 	    if (m.find("Uživatelka") != string::npos) {
 		src = string(m, a + sizeof("Uživatelka ") - 1, b - a - sizeof("Uživatelka ") + 1);
 		wstrip(src);
@@ -225,7 +226,8 @@ namespace xchat {
     {
 	unsigned int a,b;
 	if ((a = m.find("Uživatel")) != string::npos &&
-		(b = m.find("opustil")) != string::npos) {
+		(((b = m.find("opustil  místnost")) != string::npos) || 
+		 ((b = m.find("opustila místnost")) != string::npos))) {
 	    if (m.find("Uživatelka") != string::npos) {
 		src = string(m, a + sizeof("Uživatelka ") - 1, b - a - sizeof("Uživatelka ") + 1);
 		wstrip(src);
