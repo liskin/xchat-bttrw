@@ -23,6 +23,7 @@
 #include "irc.h"
 #include "TomiTCP/net.h"
 #include "TomiTCP/str.h"
+#include "setproctitle.h"
 using namespace std;
 using namespace xchat;
 using namespace net;
@@ -146,6 +147,9 @@ int main(int argc, char *argv[])
     if (argc == 2 && atol(argv[1]))
 	port = atol(argv[1]);
 
+
+    compat_init_setproctitle(argc, argv);
+
     try {
 	s.listen(port
 #ifdef WIN32
@@ -171,6 +175,8 @@ main_accept:
 #ifdef LOG_ENABLED
 	log(tomi_ntop(c->rname) + " - Connected");
 #endif
+
+	setproctitle(("gate: " + tomi_ntop(c->rname)).c_str());
 
 	string nick, pass;
 	bool user = false;
@@ -198,6 +204,27 @@ main_accept:
 		 */
 		if (!x.get()) {
 		    if (cmd[0] == "NICK" && cmd.size() >= 2) {
+			/*
+			 * Check nickname
+			 */
+			if (cmd[1].length() > 20) {
+			    fprintf(*c, ":%s 432 * %s :Erroneous Nickname\n", me,
+				    cmd[1].c_str());
+			    break;
+			}
+
+			bool err = false;
+			for (string::iterator i = cmd[1].begin(); i != cmd[1].end(); i++)
+			    if (!isprint(*i)) {
+				err = true;
+				break;
+			    }
+			if (err) {
+			    fprintf(*c, ":%s 432 * %s :Erroneous Nickname\n", me,
+				    cmd[1].c_str());
+			    break;
+			}
+
 			nick = cmd[1];
 		    } else if (cmd[0] == "PASS" && cmd.size() >= 2) {
 			pass = cmd[1];
@@ -231,6 +258,8 @@ main_accept:
 #ifdef LOG_ENABLED
 			log(tomi_ntop(c->rname) + " - Logging in - " + nick);
 #endif
+
+			setproctitle(("gate: " + tomi_ntop(c->rname) + " (" + nick + ")").c_str());
 
 			try { x.reset(new XChat(nick, pass)); }
 			catch (runtime_error e) {

@@ -41,7 +41,7 @@ libxchat-bttrw.a: xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o \
                   charset.o list.o ison.o
 	$(AR) rsv $@ $?
 
-gate: gate.o md5.o libxchat-bttrw.a TomiTCP/libTomiTCP.a
+gate: gate.o md5.o setproctitle.o libxchat-bttrw.a TomiTCP/libTomiTCP.a
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 ifeq ($(TARGET),i386-mingw32msvc)
 	strip $@
