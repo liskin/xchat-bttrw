@@ -23,7 +23,7 @@ vector<string> masters;
 vector<string> masternicks;
 string oname = "";
 string opassword = "";
-string modpath = "/home/pytt_l/c++/TomiTCP";
+string modpath = "/home/pytt_l/c++/TomiTCP/irc";
 unsigned int max_modes = 4;
 int safe_mode = 0; // safe mode, needed for dancer ircd, specifies level of niceness to ircd
 int some_time = 300; // time for waiting for some input during operation
@@ -488,7 +488,7 @@ void processsome(FILE *f)
     }
 }
 
-void body(FILE *f)
+void body(net::TomiTCP &f)
 {
     char buf[4096];
 
@@ -512,12 +512,11 @@ int main(int argc, char *argv[])
 
 	while (1) {
 	    net::TomiTCP sock(server,port);
-	    FILE *f = sock.makestream();
+	    FILE *f = sock;
 	    my_f = f;
 
 	    login(f);
-	    body(f);
-	    fclose(f);
+	    body(sock);
 	    sleep(10);
 	}
     } catch (std::runtime_error e) {

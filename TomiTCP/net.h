@@ -36,9 +36,12 @@ namespace net {
 
     class TomiTCP {
 	public:
-	    TomiTCP() : sock(-1) { }
+	    TomiTCP() : sock(-1), stream(0) { }
 	    TomiTCP(uint16_t port); // listening socket
 	    TomiTCP(const std::string& hostname, uint16_t port); // connection
+	    void listen(uint16_t port);
+	    void connect(const std::string& hostname, uint16_t port);
+	    void close();
 	    ~TomiTCP();
 	    bool ok();
 	    int nodelay();
@@ -46,9 +49,13 @@ namespace net {
 	    void send(const char* buf, int sz, unsigned int ms = 10);
 	    int recv(char* buf, int sz, unsigned int ms = 5000);
 	    FILE* makestream();
+	    int getline(string& s);
+
+	    operator FILE* ();
 
 	    sockaddr_uni name;
 	    int sock;
+	    FILE *stream;
     };
 }
 

@@ -9,7 +9,12 @@
 #include "net.h"
 
 namespace net {
-    TomiTCP::TomiTCP(uint16_t port) : sock(-1)
+    TomiTCP::TomiTCP(uint16_t port) : sock(-1), stream(0)
+    {
+	listen(port);
+    }
+
+    void TomiTCP::listen(uint16_t port)
     {
 	memset(&name,0,sizeof(name));
 	name.sin6.sin6_family = AF_INET6;
@@ -46,7 +51,12 @@ namespace net {
 	}
     }
 
-    TomiTCP::TomiTCP(const std::string& hostname, uint16_t port) : sock(-1)
+    TomiTCP::TomiTCP(const std::string& hostname, uint16_t port) : sock(-1), stream(0)
+    {
+	connect(hostname,port);
+    }
+
+    void TomiTCP::connect(const std::string& hostname, uint16_t port)
     {
 	memset(&name,0,sizeof(name));
 
@@ -74,10 +84,9 @@ namespace net {
 	    if (socket < 0) {
 		std::cerr << "Ch: " << strerror(errno) << std::endl;
 	    } else {
-		ret = connect(sock,(const sockaddr*)&name,SIZEOF_SOCKADDR(name));
+		ret = ::connect(sock,(const sockaddr*)&name,SIZEOF_SOCKADDR(name));
 		if (ret) {
-		    ::close(sock);
-		    sock = -1;
+		    close();
 		    std::cerr << "Ch: " << strerror(errno) << std::endl;
 		} else {
 		    break;
@@ -87,10 +96,25 @@ namespace net {
 	}
 
 	freeaddrinfo(ai);
+
+	try {
+	    stream = makestream();
+	} catch (...) {
+	    close();
+	    throw;
+	}
     }
 
     TomiTCP::~TomiTCP()
     {
+	close();
+    }
+
+    void TomiTCP::close()
+    {
+	if (stream)
+	    fclose(stream);
+
 	if (sock >= 0)
 	    ::close(sock);
 	sock = -1;
@@ -121,6 +145,14 @@ namespace net {
 	ret->sock = TEMP_FAILURE_RETRY(::accept(sock,&ret->name.sa,&len));
 	if (ret->sock < 0)
 	    throw std::runtime_error(std::string(strerror(errno)));
+
+	try {
+	    ret->stream = ret->makestream();
+	} catch (...) {
+	    ret->close();
+	    throw;
+	}
+	
 	return ret;
     }
 
@@ -173,6 +205,24 @@ namespace net {
 	    throw std::runtime_error(std::string(strerror(errno)));
 	setvbuf(f,NULL,_IONBF,0); // no buffering
 	return f;
+    }
+
+    TomiTCP::operator FILE* ()
+    {
+	return stream;
+    }
+
+    int TomiTCP::getline(string& s)
+    {
+	char *buf;
+	size_t len = 0;
+
+	int ret = ::getline(&buf,&len,stream);
+	if (ret == -1)
+	    return 0;
+	s = buf;
+	free(buf);
+	return 1;
     }
 
     std::string tomi_ntop(const sockaddr_uni& name)

@@ -14,9 +14,9 @@ endif
 
 .PHONY: all clean
 
-all: libTomiTCP.so
+all: libTomiTCP.a
 clean:
-	$(RM) *.{o,so}
-libTomiTCP.so: net.o
-	$(CXX) $(LDFLAGS) -shared $(TARGET_ARCH) $< $(LOADLIBES) -o $@
+	$(RM) *.{o,so,a}
+libTomiTCP.a: net.o
+	$(AR) rsv $@ $<
 net.o: net.cc net.h

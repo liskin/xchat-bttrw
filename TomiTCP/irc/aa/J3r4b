@@ -1,4 +1,4 @@
-#!../irc-run
+#!../irc
 server	efnet.demon.co.uk
 port	6667
 nick	J3r4b

@@ -1,4 +1,4 @@
-#!../irc-run
+#!../irc
 server	tyrael.czech.net
 port	6667
 nick	Kicker|drunk
