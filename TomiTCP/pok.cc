@@ -13,7 +13,8 @@ int main(int argc, char *argv[])
 	} catch (...) {
 	}
 	net::TomiHTTP s;
-	int ret = s.GET(argv[1],&c);
+	//int ret = s.GET(argv[1],&c);
+	int ret = s.POST(argv[1],"ahoj=nazdar&nazdar=bagr",&c);
 	cout << ret << endl;
 	c.save("cookies");
 

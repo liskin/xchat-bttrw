@@ -1,0 +1,6 @@
+#ifndef VERSION_H_INCLUDED
+#define VERSION_H_INCLUDED
+
+#define PACKAGE_VERSION "SVN"
+
+#endif /* VERSION_H_INCLUDED */

@@ -12,6 +12,7 @@ namespace net {
 	    ~TomiHTTP();
 
 	    int GET(string address, TomiCookies* cookies);
+	    int POST(string address, string data, TomiCookies* cookies);
 	    map<string,string> headers;
     };
 }
