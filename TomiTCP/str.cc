@@ -195,7 +195,11 @@ namespace std {
 
 	while ((fromsize>0) && (tosize>0))
 	{
+#ifdef WIN32
+	    if ((int)iconv(conv, &msgptr, &fromsize, &resptr, &tosize)==-1)
+#else
 	    if ((int)iconv(conv, (char **)&msgptr, &fromsize, &resptr, &tosize)==-1)
+#endif
 	    {
 		// array is not big enough
 		if (errno == E2BIG)
