@@ -59,33 +59,6 @@ namespace xchat {
 	return 0;
     }
 
-    /* 
-     * Zjisti pocet znaku v UTF-8 retezci
-     */
-    unsigned int u8strlen(const char *c)
-    {
-	unsigned int len = 0;
-
-	for (; *c; c++)
-	    if (!(*c & 0x80 && ~*c & 0x40))
-		len++;
-
-	return len;
-    }
-
-    /*
-     * Zjisti pocet 8-bit znaku, ktere odpovidaji poctu 'limit' UTF-8 znaku
-     */
-    unsigned int u8strlimit(const char *c, unsigned int limit)
-    {
-	const char *tc = c;
-	for (; *tc && (limit || (*tc & 0x80 && ~*tc & 0x40)); tc++)
-	    if (!(*tc & 0x80 && ~*tc & 0x40))
-		limit--;
-
-	return tc - c;
-    }
-
     /*
      * Go through sendq and send messages, take flood protection into account.
      * Then, send anti-idle messages if necessary.
