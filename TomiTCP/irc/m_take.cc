@@ -8,51 +8,30 @@ extern "C" {
 
 string autotake;
 
-void takeover(FILE *f, string &prefix, string &snick, string &shost,
-	vector<string> &cmd, map<string,string> &param)
+void takeover(FILE *f, string chan)
 {
-    if (cmd.size() != 5) {
-	cout << "CH\n";
-	return;
-    }
-
-    if (param["chan"] != cmd[3]) {
-	cout << "Ignoring" << endl;
-	return;
-    }
-
-    if (!strcasestr(cmd[4].c_str(),("@"+nick).c_str())) {
+    if (!channels[chan][nick]) {
 	cout << "Not opped or not in" << endl;
 	return;
     }
 
+    // this need not to be here... :)
     if (safe_mode)
 	processsome(f);
 
     vector<string> ops;
-    const char *p = cmd[4].c_str(), *e = cmd[4].c_str() + cmd[4].length();
 
-    while (p < e) {
-	char* d = strchr(p,' ');
-	string n;
+    for (channel_t::iterator i = channels[chan].begin(); i != channels[chan].end(); i++) {
+	if (!i->second)
+	    continue;
 
-	bool no = (*p != '@');
-
-	if (d) {
-	    n = string(p+1,0,(d-p-1));
-	    p = d+1;
-	} else {
-	    n = string(p+1);
-	    p = e;
-	}
-
-	if (!strcasecmp(n.c_str(),nick.c_str()) || no)
+	if (!strcasecmp(i->first.c_str(),nick.c_str()))
 	    continue;
 
 	{
 	    bool nn = 0;
-	    for (vector<string>::iterator it = masternicks.begin(); it!=masternicks.end(); it++)
-		if (!fnmatch(it->c_str(),n.c_str(),FNM_CASEFOLD)) {
+	    for (vector<string>::iterator it = masters.begin(); it != masters.end(); it++)
+		if (!fnmatch(it->c_str(),users[i->first].c_str(),FNM_CASEFOLD)) {
 		    nn = 1;
 		    break;
 		}
@@ -60,12 +39,12 @@ void takeover(FILE *f, string &prefix, string &snick, string &shost,
 		continue;
 	}
 
-	ops.push_back(n);
+	ops.push_back(i->first);
     }
 
     string out;
     for (unsigned int i=0; i<ops.size(); i+=max_modes) {
-	string c = "MODE "+cmd[3]+" -";
+	string c = "MODE "+chan+" -";
 	for (unsigned int j=i; j<(ops.size() <? (i+max_modes)); j++)
 	    c += "o";
 	for (unsigned int j=i; j<(ops.size() <? (i+max_modes)); j++)
@@ -102,9 +81,7 @@ void m_take_cmd(FILE *f, string snick, vector<string> cl)
 	if (cl.size() != 2) {
 	    S(f,"PRIVMSG %s :Need 1 parameters\n",snick.c_str());
 	} else {
-	    pend["353"].first = takeover;
-	    pend["353"].second["chan"] = cl[1];
-	    S(f,"NAMES %s\n",cl[1].c_str());
+	    takeover(f,cl[1]);
 	}
 	return;
     }
@@ -115,9 +92,7 @@ void m_take_mode(FILE *f, string snick, string shost, string chan, vector<string
     if (strcasestr(autotake.c_str(),chan.c_str())) {
 	for (vector<string>::iterator it = modes.begin(); it != modes.end(); it++) {
 	    if (!strcasecmp(it->c_str(),(string("+o ")+nick).c_str())) {
-		pend["353"].first = takeover;
-		pend["353"].second["chan"] = chan;
-		S(f,"NAMES %s\n",chan.c_str());
+		takeover(f,chan);
 		break;
 	    }
 	}
