@@ -89,18 +89,24 @@ namespace std {
      * These are considered deprecated and are subject to remove during next
      * cleanup. Use tostr template functions instead.
      */
-    string (* const inttostr)(int) = tostr<int>;
-    string (* const linttostr)(long int) = tostr<long int>;
-    string (* const llinttostr)(long long int) = tostr<long long int>;
-    string (* const uinttostr)(unsigned int) = tostr<unsigned int>;
-    string (* const ulinttostr)(unsigned long int) = tostr<unsigned long int>;
-    string (* const ullinttostr)(unsigned long long int) = tostr<unsigned long long int>;
-    string (* const uinttohstr)(unsigned int, bool = 0) = tostr_hex<unsigned int>;
-    string (* const ulinttohstr)(unsigned long int, bool = 0) = tostr_hex<unsigned long int>;
-    string (* const ullinttohstr)(unsigned long long int, bool = 0) = tostr_hex<unsigned long long int>;
-    string (* const floattostr)(float, int = -1) = tostr_float<float>;
-    string (* const doubletostr)(double, int = -1) = tostr_float<double>;
-    string (* const ldoubletostr)(long double, int = -1) = tostr_float<long double>;
+#define TOSTR(a,b) inline string a##tostr(b i) { return tostr<b>(i); }
+    TOSTR(int,int)
+    TOSTR(lint,long int)
+    TOSTR(llint,long long int)
+    TOSTR(uint,unsigned int)
+    TOSTR(ulint,unsigned long int)
+    TOSTR(ullint,unsigned long long int)
+#undef TOSTR
+#define TOSTR(a,b) inline string a##tohstr(b i, bool j = 0) { return tostr_hex<b>(i,j); }
+    TOSTR(uint,unsigned int)
+    TOSTR(ulint,unsigned long int)
+    TOSTR(ullint,unsigned long long int)
+#undef TOSTR
+#define TOSTR(a,b) inline string a##tostr(b i, int j = -1) { return tostr_float<b>(i,j); }
+    TOSTR(float,float)
+    TOSTR(double,double)
+    TOSTR(ldouble,long double)
+#undef TOSTR
 
     const string INDENT_DETECT = "\033";
     int len(const string& s, int ini = 0, int tab = 8);
