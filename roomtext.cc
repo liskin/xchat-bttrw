@@ -88,9 +88,8 @@ namespace xchat {
     /*
      * Get nick (source) and, if given, target nick
      */
-    void XChat::getnick(string &m, string &src, string &target, bool &interroom)
+    void XChat::getnick(string &m, string &src, string &target)
     {
-	interroom = 0;
 	string t = string(m, 0, m.find(": "));
 	if (t.length() == m.length())
 	    return;
@@ -105,15 +104,11 @@ namespace xchat {
 
 	// strip [room]
 	unsigned int a;
-	if (src[0] == '[' && ((a = src.find(']')) != string::npos)) {
+	if (src[0] == '[' && ((a = src.find(']')) != string::npos))
 	    src.erase(0, a + 1);
-	    interroom |= 1;
-	}
 	
-	if (target[0] == '[' && ((a = target.find(']')) != string::npos)) {
+	if (target[0] == '[' && ((a = target.find(']')) != string::npos))
 	    target.erase(0, a + 1);
-	    interroom |= 1;
-	}
 
 	if (src.find(' ') != string::npos || target.find(' ') != string::npos) {
 	    src = "";
@@ -302,22 +297,25 @@ namespace xchat {
     }
 
     /*
-     * Check if this whisper is already in queue
+     * Check if this whisper is already in queue or in the secondary queue
+     * with EvWhispers from previous refresh.
      */
     bool XChat::whisper_in_queue(string &m, string &src)
     {
 	for (deque<recv_item>::iterator i = recvq.begin();
 		i != recvq.end(); i++) {
 	    EvWhisper *e;
-	    EvRoomWhisper *f;
-	    if ((e = dynamic_cast<EvWhisper*>(i->e.get()))) {
+	    if ((e = dynamic_cast<EvWhisper*>(i->e.get())))
 		if (e->getsrc().nick == src && e->str() == m)
 		    return true;
-	    }
-	    if ((f = dynamic_cast<EvRoomWhisper*>(i->e.get()))) {
-		if (f->getsrc().nick == src && f->str() == m)
+	}
+
+	for (deque<recv_item>::iterator i = old_recvq.begin();
+		i != old_recvq.end(); i++) {
+	    EvWhisper *e;
+	    if ((e = dynamic_cast<EvWhisper*>(i->e.get())))
+		if (e->getsrc().nick == src && e->str() == m)
 		    return true;
-	    }
 	}
 
 	return false;
@@ -332,7 +330,7 @@ namespace xchat {
 	bool advert = isadvert(m, link);
 
 	x_nick *n;
-	
+
 	striphtml(m);
 	striphtmlent(m);
 	stripdate(m);
@@ -347,8 +345,7 @@ namespace xchat {
 	}
 
 	string src, target;
-	bool interroom;
-	getnick(m, src, target, interroom);
+	getnick(m, src, target);
 
 	if (src.length()) {
 	    unsmilize(m);
@@ -371,22 +368,12 @@ namespace xchat {
 		    recvq_push(e);
 		}
 	    } else if (target.length() && strtolower_nr(src) != strtolower_nr(nick)) {
-		if (interroom) {
-		    EvWhisper *e = new EvWhisper;
-		    e->s = recode_to_client(m);
-		    e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
-		    e->target = target;
-		    if (!whisper_in_queue(e->s, e->src.nick))
-			recvq_push(e);
-		} else {
-		    EvRoomWhisper *e = new EvRoomWhisper;
-		    e->s = recode_to_client(m);
-		    e->rid = r.rid;
-		    e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
-		    e->target = target;
-		    if (!whisper_in_queue(e->s, e->src.nick))
-			recvq_push(e);
-		}
+		EvWhisper *e = new EvWhisper;
+		e->s = recode_to_client(m);
+		e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
+		e->target = target;
+		if (!whisper_in_queue(e->s, e->src.nick))
+		    recvq_push(e);
 	    } else if (strtolower_nr(src) != strtolower_nr(nick)) {
 		EvRoomMsg *e = new EvRoomMsg;
 		e->s = recode_to_client(m);

@@ -93,11 +93,20 @@ namespace xchat {
 	    for (set<string>::iterator i = srooms.begin(); i != srooms.end(); i++) {
 		try { getmsg(rooms[*i]); }
 		catch (runtime_error e) {
-		    throw runtime_error(*i + ": " + e.what());
+		    EvRoomError *f = new EvRoomError;
+		    f->s = e.what();
+		    f->rid = *i;
+		    f->fatal = false;
+		    recvq_push(f);
 		}
 	    }
 
 	    last_recv = time(0);
+
+	    /*
+	     * Clear the secondary queue.
+	     */
+	    old_recvq.clear();
 	}
     }
 

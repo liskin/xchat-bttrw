@@ -37,8 +37,10 @@ namespace xchat {
 	    friend class XChat;
 	private:
 	    string s2;
+	    bool fatal;
 	public:
 	    virtual const string & str() { s2 = rid + ": " + s; return s2; }
+	    virtual const bool & isfatal() { return fatal; }
 	    virtual ~EvRoomError() {}
     };
     
@@ -49,17 +51,6 @@ namespace xchat {
 	public:
 	    virtual const x_nick & getsrc() { return src; }
 	    virtual ~EvRoomMsg() {}
-    };
-    
-    class EvRoomWhisper : public EvRoomOther {
-	    friend class XChat;
-	protected:
-	    x_nick src;
-	    string target;
-	public:
-	    virtual const x_nick & getsrc() { return src; }
-	    virtual const string & gettarget() { return target; }
-	    virtual ~EvRoomWhisper() {}
     };
     
     class EvRoomJoin : public EvRoomOther {

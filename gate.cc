@@ -620,10 +620,15 @@ main_accept:
 		if (dynamic_cast<EvRoomError*>(e.get())) {
 		    auto_ptr<EvRoomError> f((EvRoomError*)e.release());
 
-		    try { x->leave(f->getrid()); } catch (...) { }
-		    fprintf(*c, ":%s KICK #%s %s :Error: %s\n", me,
-			    f->getrid().c_str(), nick.c_str(),
-			    f->str().c_str());
+		    if (f->isfatal()) {
+			try { x->leave(f->getrid()); } catch (...) { }
+			fprintf(*c, ":%s KICK #%s %s :Error: %s\n", me,
+				f->getrid().c_str(), nick.c_str(),
+				f->str().c_str());
+		    } else {
+			fprintf(*c, ":%s NOTICE %s :Error: %s: %s\n", me,
+				nick.c_str(), f->getrid().c_str(), f->str().c_str());
+		    }
 		} else if (dynamic_cast<EvRoomMsg*>(e.get())) {
 		    auto_ptr<EvRoomMsg> f((EvRoomMsg*)e.release());
 		    string str = f->str();
@@ -632,15 +637,6 @@ main_accept:
 		    fprintf(*c, ":%s!%s@%s %s #%s :%s\n", f->getsrc().nick.c_str(),
 			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
 			    notice?"NOTICE":"PRIVMSG", f->getrid().c_str(),
-			    str.c_str());
-		} else if (dynamic_cast<EvRoomWhisper*>(e.get())) {
-		    auto_ptr<EvRoomWhisper> f((EvRoomWhisper*)e.release());
-		    string str = f->str();
-		    bool notice = is_notice(str);
-
-		    fprintf(*c, ":%s!%s@%s %s %s :%s\n", f->getsrc().nick.c_str(),
-			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
-			    notice?"NOTICE":"PRIVMSG", f->gettarget().c_str(),
 			    str.c_str());
 		} else if (dynamic_cast<EvWhisper*>(e.get())) {
 		    auto_ptr<EvWhisper> f((EvWhisper*)e.release());

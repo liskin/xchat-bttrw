@@ -80,7 +80,7 @@ namespace xchat {
 
 	    time_t last_sent, last_recv;
 	    queue<send_item> sendq;
-	    deque<recv_item> recvq;
+	    deque<recv_item> recvq, old_recvq;
 
 	    void do_sendq();
 	    void fill_recvq();
@@ -102,7 +102,7 @@ namespace xchat {
 
 	    static void striphtml(string &s);
 	    static void stripdate(string &m);
-	    static void getnick(string &m, string &src, string &target, bool &interroom);
+	    static void getnick(string &m, string &src, string &target);
 	    static void unsmilize(string &s);
 	    bool isjoin(room& r, string &m, string &src, int &sex);
 	    bool isleave(room& r, string &m, string &src, int &sex);
@@ -130,6 +130,16 @@ namespace xchat {
 
     inline Event * XChat::recvq_pop() {
 	auto_ptr<Event> e = recvq.front().e; recvq.pop_front();
+
+	/*
+	 * Store EvWhisper in a secondary recvq to make whisper_in_queue able
+	 * to check for existing Whispers in previous refresh. All this is
+	 * needed to fix an xchat.cz race condition.
+	 */
+	EvWhisper *f = dynamic_cast<EvWhisper*>(e.get());
+	if (f)
+	    old_recvq.push_back(recv_item(new EvWhisper(*f)));
+
 	return e.release();
     }
     

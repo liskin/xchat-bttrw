@@ -381,6 +381,7 @@ namespace xchat {
 	    EvRoomError *e = new EvRoomError;
 	    e->s = recode_to_client(kickmsg);
 	    e->rid = r.rid;
+	    e->fatal = true;
 	    recvq_push(e);
 	} else
 	    goto parse_error;
@@ -398,6 +399,7 @@ parse_error:
 	    EvRoomError *e = new EvRoomError;
 	    e->s = "Parse error";
 	    e->rid = r.rid;
+	    e->fatal = true;
 	    recvq_push(e);
 	}
     }
