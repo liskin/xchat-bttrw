@@ -20,7 +20,7 @@ auto_ptr<TomiTCP> in;
  * Hop to next host
  */
 char *lasthost = 0;
-void pconnect(TomiTCP &c, char *host)
+void pconnect(TomiTCP &c, char *host, bool last)
 {
     if (!host || !*host)
 	return;
@@ -36,8 +36,10 @@ void pconnect(TomiTCP &c, char *host)
 	 * The proxy wasn't able to connect to the one we have in host var
 	 * within a specified time.
 	 */
-	cerr << "Removing " << host << endl;
-	*host = 0;
+	if (!last) {
+	    cerr << "Removing " << host << endl;
+	    *host = 0;
+	}
 	throw runtime_error("Connection timeout");
     }
 
@@ -61,8 +63,10 @@ void pconnect(TomiTCP &c, char *host)
 	     * The proxy wasn't able to connect to host we wanted.
 	     */
 	    if (code >= 500) {
-		cerr << "Removing " << host << endl;
-		*host = 0;
+		if (!last) {
+		    cerr << "Removing " << host << endl;
+		    *host = 0;
+		}
 	    }
 	    /*
 	     * The proxy didn't want to connect.
@@ -156,7 +160,7 @@ int main(int argc, char *argv[])
 	     * Hop over proxys
 	     */
 	    while (marg < argc)
-		pconnect(out, argv[marg++]);
+		pconnect(out, argv[marg++], (marg + 1) == argc);
 
 	    cerr << "Ready, Go on!" << endl;
 
