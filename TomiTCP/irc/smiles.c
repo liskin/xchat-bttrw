@@ -27,7 +27,7 @@ const char *smiles[] = {
     [20] ":.)",
     [21] "*mimo*",
     [22] "*pivo*",
-    [23] ":-x",
+    [23] ":-*",
     [24] "*fialovej :)*", // fialovej toci ocima
     [25] "*zamilovane oci*",
     [26] "*mmnt*",
