@@ -15,32 +15,31 @@ namespace net {
 	memset(&rname,0,sizeof(rname));
     }
 
-    TomiTCP::TomiTCP(uint16_t port) : sock(-1), stream(0)
+    TomiTCP::TomiTCP(uint16_t port, const string &addr) : sock(-1), stream(0)
     {
 	memset(&lname,0,sizeof(lname));
 	memset(&rname,0,sizeof(rname));
-	listen(port);
+	listen(port,addr);
     }
 
-    void TomiTCP::listen(uint16_t port)
+    void TomiTCP::listen(uint16_t port, const string &addr)
     {
 	if (ok()) {
 	    close();
 	}
 
 	memset(&lname,0,sizeof(lname));
-	lname.sin6.sin6_family = AF_INET6;
-	lname.sin6.sin6_port = htons(port);
-	lname.sin6.sin6_addr = in6addr_any;
+	lname.sa.sa_family = AF_INET6;
+	tomi_pton(addr,lname);
+	PORT_SOCKADDR(lname) = htons(port);
 
-	sock = ::socket(PF_INET6, SOCK_STREAM, 0);
-	if (sock < 0 && (errno == EINVAL || errno == EAFNOSUPPORT)) {
+	sock = ::socket(lname.sa.sa_family, SOCK_STREAM, 0);
+	if (sock < 0 && (errno == EINVAL || errno == EAFNOSUPPORT) && addr == "::") {
                 lname.sin.sin_family = AF_INET;
                 lname.sin.sin_addr.s_addr = INADDR_ANY;
                 
                 sock = ::socket(PF_INET, SOCK_STREAM, 0);
-        }
-	if (sock < 0) {
+        } else if (sock < 0) {
 	    throw runtime_error(string(strerror(errno)));
 	}
 
@@ -344,7 +343,8 @@ namespace net {
 	int ret;
 
 	if (name.sa.sa_family == AF_INET6 && p.length() && ((int)p.find_first_of(':'))==-1)
-	    p = "::ffff:" + p;
+	    name.sa.sa_family = AF_INET;
+	    //p = "::ffff:" + p;
 	ret = inet_pton(name.sa.sa_family,p.c_str(),(name.sa.sa_family == AF_INET)?
 		((void *)&name.sin.sin_addr):
 		((void *)&name.sin6.sin6_addr));

@@ -39,9 +39,9 @@ namespace net {
     class TomiTCP {
 	public:
 	    TomiTCP();
-	    TomiTCP(uint16_t port); // listening socket
+	    TomiTCP(uint16_t port, const string& addr = "::"); // listening socket
 	    TomiTCP(const string& hostname, uint16_t port); // connection
-	    void listen(uint16_t port);
+	    void listen(uint16_t port, const string& addr = "::");
 	    void connect(const string& hostname, uint16_t port);
 	    void attach(int filedes);
 	    void close();
