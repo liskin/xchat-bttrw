@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
 			try {
 			    j->second.l = x->getmsg(j->first, j->second.l, m);
 			} catch (runtime_error e) {
-			    x->part(j->first);
+			    try { x->part(j->first); } catch (...) { }
 			    fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
 				    hash(nick).c_str(), sexhost[mysex], j->first.c_str());
 			    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
