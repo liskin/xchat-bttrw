@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include "xchat.h"
 #include "irc.h"
+#include "idle.h"
 #include "TomiTCP/net.h"
 #include "TomiTCP/str.h"
 using namespace std;
@@ -110,7 +111,7 @@ main_accept:
 		     * client happy.
 		     */
 
-		    fprintf(*c, ":%s 001 %s :Vitej Smazko na xchat.cz!\n", me, nick.c_str());
+		    fprintf(*c, ":%s 001 %s :Welcome Back To The Real World, but still connected to xchat.cz\n", me, nick.c_str());
 		    fprintf(*c, ":%s 002 %s :Your host is %s[%s/%i]"
 			    ", running version xchat-bttrw " VERSION "\n", me,
 			    nick.c_str(), me, revers(c->lname).c_str(), port);
@@ -360,6 +361,11 @@ main_accept:
 			fprintf(*c, ":%s!%s@%s KICK %s %s :%s\n", who.c_str(),
 				hash(who).c_str(), host.c_str(),
 				target.c_str(), src.c_str(), reason.c_str());
+		} else if (strtolower_nr(src) == "system" && 
+			strtolower_nr(target) == strtolower_nr(nick) &&
+			checkidle(wstrip_nr(m))) {
+		    fprintf(*c, ":%s NOTICE %s :System: %s [IDLER]\n", me,
+			    nick.c_str(), m.c_str());
 		} else if (strtolower_nr(src) == "system" && 
 			strtolower_nr(target) == strtolower_nr(nick)) {
 		    fprintf(*c, ":%s NOTICE %s :System: %s\n", me,

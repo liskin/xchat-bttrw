@@ -297,8 +297,7 @@ namespace xchat {
 	if (idle_interval && sendq.empty())
 	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
 		if (time(0) - i->second.last_sent >= idle_interval) {
-		    sendq_push(i->first, "/s " + nick + " " +
-			    idle_msgs[rand() % idle_msgs_count]);
+		    sendq_push(i->first, "/s " + nick + " " + genidle());
 		}
 	    }
     }
