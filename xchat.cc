@@ -264,9 +264,10 @@ namespace xchat {
 	if (src == strtolower_nr(nick))
 	    return sexhost[mysex];
 
-	for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++)
-	    if (i->second.nicklist.find(src) != i->second.nicklist.end())
-		return sexhost[i->second.nicklist[src].sex];
+	if (sendq.empty())
+	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++)
+		if (i->second.nicklist.find(src) != i->second.nicklist.end())
+		    return sexhost[i->second.nicklist[src].sex];
 
 	return userhost;
     }

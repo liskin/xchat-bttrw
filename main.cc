@@ -247,14 +247,20 @@ int main(int argc, char *argv[])
 		    }
 		    fprintf(*c, ":%s 315 %s %s :End of /WHO list.\n", me,
 			    nick.c_str(), cmd[1].c_str());
-		} else if (cmd[0] == "WHOIS" && cmd.size() == 2) {
+		} else if (cmd[0] == "WHOIS" && cmd.size() >= 2) {
 		    /*
 		     * Mangle `WHOIS nick' into `/info nick'
-		     */
-		} else if (cmd[0] == "WHOIS" && cmd.size() == 3) {
-		    /*
+		     * or
 		     * Mangle `WHOIS nick nick' into `/info2 nick'
 		     */
+		    if (x->rooms.size()) {
+			x->sendq_push(x->rooms.begin()->first,
+				string("/info") + ((cmd.size() != 2)?"2 ":" ")
+				    + cmd[1]);
+		    } else {
+			fprintf(*c, ":%s NOTICE %s :Can't send PRIVMSG's "
+				"without channel joined\n", me, nick.c_str());
+		    }
 		} else {
 		    cout << l << endl;
 		    fprintf(*c, ":%s NOTICE %s :Unknown command\n", me, nick.c_str());
