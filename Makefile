@@ -2,7 +2,7 @@
 
 DEBUG=yes
 
-CFLAGS=-Wall -D_GNU_SOURCE -I./TomiTCP
+CFLAGS=-Wall -D_GNU_SOURCE
 CXXFLAGS=$(CFLAGS)
 LDLIBS=-lrecode -lcrypto
 LDFLAGS=
@@ -16,7 +16,7 @@ endif
 
 .PHONY: all clean dep dummy
 
-all: gate
+all: libxchat-bttrw.a gate
 
 MAKEDEP=gcc -MM $(wildcard *.c *.cc) > .depend
 dep:
@@ -26,11 +26,15 @@ dep:
 
 -include .depend
 
-gate: gate.o xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o charset.o TomiTCP/libTomiTCP.a
+libxchat-bttrw.a: xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o charset.o
+	$(AR) rsv $@ $?
+
+gate: gate.o libxchat-bttrw.a TomiTCP/libTomiTCP.a
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 clean:
-	$(RM) xchat-bttrw *.o
-	$(MAKE) -C TomiTCP clean
+	$(RM) libxchat-bttrw.a gate *.o
+#	$(MAKE) -C TomiTCP clean
+
 TomiTCP/libTomiTCP.a: dummy
 	$(MAKE) -C TomiTCP DEBUG=$(DEBUG)
