@@ -211,25 +211,39 @@ namespace xchat {
 	    if (expect_apos) {
 		expect_apos = false;
 		if (l[0] == '\'') {
-		    unsigned int pos;
-		    if ((pos = l.find('\'', 1)) != string::npos) {
-			tv.push_back(string(l, 1, pos - 1));
-			if (l[pos + 1] == ',') {
-			    expect_apos = true;
+		    unsigned int a, b = 1;
+		    while ((a = l.find('\'', b)) != string::npos) {
+			if (l[a - 1] == '\\') {
+			    b = a + 1;
+			    continue;
 			}
+
+			tv.push_back(string(l, 1, a - 1));
+			if (l[a + 1] == ',')
+			    expect_apos = true;
+
+			break;
 		    }
 		}
 	    } else {
-		unsigned int pos1, pos2, pos3;
+		unsigned int pos1, pos2, a, b;
 		static string pat1 = ".addText(", pat2 = "Array('";
 
 		if ((pos1 = l.find(pat1)) != string::npos) {
 		    if ((pos2 = l.find(pat2, pos1 + pat1.length())) != string::npos) {
-			if ((pos3 = l.find('\'', pos2 + pat2.length())) != string::npos) {
+			b = pos2 + pat2.length();
+			while ((a = l.find('\'', b)) != string::npos) {
+			    if (l[a - 1] == '\\') {
+				b = a + 1;
+				continue;
+			    }
+
 			    tv.push_back(string(l, pos2 + pat2.length(),
-					pos3 - pos2 - pat2.length()));
-			    if (l[pos3 + 1] == ',')
+					a - pos2 - pat2.length()));
+			    if (l[a + 1] == ',')
 				expect_apos = true;
+
+			    break;
 			}
 		    }
 		}
