@@ -248,7 +248,6 @@ namespace xchat {
 		    parse_updateinfo(string(l,pos+pat.length()), admin, locked);
 		    if (r.admin != admin) {
 			EvRoomAdminChange *e = new EvRoomAdminChange;
-			e->s = "Admin change: " + r.admin + " => " + admin;
 			e->rid = r.rid;
 			e->before = r.admin;
 			e->now = admin;
@@ -258,7 +257,6 @@ namespace xchat {
 
 		    if (r.locked != locked) {
 			EvRoomLockChange *e = new EvRoomLockChange;
-			e->s = "Locked change: " + r.admin + " => " + admin;
 			e->rid = r.rid;
 			e->before = r.locked;
 			e->now = locked;

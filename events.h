@@ -125,8 +125,12 @@ namespace xchat {
     class EvRoomAdminChange : public EvRoomOther {
 	    friend class XChat;
 	protected:
-	    string before, now;
+	    string before, now, s2;
 	public:
+	    virtual const string & str() {
+		s2 = "Admin change: " + before + " => " + now;
+		return s2;
+	    }
 	    virtual const string & getbefore() { return before; }
 	    virtual const string & getnow() { return now; }
 	    virtual ~EvRoomAdminChange() {}
@@ -136,7 +140,13 @@ namespace xchat {
 	    friend class XChat;
 	protected:
 	    bool before, now;
+	    string s2;
 	public:
+	    virtual const string & str() {
+		s2 = string("Locked change: ") + (before?"locked":"unlocked") +
+		    " => " + (now?"locked":"unlocked");
+		return s2;
+	    }
 	    virtual const bool & getbefore() { return before; }
 	    virtual const bool & getnow() { return now; }
 	    virtual ~EvRoomLockChange() {}
