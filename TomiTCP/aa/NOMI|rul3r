@@ -1,5 +1,5 @@
 #!../irc
-server	irc.nomi.cz
+server	62.77.119.154
 port	6667
 nick	NOMI|rul3r
 password	nomi-team
