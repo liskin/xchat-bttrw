@@ -1,6 +1,6 @@
 # vim:set sw=8 nosta:
 
-DEBUG=no
+DEBUG=yes
 
 CFLAGS=-Wall -D_GNU_SOURCE -I./TomiTCP
 CXXFLAGS=$(CFLAGS)

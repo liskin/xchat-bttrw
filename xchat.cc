@@ -111,6 +111,7 @@ namespace xchat {
 		    pos = a + 1;
 		}
 	    } else {
+		pos = a + 1;
 	    }
 	}
     }
