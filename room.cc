@@ -112,14 +112,14 @@ namespace xchat {
 	    string pat = "název místnosti:</th><td width=260>";
 	    unsigned int pos = l.find(pat);
 	    if (pos != string::npos) {
-		r.name = wstrip_nr(string(l,pos+pat.length()));
+		r.name = recode_to_client(wstrip_nr(string(l,pos+pat.length())));
 		continue;
 	    }
 	    
 	    pat = "popis místnosti:</th><td>";
 	    pos = l.find(pat);
 	    if (pos != string::npos) {
-		r.desc = wstrip_nr(string(l,pos+pat.length()));
+		r.desc = recode_to_client(wstrip_nr(string(l,pos+pat.length())));
 		unsmilize(r.desc);
 		continue;
 	    }
