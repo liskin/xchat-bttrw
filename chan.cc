@@ -104,4 +104,13 @@ namespace xchat {
 
 	return lastmsg;
     }
+
+    void XChat::putmsg(const string& room, const string& msg)
+    {
+	TomiHTTP s;
+	int ret = s.POST(makeurl2("modchat"),"op=textpage&rid="+room+"&aid=0"+
+		"&target=~&textarea="+TomiHTTP::URLencode(msg),0);
+	if (ret != 200)
+	    throw runtime_error("Not HTTP 200 Ok while posting msg");
+    }
 }

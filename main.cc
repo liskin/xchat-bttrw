@@ -1,30 +1,55 @@
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include "xchat.h"
+#include "TomiTCP/net.h"
 using namespace std;
 using namespace xchat;
 
+string striphtml(string a)
+{
+    string out;
+    stringstream s(a);
+
+    while (getline(s,a,'<')) {
+	out += a + " ";
+	getline(s,a,'>');
+    }
+
+    return out;
+}
+
 int main(int argc, char *argv[])
 {
-    if (argc != 3) {
-	cerr << argv[0] << " <user> <pass>" << endl;
+    if (argc != 4) {
+	cerr << argv[0] << " <user> <pass> <channel>" << endl;
 	return -1;
     }
+
+    string room = argv[3];
 
     try {
 	XChat x(argv[1],argv[2]);
 	cout << "Logged in uid=" << x.uid << " sid=" << x.sid << endl;
-	int l = x.join("4030012");
-	cout << "DDD " << l << endl;
+
+	int l = x.join(room);
+
 	while (1) {
-	    cout << "---------------" << endl;
 	    vector<string> m;
-	    l = x.getmsg("4030012",l,m);
+	    l = x.getmsg(room,l,m);
 	    for (vector<string>::iterator i = m.begin(); i != m.end(); i++) {
-		cout << "DD= " << *i << endl;
+		cout << striphtml(*i) << endl;
 	    }
-	    cout << "DDD " << l << endl;
+
 	    sleep(5);
+
+	    if (net::input_timeout(0,0) > 0) {
+		string tmp;
+		getline(cin,tmp);
+		if (!tmp.length())
+		    break;
+		x.putmsg(room,tmp);
+	    }
 	}
     } catch (runtime_error e) {
 	cerr << e.what() << endl;

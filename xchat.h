@@ -18,6 +18,7 @@ namespace xchat {
 
 	    int join(const string& room);
 	    int getmsg(const string& room, int lastmsg, vector<string>& msgs);
+	    void putmsg(const string& room, const string& msg);
 
 	    static string makeurl(const string& url);
 	    string makeurl2(const string& url);
