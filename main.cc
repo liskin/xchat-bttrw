@@ -76,11 +76,10 @@ int main(int argc, char *argv[])
 			break;
 		    }
 		} else if (!x.get()) {
+		    // registered command boundary
 		    fprintf(*c, ":%s ERROR :Not registered\n", me);
 		    break;
-		}
-
-		if (cmd[0] == "PING") {
+		} else if (cmd[0] == "PING") {
 		    if (cmd.size() >= 2) {
 			fprintf(*c, ":%s PONG :%s\n", me, cmd[1].c_str());
 		    } else {
@@ -93,23 +92,37 @@ int main(int argc, char *argv[])
 			cmd[1].erase(cmd[1].begin());
 		    room = cmd[1];
 
-		    try { room_l = x->join(cmd[1]); }
+		    vector<string> nicklist;
+		    nicklist.push_back(nick);
+
+		    try { room_l = x->join(cmd[1], nicklist); }
 		    catch (runtime_error e) {
 			fprintf(*c, ":%s ERROR :%s\n", me, e.what());
 			break;
 		    }
 
 		    fprintf(*c, "%s!@ JOIN #%s\n", nick.c_str(), cmd[1].c_str());
+		    string tmp; int i; vector<string>::iterator j;
+		    for (i = 1, j = nicklist.begin(); j != nicklist.end(); j++, i++) {
+			tmp += *j + " ";
+			if (i % 5 == 0 || j + 1 == nicklist.end()) {
+			    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
+				    cmd[1].c_str(), tmp.c_str());
+			}
+		    }
 		    fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
 			    nick.c_str(), cmd[1].c_str());
 		} else if (cmd[0] == "PRIVMSG" && cmd.size() == 3) {
-		    if (cmd[1][0] == '#')
+		    if (cmd[1][0] == '#') {
 			cmd[1].erase(cmd[1].begin());
 
-		    try { x->putmsg(cmd[1], cmd[2]); }
-		    catch (runtime_error e) {
-			fprintf(*c, ":%s ERROR :%s\n", me, e.what());
-			break;
+			try { x->putmsg(cmd[1], cmd[2]); }
+			catch (runtime_error e) {
+			    fprintf(*c, ":%s ERROR :%s\n", me, e.what());
+			    break;
+			}
+		    } else {
+			fprintf(*c, ":%s NOTICE %s :Query not implemented\n", me, nick.c_str());
 		    }
 		} else if (cmd[0] == "MODE" && cmd.size() == 2) {
 		    fprintf(*c, ":%s 324 %s %s +\n", me, nick.c_str(), cmd[1].c_str());

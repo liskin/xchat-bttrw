@@ -8,19 +8,41 @@
 using namespace net;
 
 namespace xchat {
-    int XChat::join(const string& room)
+    int XChat::join(const string& room, vector<string>& nicklist)
     {
 	TomiHTTP s;
+	string l;
+
 	int ret = s.GET(makeurl2("modchat?op=mainframeset&rid="+room),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
+	s.close();
+	
+	ret = s.GET(makeurl2("modchat?op=textpageng&js=1&rid="+room),0);
+	if (ret != 200)
+	    throw runtime_error("Not HTTP 200 Ok while joining channel");
+	while (s.getline(l)) {
+	    if (l.find("<select name=\"target\">") != string::npos) {
+		while (s.getline(l)) {
+		    if (l.find("</select>") != string::npos)
+			break;
+
+		    string nick;
+		    stringstream ss(l);
+		    getline(ss, nick, '"');
+		    getline(ss, nick, '"');
+
+		    if (nick != "~")
+			nicklist.push_back(nick);
+		}
+	    }
+	}
 	s.close();
 
 	ret = s.GET(makeurl2("modchat?op=roomtopng&js=1&rid="+room),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
 
-	string l;
 	while (s.getline(l)) {
 	    string pat = "&inc=1&last_line=";
 	    unsigned int pos = l.find(pat);

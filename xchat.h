@@ -16,7 +16,7 @@ namespace xchat {
 	    XChat(const string& user, const string& pass);
 	    ~XChat();
 
-	    int join(const string& room);
+	    int join(const string& room, vector<string>& nicklist);
 	    int getmsg(const string& room, int lastmsg, vector<string>& msgs);
 	    void putmsg(const string& room, const string& msg);
 
