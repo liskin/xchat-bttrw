@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     try {
 	XChat x(argv[1],argv[2]);
 	cout << "Logged in uid=" << x.uid << " sid=" << x.sid << endl;
-	int l = x.join("324979","8");
+	int l = x.join("324979");
 	cout << "DDD " << l << endl;
 	while (1) {
 	    cout << "---------------" << endl;

@@ -20,7 +20,7 @@ namespace xchat {
 	    XChat(const string& user, const string& pass);
 	    ~XChat();
 
-	    int join(const string& room, const string& cat);
+	    int join(const string& room);
 	    int getmsg(const string& room, int lastmsg, vector<msg_t>& msgs);
 
 	    static string makeurl(const string& url);

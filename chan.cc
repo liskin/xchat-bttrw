@@ -8,15 +8,15 @@
 using namespace net;
 
 namespace xchat {
-    int XChat::join(const string& room, const string& cat)
+    int XChat::join(const string& room)
     {
 	TomiHTTP s;
-	int ret = s.GET(makeurl2("modchat?op=mainframeset&rid="+room+"&cid="+cat),0);
+	int ret = s.GET(makeurl2("modchat?op=mainframeset&rid="+room),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
 	s.close();
 	
-	ret = s.GET(makeurl2("modchat?op=roomframe&rid="+room+"&cid="+cat),0);
+	ret = s.GET(makeurl2("modchat?op=roomframe&rid="+room),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
 
