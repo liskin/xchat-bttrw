@@ -14,7 +14,6 @@ endif
 
 ifeq ($(TARGET),i386-mingw32msvc)
  LDLIBS += -liconv -lws2_32
- LDFLAGS += -Wl,--wrap -Wl,strerror
 endif
 
 COMPONENTS=net http cookies str
