@@ -33,6 +33,12 @@ namespace std {
 		    if (s.length())
 			cmd.push_back(s);
 		    p = d+1;
+
+		    if (cmd.size() == 1 && strtoupper_nr(cmd[0]) == "PASS" &&
+			    p[0] != ':') {
+			cmd.push_back(string(p));
+			p = e;
+		    }
 		} else {
 		    string s = string(p);
 		    wstrip(s);
