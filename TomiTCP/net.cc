@@ -433,27 +433,33 @@ namespace net {
     int input_timeout(int filedes, unsigned int ms)
     {
 	fd_set set;
-        struct timeval timeout;
+        struct timeval timeout, *to = 0;
 
         FD_ZERO(&set);
         FD_SET(filedes, &set);
 
-        timeout.tv_sec = ms / 1000;
-        timeout.tv_usec = (ms % 1000) * 1000;
-        return TEMP_FAILURE_RETRY(select(FD_SETSIZE,&set,NULL,NULL,&timeout));
+	if (ms >= 0) {
+	    timeout.tv_sec = ms / 1000;
+	    timeout.tv_usec = (ms % 1000) * 1000;
+	    to = &timeout;
+	}
+        return TEMP_FAILURE_RETRY(select(FD_SETSIZE,&set,NULL,NULL,to));
     }
 
     int output_timeout(int filedes, unsigned int ms)
     {
 	fd_set set;
-        struct timeval timeout;
+        struct timeval timeout, *to = 0;
 
         FD_ZERO(&set);
         FD_SET(filedes, &set);
 
-        timeout.tv_sec = ms / 1000;
-        timeout.tv_usec = (ms % 1000) * 1000;
-        return TEMP_FAILURE_RETRY(select(FD_SETSIZE,NULL,&set,NULL,&timeout));
+	if (ms >= 0) {
+	    timeout.tv_sec = ms / 1000;
+	    timeout.tv_usec = (ms % 1000) * 1000;
+	    to = &timeout;
+	}
+        return TEMP_FAILURE_RETRY(select(FD_SETSIZE,NULL,&set,NULL,to));
     }
 
 #ifdef WIN32
