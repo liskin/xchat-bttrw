@@ -49,7 +49,7 @@ string hash(string s)
 /*
  * Make host
  */
-inline string host(const string &nick, int sex)
+inline string host(const x_nick &n)
 {
     static const char * const sexhost[] = {
 	"girls.xchat.cz",
@@ -57,22 +57,22 @@ inline string host(const string &nick, int sex)
 	"users.xchat.cz"
     };
 
-    return hash(nick) + "." + sexhost[sex];
+    return hash(n.nick) + "." + sexhost[n.sex];
 }
 
 /*
  * Make username
  */
-inline string username(const string &nick) {
-    return hash(nick);
+inline string username(const x_nick &n) {
+    return hash(n.nick);
 }
 
 /*
  * Make nick!username@host
  */
-inline string mask(const string &nick, int sex)
+inline string mask(const x_nick &n)
 {
-    return nick + "!" + username(nick) + "@" + host(nick, sex);
+    return n.nick + "!" + username(n) + "@" + host(n);
 }
 
 /*
@@ -329,7 +329,7 @@ main_accept:
 			fprintf(*c, ":%s 005 %s MODES=1 MAXTARGETS=1 NICKLEN=20 SAFELIST"
 				" :are supported by this server\n",
 				me, nick.c_str());
-			fprintf(*c, ":%s 005 %s CHANTYPES=# PREFIX=(o)@ CHANMODES=,,,i"
+			fprintf(*c, ":%s 005 %s CHANTYPES=# PREFIX=(ov)@+ CHANMODES=,,,i"
 				" NETWORK=xchat.cz CASEMAPPING=ascii"
 				" :are supported by this server\n", me, nick.c_str());
 
@@ -392,7 +392,9 @@ main_accept:
 			try {
 			    x->join(chan);
 
-			    fprintf(*c, ":%s JOIN #%s\n", mask(nick, 2).c_str(), chan.c_str());
+			    fprintf(*c, ":%s JOIN #%s\n",
+				    mask((struct x_nick){ nick, 2 }).c_str(),
+				    chan.c_str());
 			    fprintf(*c, ":%s 332 %s #%s :%s\n", me, nick.c_str(), chan.c_str(),
 				    (x->rooms[chan].name + " - " + x->rooms[chan].desc).c_str());
 
@@ -400,7 +402,9 @@ main_accept:
 			    string tmp; int i; nicklist_t::iterator j;
 			    for (i = 1, j = x->rooms[chan].nicklist.begin();
 				    j != x->rooms[chan].nicklist.end(); j++, i++) {
-				tmp += ((x->isadmin(chan, j->first))?"@":"") +
+				tmp += string("") +
+				    ((x->isadmin(chan, j->first))?"@":"") +
+				    ((j->second.sex == 0)?"+":"") +
 				    j->second.nick + " ";
 				if (i % 5 == 0) {
 				    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
@@ -435,7 +439,8 @@ main_accept:
 			if (x->rooms.find(chan) != x->rooms.end()) {
 			    try {
 				x->leave(chan);
-				fprintf(*c, ":%s PART #%s :\n", mask(nick, 2).c_str(),
+				fprintf(*c, ":%s PART #%s :\n",
+					mask((struct x_nick){ nick, 2 }).c_str(),
 					chan.c_str());
 			    } catch (runtime_error e) {
 				fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
@@ -528,13 +533,14 @@ main_accept:
 			     */
 			    for (nicklist_t::iterator i = x->rooms[cmd[1]].nicklist.begin();
 				    i != x->rooms[cmd[1]].nicklist.end(); i++) {
-				fprintf(*c, ":%s 352 %s #%s %s %s %s %s %s :%d %s\n", me,
+				fprintf(*c, ":%s 352 %s #%s %s %s %s %s H%s%s :%d %s\n", me,
 					nick.c_str(), cmd[1].c_str(),
-					username(i->second.nick).c_str(),
-					host(i->second.nick, i->second.sex).c_str(),
-					me, i->second.nick.c_str(), 
-					(x->isadmin(cmd[1], i->first))?"H@":"H", 0,
-					"xchat.cz user");
+					username(i->second).c_str(),
+					host(i->second).c_str(),
+					me, i->second.nick.c_str(),
+					(x->isadmin(cmd[1], i->first))?"@":"",
+					(i->second.sex == 0)?"+":"",
+					0, "xchat.cz user");
 			    }
 			}
 			cmd[1] = "#" + cmd[1];
@@ -545,9 +551,8 @@ main_accept:
 			x_nick *n = x->findnick(cmd[1], 0);
 			if (n)
 			    fprintf(*c, ":%s 352 %s %s %s %s %s %s %s :%d %s\n", me,
-				    nick.c_str(), "*", username(n->nick).c_str(),
-				    host(n->nick, n->sex).c_str(),
-				    me, n->nick.c_str(), "H", 0,
+				    nick.c_str(), "*", username(*n).c_str(),
+				    host(*n).c_str(), me, n->nick.c_str(), "H", 0,
 				    "xchat.cz user");
 		    }
 		    fprintf(*c, ":%s 315 %s %s :End of /WHO list.\n", me,
@@ -572,7 +577,7 @@ main_accept:
 		    if (n)
 			fprintf(*c, ":%s 311 %s %s %s %s * :%s\n", me,
 				nick.c_str(), n->nick.c_str(),
-				username(n->nick).c_str(), host(n->nick, n->sex).c_str(),
+				username(*n).c_str(), host(*n).c_str(),
 				"xchat.cz user");
 		    fprintf(*c, ":%s 318 %s %s :End of /WHOIS list.\n", me,
 			    nick.c_str(), cmd[1].c_str());
@@ -624,7 +629,9 @@ main_accept:
 			string tmp; int i; nicklist_t::iterator j;
 			for (i = 1, j = x->rooms[cmd[1]].nicklist.begin();
 				j != x->rooms[cmd[1]].nicklist.end(); j++, i++) {
-			    tmp += ((x->isadmin(cmd[1], j->first))?"@":"") +
+			    tmp += string("") +
+				((x->isadmin(cmd[1], j->first))?"@":"") +
+				((j->second.sex == 0)?"+":"") +
 				j->second.nick + " ";
 			    if (i % 5 == 0) {
 				fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
@@ -666,7 +673,7 @@ main_accept:
 			x_nick *n = x->findnick(*i, 0);
 			if (n)
 			    rpl += n->nick + "=+" +
-				username(n->nick) + "@" + host(n->nick, n->sex) + " ";
+				username(*n) + "@" + host(*n) + " ";
 		    }
 		    fprintf(*c, ":%s 302 %s :%s\n", me, nick.c_str(), rpl.c_str());
 		} else if (cmd[0] == "ISON" && cmd.size() >= 2) {
@@ -741,7 +748,7 @@ main_accept:
 		    bool notice = is_notice(str);
 
 		    fprintf(*c, ":%s %s #%s :%s\n",
-			    mask(f->getsrc().nick, f->getsrc().sex).c_str(),
+			    mask(f->getsrc()).c_str(),
 			    notice?"NOTICE":"PRIVMSG", f->getrid().c_str(),
 			    str.c_str());
 		} else if (dynamic_cast<EvWhisper*>(e.get())) {
@@ -750,29 +757,39 @@ main_accept:
 		    bool notice = is_notice(str);
 
 		    fprintf(*c, ":%s %s %s :%s\n",
-			    mask(f->getsrc().nick, f->getsrc().sex).c_str(),
+			    mask(f->getsrc()).c_str(),
 			    notice?"NOTICE":"PRIVMSG", f->gettarget().nick.c_str(),
 			    str.c_str());
 		} else if (dynamic_cast<EvRoomJoin*>(e.get())) {
 		    auto_ptr<EvRoomJoin> f((EvRoomJoin*)e.release());
 
 		    fprintf(*c, ":%s JOIN #%s\n",
-			    mask(f->getsrc().nick, f->getsrc().sex).c_str(),
+			    mask(f->getsrc()).c_str(),
 			    f->getrid().c_str());
+
+		    string mode;
 		    if (x->ispermadmin(f->getrid(), f->getsrc().nick))
-			fprintf(*c, ":%s MODE #%s +o %s\n", me,
-				f->getrid().c_str(), f->getsrc().nick.c_str());
+			mode += "o";
+		    if (f->getsrc().sex == 0)
+			mode += "v";
+
+		    if (mode.length())
+			fprintf (*c, ":%s MODE #%s +%s %s%s%s\n",
+				me, f->getrid().c_str(), mode.c_str(),
+				f->getsrc().nick.c_str(), ((mode.length() == 2)?" ":""),
+				((mode.length() == 2)?f->getsrc().nick.c_str():""));
+		    
 		} else if (dynamic_cast<EvRoomLeave*>(e.get())) {
 		    auto_ptr<EvRoomLeave> f((EvRoomLeave*)e.release());
 
 		    fprintf(*c, ":%s PART #%s :%s\n",
-			    mask(f->getsrc().nick, f->getsrc().sex).c_str(),
+			    mask(f->getsrc()).c_str(),
 			    f->getrid().c_str(), f->getreason().c_str());
 		} else if (dynamic_cast<EvRoomKick*>(e.get())) {
 		    auto_ptr<EvRoomKick> f((EvRoomKick*)e.release());
 
 		    fprintf(*c, ":%s KICK #%s %s :%s\n",
-			    mask(f->getsrc().nick, f->getsrc().sex).c_str(),
+			    mask(f->getsrc()).c_str(),
 			    f->getrid().c_str(), f->gettarget().nick.c_str(),
 			    f->getreason().c_str());
 		} else if (dynamic_cast<EvRoomSysMsg*>(e.get())) {

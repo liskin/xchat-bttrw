@@ -5,7 +5,7 @@ namespace std {
     /*
      * Parse IRC input line into source, command and parameters
      */
-    void parsein(string buf, string& prefix, vector<string>& cmd)
+    void parsein(const string &buf, string& prefix, vector<string>& cmd)
     {
 	const char *p = buf.c_str(), *e = buf.c_str() + buf.length();
 

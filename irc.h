@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace std {
-    void parsein(string buf, string& prefix, vector<string>& cmd);
+    void parsein(const string &buf, string& prefix, vector<string>& cmd);
     void parsemode(const vector<string>& cmd, vector<pair<string,string> >& mode);
 }
 
