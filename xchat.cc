@@ -13,6 +13,7 @@ namespace xchat {
      * Variable definitions
      */
     int idle_interval = 0;
+    int recv_interval = 3;
     string client_charset;
 
     /*

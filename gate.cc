@@ -386,6 +386,10 @@ main_accept:
 			show_advert = atol(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :show_advert set to %i\n",
 				me, nick.c_str(), show_advert);
+		    } else if (cmd[1] == "RECV_INTERVAL" && cmd.size() == 3) {
+			recv_interval = atol(cmd[2].c_str());
+			fprintf(*c, ":%s NOTICE %s :recv_interval set to %i\n",
+				me, nick.c_str(), recv_interval);
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
 				" count\n", me, nick.c_str());

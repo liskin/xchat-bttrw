@@ -44,9 +44,9 @@ namespace xchat {
      * Flood protection, refresh rate, max msg length and idle protection
      * 720 is optimal for flood protection
      */
-    const int send_interval = 5, recv_interval = 3;
+    const int send_interval = 5;
     const unsigned int max_msg_length = 200;
-    extern int idle_interval;
+    extern int idle_interval, recv_interval;
 
     /*
      * Load balancing consts
