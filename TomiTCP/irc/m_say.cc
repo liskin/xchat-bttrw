@@ -6,11 +6,15 @@ using namespace std;
 
 extern "C" {
 
+int m_say_port = 12204;
 net::TomiTCP m_say_s;
 
 void m_say_timer(FILE *f)
 {
     try {
+	if (!m_say_s.ok()) {
+	    m_say_s.listen(m_say_port);
+	}
 	if (net::input_timeout(m_say_s.sock,0) > 0) {
 	    net::TomiTCP *cl = m_say_s.accept();
 
@@ -32,12 +36,22 @@ void m_say_timer(FILE *f)
     }
 }
 
+int m_say_config(string a, string b)
+{
+    if (!strcasecmp(a.c_str(),"say_port"))
+        m_say_port = atol(b.c_str());
+    else
+        return 1;
+
+    return 0;
+}
+
 void m_say_init(struct module &m)
 {
     cout << "m_say init - hello" << endl;
     try {
-	m_say_s.listen(12204);
 	m.timer = m_say_timer;
+	m.config = m_say_config;
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
     }
