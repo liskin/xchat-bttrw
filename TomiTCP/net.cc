@@ -3,12 +3,41 @@
 #include <sstream>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <netdb.h>
+#ifndef WIN32
+# include <sys/socket.h>
+# include <arpa/inet.h>
+# include <netinet/tcp.h>
+# include <netdb.h>
+#endif
 #include "net.h"
 #include "str.h"
+
+int &c_errno = errno;
+
+#ifdef WIN32
+# undef errno
+# define errno WSAGetLastError()
+# define EAFNOSUPPORT WSAEAFNOSUPPORT
+# define TEMP_FAILURE_RETRY(a) (a)
+# define strerror inttostr
+# define NEED_GETLINE
+int winsock_init() {
+    WORD wVersionRequested;
+    WSADATA wsaData;
+    int err;
+
+    wVersionRequested = MAKEWORD( 2, 0 );
+
+    err = WSAStartup( wVersionRequested, &wsaData );
+    if ( err != 0 ) {
+	std::cerr << "Too old winsock" << std::endl;
+	throw 0;
+    }
+
+    return 0;
+}
+int winsock_init_tmp = winsock_init();
+#endif
 
 namespace net {
     TomiTCP::TomiTCP() : sock(-1), stream(0) {
@@ -108,7 +137,7 @@ namespace net {
 
 	stream = fdopen(sock,"r+");
 	if (!stream) {
-	    int er = errno;
+	    int er = c_errno;
 	    close();
 	    throw runtime_error(string(strerror(er)));
 	}
@@ -209,7 +238,7 @@ namespace net {
 
 	stream = fdopen(sock,"r+");
 	if (!stream) {
-	    int er = errno;
+	    int er = c_errno;
 	    close();
 	    throw runtime_error(string(strerror(er)));
 	}
@@ -264,7 +293,7 @@ namespace net {
 
 	ret->stream = fdopen(ret->sock,"r+");
 	if (!ret->stream) {
-	    int er = er;
+	    int er = c_errno;
 	    delete ret;
 	    throw runtime_error(string(strerror(er)));
 	}
@@ -314,7 +343,7 @@ namespace net {
 
 	FILE *f = fdopen(s,"r+");
 	if (!f)
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error(string(strerror(c_errno)));
 	setvbuf(f,NULL,_IONBF,0); // no buffering
 
 	return f;
@@ -327,6 +356,10 @@ namespace net {
 
     int TomiTCP::getline(string& s)
     {
+#ifdef NEED_GETLINE
+	throw 0;
+	return 0;
+#else
 	char *buf;
 	size_t len = 0;
 
@@ -336,16 +369,24 @@ namespace net {
 	s = buf;
 	free(buf);
 	return 1;
+#endif
     }
 
     string tomi_ntop(const sockaddr_uni& name)
     {
 	char tmp[128],*p;
 
+#ifdef WIN32
+	DWORD len = 128;
+	if (!WSAAddressToString((struct sockaddr*)&name.sa,SIZEOF_SOCKADDR(name),0,tmp,&len))
+	    throw runtime_error(string(strerror(errno)));
+	tmp[len] = 0;
+#else
 	if (!inet_ntop(name.sa.sa_family,(name.sa.sa_family == AF_INET)?
 		    ((const void *)&name.sin.sin_addr):
 		    ((const void *)&name.sin6.sin6_addr),tmp,128))
 	    throw runtime_error(string(strerror(errno)));
+#endif
 
 	if (name.sa.sa_family == AF_INET6 && IN6_IS_ADDR_V4MAPPED(&name.sin6.sin6_addr))
 	    if ((p = strstr(tmp,":ffff:")) || (p = strstr(tmp, ":FFFF:")))
@@ -356,18 +397,21 @@ namespace net {
     
     void tomi_pton(string p, sockaddr_uni& name)
     {
-	int ret;
-
 	if (name.sa.sa_family == AF_INET6 && p.length() && ((int)p.find_first_of(':'))==-1)
 	    name.sa.sa_family = AF_INET;
-	    //p = "::ffff:" + p;
-	ret = inet_pton(name.sa.sa_family,p.c_str(),(name.sa.sa_family == AF_INET)?
+#ifdef WIN32
+	int sz = SIZEOF_SOCKADDR(name);
+	if (WSAStringToAddress((char*)p.c_str(),name.sa.sa_family,0,(struct sockaddr*)&name.sa,&sz))
+	    throw runtime_error(string(strerror(errno)));
+#else
+	int ret = inet_pton(name.sa.sa_family,p.c_str(),(name.sa.sa_family == AF_INET)?
 		((void *)&name.sin.sin_addr):
 		((void *)&name.sin6.sin6_addr));
 	if (ret < 0)
 	    throw runtime_error(string(strerror(errno)));
 	if (ret == 0)
 	    throw runtime_error("Not a valid address");
+#endif
     }
     
     string revers(const sockaddr_uni& name)

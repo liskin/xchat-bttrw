@@ -6,12 +6,16 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
-#include <netinet/in.h>
-#include <sys/types.h>
 #include <exception>
 #include <stdexcept>
 #include <unistd.h>
-#include <sys/socket.h>
+#ifdef WIN32
+# include <ws2tcpip.h>
+#else
+# include <netinet/in.h>
+# include <sys/types.h>
+# include <sys/socket.h>
+#endif
 
 #define SIZEOF_SOCKADDR(so) ((so).sa.sa_family == AF_INET6 ? \
     sizeof((so).sin6) : sizeof((so).sin))
