@@ -14,9 +14,12 @@ endif
 
 .PHONY: all clean
 
-all: libTomiTCP.a
+all: libTomiTCP.a pok
 clean:
 	$(RM) *.{o,so,a}
-libTomiTCP.a: net.o
-	$(AR) rsv $@ $<
+libTomiTCP.a: net.o http.o cookies.o
+	$(AR) rsv $@ $?
 net.o: net.cc net.h
+http.o: http.cc http.h net.h str.h
+cookies.o: cookies.cc cookies.h
+pok: pok.o libTomiTCP.a

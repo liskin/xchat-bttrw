@@ -16,6 +16,10 @@ namespace net {
 
     void TomiTCP::listen(uint16_t port)
     {
+	if (ok()) {
+	    close();
+	}
+
 	memset(&name,0,sizeof(name));
 	name.sin6.sin6_family = AF_INET6;
 	name.sin6.sin6_port = htons(port);
@@ -58,6 +62,10 @@ namespace net {
 
     void TomiTCP::connect(const std::string& hostname, uint16_t port)
     {
+	if (ok()) {
+	    close();
+	}
+
 	memset(&name,0,sizeof(name));
 
 	struct addrinfo *ai,*aip,hints;
@@ -107,6 +115,7 @@ namespace net {
 
     TomiTCP::~TomiTCP()
     {
+	//cerr << "TomiTCP destructed" << endl;
 	close();
     }
 
