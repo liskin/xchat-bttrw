@@ -13,7 +13,8 @@ namespace net {
 
 	    int GET(string address, TomiCookies* cookies);
 	    int POST(string address, const string& data, TomiCookies* cookies);
-	    map<string,string> headers;
+	    typedef map<string,string> headers_t;
+	    headers_t headers;
 
 	    static string URLencode(const string& s);
     };
