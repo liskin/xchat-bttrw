@@ -135,6 +135,8 @@ const char * const me = "xchat.cz";
 
 time_t last_ping = 0, last_ping_sent = 0, connect_time = 0;
 
+bool voiced_girls = false;
+
 #ifndef WIN32
 void sigchld(int) {
     int status, serrno;
@@ -364,6 +366,14 @@ main_accept:
 			client_charset = cmd[2];
 			fprintf(*c, ":%s NOTICE %s :client_charset set to %s\n",
 				me, nick.c_str(), client_charset.c_str());
+		    } else if (cmd[1] == "VOICED_GIRLS" && cmd.size() == 3) {
+			/*
+			 * Please don't turn this on later than at the
+			 * beginning
+			 */
+			voiced_girls = atol(cmd[2].c_str());
+			fprintf(*c, ":%s NOTICE %s :voiced_girls set to %i\n",
+				me, nick.c_str(), voiced_girls);
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
 				" count\n", me, nick.c_str());
@@ -404,7 +414,7 @@ main_accept:
 				    j != x->rooms[chan].nicklist.end(); j++, i++) {
 				tmp += string("") +
 				    ((x->isadmin(chan, j->first))?"@":"") +
-				    ((j->second.sex == 0)?"+":"") +
+				    ((j->second.sex == 0 && voiced_girls)?"+":"") +
 				    j->second.nick + " ";
 				if (i % 5 == 0) {
 				    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
@@ -539,7 +549,7 @@ main_accept:
 					host(i->second).c_str(),
 					me, i->second.nick.c_str(),
 					(x->isadmin(cmd[1], i->first))?"@":"",
-					(i->second.sex == 0)?"+":"",
+					(i->second.sex == 0 && voiced_girls)?"+":"",
 					0, "xchat.cz user");
 			    }
 			}
@@ -631,7 +641,7 @@ main_accept:
 				j != x->rooms[cmd[1]].nicklist.end(); j++, i++) {
 			    tmp += string("") +
 				((x->isadmin(cmd[1], j->first))?"@":"") +
-				((j->second.sex == 0)?"+":"") +
+				((j->second.sex == 0 && voiced_girls)?"+":"") +
 				j->second.nick + " ";
 			    if (i % 5 == 0) {
 				fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
@@ -770,7 +780,7 @@ main_accept:
 		    string mode;
 		    if (x->ispermadmin(f->getrid(), f->getsrc().nick))
 			mode += "o";
-		    if (f->getsrc().sex == 0)
+		    if (f->getsrc().sex == 0 && voiced_girls)
 			mode += "v";
 
 		    if (mode.length())
