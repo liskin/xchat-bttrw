@@ -244,7 +244,7 @@ main_accept:
 		    }
 		} else if ((cmd[0] == "PRIVMSG" || cmd[0] == "NOTICE") && cmd.size() == 3) {
 		    if (cmd[0] == "NOTICE")
-			cmd[1] = "Notice: " + cmd[1];
+			cmd[2] = "Notice: " + cmd[2];
 
 		    if (cmd[1][0] == '#') {
 			cmd[1].erase(cmd[1].begin());
