@@ -49,6 +49,12 @@ namespace xchat {
     extern int idle_interval;
 
     /*
+     * Load balancing consts
+     */
+    const int tries_to_rest = 5, rest_duration = 1800,
+	  nextchance_interval = 30;
+
+    /*
      * Recoding
      */
     extern string client_charset;
@@ -72,9 +78,20 @@ namespace xchat {
 		}
     };
 
+    class server {
+	public:
+	    net::sockaddr_uni sa;
+	    time_t last_break;
+	    int break_count;
+
+	    server(const net::sockaddr_uni &a) : sa(a), last_break(0),
+						 break_count(0)
+	    { }
+    };
+
     class XChat {
 	public:
-	    vector<net::sockaddr_uni> servers;
+	    vector<server> servers;
 
 	    string uid, sid, nick;
 	    rooms_t rooms;
@@ -99,6 +116,9 @@ namespace xchat {
 	    void putmsg(room& r, const string& target, const string& msg);
 	    void setdesc(const string& rid, const string& desc);
 
+	    int lastsrv;
+	    string lastsrv_broke();
+	    int makesrv();
 	    string makeurl(const string& url);
 	    string makeurl2(const string& url);
 

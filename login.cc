@@ -11,19 +11,24 @@ namespace xchat {
      * Init variables, connect to the xchat.cz network.
      */
     XChat::XChat(const string& user, const string& pass)
-	: nick(user), last_sent(0), last_recv(0)
+	: nick(user), last_sent(0), last_recv(0), lastsrv(0)
     {
 	// prepare list of available servers
-	resolve("xchat.centrum.cz", "", servers);
-	if (! servers.size())
+	vector<sockaddr_uni> sockaddrs;
+	resolve("xchat.centrum.cz", "", sockaddrs);
+	if (! sockaddrs.size())
 	    throw runtime_error("Could not get xchat server list from DNS.");
+	for (vector<sockaddr_uni>::iterator i = sockaddrs.begin();
+		i != sockaddrs.end(); i++)
+	    servers.push_back(server(*i));
 
 	TomiHTTP s;
 	int ret = s.POST(makeurl("~guest~/login/"),
 		"js=1&skin=2&name="+TomiHTTP::URLencode(user)+"&pass="+
 		TomiHTTP::URLencode(pass),0);
 	if (ret != 302)
-	    throw runtime_error("Not HTTP 302 Found while logging in");
+	    throw runtime_error("Not HTTP 302 Found while logging in - "
+		    + lastsrv_broke());
 
 	string l = s.headers["location"];
 
@@ -51,6 +56,7 @@ namespace xchat {
 	TomiHTTP s;
 	int ret = s.GET(makeurl("~~logout/~$" + uid + "~" + sid + "/"),0);
 	if (ret != 302)
-	    throw runtime_error("Not HTTP 302 Found while logging off");
+	    throw runtime_error("Not HTTP 302 Found while logging off - "
+		    + lastsrv_broke());
     }
 }

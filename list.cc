@@ -18,7 +18,8 @@ namespace xchat {
 
 	int ret = s.GET(makeurl("~guest~/modchat?op=homepage&skin=2"),0);
 	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while getting list");
+	    throw runtime_error("Not HTTP 200 Ok while getting list - "
+		    + lastsrv_broke());
 	while (s.getline(l)) {
 	    unsigned int a, b, c;
 	    unsigned int pos = 0;

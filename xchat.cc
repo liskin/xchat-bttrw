@@ -25,11 +25,66 @@ namespace xchat {
     }
 
     /*
+     * Last server broke, count it.
+     */
+    string XChat::lastsrv_broke()
+    {
+	servers[lastsrv].last_break = time(0);
+	servers[lastsrv].break_count++;
+
+	if (servers[lastsrv].break_count >= tries_to_rest) {
+	    EvError *e = new EvError;
+	    e->s = "Server " + tomi_ntop(servers[lastsrv].sa) + " is having a rest.";
+	    recvq_push(e);
+	}
+
+	return tomi_ntop(servers[lastsrv].sa);
+    }
+	    
+    /*
+     * Get some good server
+     */
+    int XChat::makesrv()
+    {
+	vector<int> good;
+	for (vector<server>::iterator i = servers.begin(); i != servers.end(); i++) {
+	    if (i->break_count >= tries_to_rest &&
+		    (i->last_break + rest_duration) < time(0)) {
+		EvError *e = new EvError;
+		e->s = "Server " + tomi_ntop(i->sa)
+		    + " is no longer having a rest.";
+		recvq_push(e);
+
+		i->break_count = 0;
+		good.push_back(i - servers.begin());
+	    } else if (i->break_count < tries_to_rest &&
+		    (i->last_break + nextchance_interval) < time(0)) {
+		good.push_back(i - servers.begin());
+	    }
+	}
+
+	if (good.size())
+	    return good[rand() % good.size()];
+	else {
+	    EvError *e = new EvError;
+	    e->s = "All servers considered bad, cleaning.";
+	    recvq_push(e);
+
+	    for (vector<server>::iterator i = servers.begin(); i != servers.end(); i++) {
+		i->break_count = 0;
+		i->last_break = 0;
+	    }
+
+	    return rand() % servers.size();
+	}
+    }
+
+    /*
      * Prepare URL with given full path.
      */
     string XChat::makeurl(const string& path)
     {
-	return "http://" + tomi_ntop(servers[rand() % servers.size()]) + "/" + path;
+	return "http://" + tomi_ntop(servers[lastsrv = makesrv()].sa) + "/" + path;
     }
 
     /*
@@ -37,7 +92,7 @@ namespace xchat {
      */
     string XChat::makeurl2(const string& path)
     {
-	return "http://" + tomi_ntop(servers[rand() % servers.size()]) + "/~$" +
+	return "http://" + tomi_ntop(servers[lastsrv = makesrv()].sa) + "/~$" +
 	    uid + "~" + sid + "/" + path;
     }
 

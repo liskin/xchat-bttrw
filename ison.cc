@@ -17,7 +17,8 @@ namespace xchat {
 	int ret = s.GET(makeurl("scripts/online_txt.php?nick=" + 
 		    TomiHTTP::URLencode(nick)),0);
 	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while getting online status");
+	    throw runtime_error("Not HTTP 200 Ok while getting online status - "
+		    + lastsrv_broke());
 
 	string l;
 	s.getline(l);
