@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <stdexcept>
+#include <iconv.h>
 #include "str.h"
 
 namespace std {
@@ -179,4 +180,42 @@ namespace std {
 	return out.str();
     }
 
+    string recode(const string& src, const string& from, const string& to)
+    {
+	iconv_t conv = iconv_open(to.c_str(), from.c_str());
+	if (conv == (iconv_t) -1) {
+	    return src;
+	}
+
+	size_t fromsize = src.length(), tosize = fromsize, ressize = tosize;
+	const char *msgptr = src.c_str();
+	char *result = new char[fromsize+1];
+	char *resptr = result;
+
+	while ((fromsize>0) && (tosize>0))
+	{
+	    if ((int)iconv(conv, (char **)&msgptr, &fromsize, &resptr, &tosize)==-1)
+	    {
+		// array is not big enough
+		if (errno == E2BIG)
+		{
+		    // add fromsize + 4 more characters to array
+		    result = (char*) realloc(result,ressize + fromsize + 4);
+		    resptr = result + ressize;
+		    ressize += fromsize + 4;
+		    tosize += fromsize + 4;
+		    continue;
+		}
+
+		delete []result;
+		return src;
+	    }
+	}
+
+	*resptr = 0;
+	iconv_close(conv);
+	string ret = result;
+	delete []result;
+	return ret;
+    }
 }

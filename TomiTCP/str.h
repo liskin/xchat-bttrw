@@ -41,6 +41,8 @@ namespace std {
     string reformat(string ins, int width, string firstline = "", int tab = 8,
 	    bool firstlinealone = 0, int maxspaces = 4,
 	    string indent = INDENT_DETECT);
+
+    string recode(const string& src, const string& from, const string& to);
 }
 
 #endif /* STR_H_INCLUDED */
