@@ -35,7 +35,7 @@ namespace xchat {
 		((b = string(s, a).find('>')) != string::npos)) {
 	    int smile = 0;
 
-	    string pat = "<img src=\\\"//img.centrum.cz/xs/";
+	    static string pat = "<img src=\\\"//img.centrum.cz/xs/";
 	    if (!s.compare(a, pat.length(), pat))
 		smile = atol(string(s, a + pat.length()).c_str());
 
@@ -228,12 +228,32 @@ namespace xchat {
      */
     bool XChat::isadvert(string &m, string &link)
     {
-	string pat = "<A TARGET=_blank HREF=\\\"/advert/advert.php";
-	unsigned int pos = m.find(pat);
-	if (pos != string::npos) {
+	static string pat = "<A TARGET=_blank HREF=\\\"/advert/advert.php";
+	unsigned int pos;
+	if ((pos = m.find(pat)) != string::npos) {
 	    link = "http://xchat.centrum.cz/advert/advert.php" +
 		string(m, pos + pat.length());
 	    link.erase(link.find("\\\""));
+	    return 1;
+	}
+
+	return 0;
+    }
+
+    /*
+     * Should go as EvSysMsg instead of EvRoomSysMsg?
+     */
+    bool XChat::sysnoroom(string &m)
+    {
+	// Info
+	static string pat1 = "INFO: ";
+	if (!m.compare(0, pat1.length(), pat1)) {
+	    return 1;
+	}
+
+	// Info2
+	static string pat2 = "Info2: ";
+	if (!m.compare(0, pat2.length(), pat2)) {
 	    return 1;
 	}
 
@@ -268,18 +288,22 @@ namespace xchat {
 	    unsmilize(m);
 
 	    if (strtolower_nr(src) == "system" &&
-		    strtolower_nr(target) == strtolower_nr(nick) &&
-		    checkidle(wstrip_nr(m))) {
-		EvRoomIdlerMsg *e = new EvRoomIdlerMsg;
-		e->s = recode_to_client(m);
-		e->rid = r.rid;
-		recvq_push(e);
-	    } else if (strtolower_nr(src) == "system" &&
 		    strtolower_nr(target) == strtolower_nr(nick)) {
-		EvRoomSysMsg *e = new EvRoomSysMsg;
-		e->s = recode_to_client(m);
-		e->rid = r.rid;
-		recvq_push(e);
+		if (checkidle(wstrip_nr(m))) {
+		    EvRoomIdlerMsg *e = new EvRoomIdlerMsg;
+		    e->s = recode_to_client(m);
+		    e->rid = r.rid;
+		    recvq_push(e);
+		} else if (sysnoroom(m)) {
+		    EvSysMsg *e = new EvSysMsg;
+		    e->s = recode_to_client(m);
+		    recvq_push(e);
+		} else {
+		    EvRoomSysMsg *e = new EvRoomSysMsg;
+		    e->s = recode_to_client(m);
+		    e->rid = r.rid;
+		    recvq_push(e);
+		}
 	    } else if (target.length() && strtolower_nr(src) != strtolower_nr(nick)) {
 		EvRoomWhisper *e = new EvRoomWhisper;
 		e->s = recode_to_client(m);

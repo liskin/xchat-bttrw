@@ -48,6 +48,7 @@ namespace xchat {
 	int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&rid="+rid),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
+	// we should try to parse if an error occurs
 	s.close();
 	
 	ret = s.GET(makeurl2("modchat?op=textpageng&skin=2&js=1&rid="+rid),0);
@@ -84,21 +85,17 @@ namespace xchat {
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
 
 	while (s.getline(l)) {
-	    string pat = "&inc=1&last_line=";
-	    unsigned int pos = l.find(pat);
-	    if (pos != string::npos) {
-		stringstream ss(string(l,pos+pat.length()));
-		string lastline;
-
-		getline(ss,lastline,'"');
-		r.l = atol(lastline.c_str());
+	    static string pat1 = "&inc=1&last_line=";
+	    unsigned int a, b;
+	    if ((a = l.find(pat1)) != string::npos &&
+		    (b = l.find('"', a + pat1.length())) != string::npos) {
+		r.l = atol(string(l, a + pat1.length(), b - a - pat1.length()).c_str());
 		continue;
 	    }
 
-	    pat = "update_info('";
-	    pos = l.find(pat);
-	    if (pos != string::npos) {
-		parse_updateinfo(string(l,pos+pat.length()), r.admin, r.locked);
+	    static string pat2 = "update_info('";
+	    if ((a = l.find(pat2)) != string::npos) {
+		parse_updateinfo(string(l, a + pat2.length()), r.admin, r.locked);
 	    }
 	}
 
@@ -109,25 +106,23 @@ namespace xchat {
 	while (s.getline(l)) {
 	    chomp(l);
 
-	    string pat = "název místnosti:</th><td width=260>";
-	    unsigned int pos = l.find(pat);
-	    if (pos != string::npos) {
-		r.name = recode_to_client(wstrip_nr(string(l,pos+pat.length())));
+	    static string pat1 = "název místnosti:</th><td width=260>";
+	    unsigned int pos;
+	    if ((pos = l.find(pat1)) != string::npos) {
+		r.name = recode_to_client(wstrip_nr(string(l, pos + pat1.length())));
 		continue;
 	    }
 	    
-	    pat = "popis místnosti:</th><td>";
-	    pos = l.find(pat);
-	    if (pos != string::npos) {
-		r.desc = recode_to_client(wstrip_nr(string(l,pos+pat.length())));
+	    static string pat2 = "popis místnosti:</th><td>";
+	    if ((pos = l.find(pat2)) != string::npos) {
+		r.desc = recode_to_client(wstrip_nr(string(l, pos + pat2.length())));
 		unsmilize(r.desc);
 		continue;
 	    }
 	    
-	    pat = "stálý správce:</th><td>";
-	    pos = l.find(pat);
-	    if (pos != string::npos) {
-		stringstream ss(string(l,pos+pat.length()));
+	    static string pat3 = "stálý správce:</th><td>";
+	    if ((pos = l.find(pat3)) != string::npos) {
+		stringstream ss(string(l, pos + pat3.length()));
 		string admin;
 		while (ss >> admin)
 		    r.admins.push_back(strtolower_nr(admin));
@@ -185,18 +180,14 @@ namespace xchat {
 	    wstrip(l);
 	    if (!l.length()) continue;
 	    dbg.push_back(l);
-	    //cout << l << endl;
 
 	    // look for next last_line number
 	    if (r.l == -1) {
-		string pat = "&inc=1&last_line=";
-		unsigned int pos = l.find(pat);
-		if (pos != string::npos) {
-		    stringstream ss(string(l,pos+pat.length()));
-		    string lastline;
-
-		    getline(ss,lastline,'"');
-		    r.l = atol(lastline.c_str());
+		static string pat1 = "&inc=1&last_line=";
+		unsigned int a, b;
+		if ((a = l.find(pat1)) != string::npos &&
+			(b = l.find('"', a + pat1.length())) != string::npos) {
+		    r.l = atol(string(l, a + pat1.length(), b - a - pat1.length()).c_str());
 		}
 	    }
 
@@ -239,9 +230,9 @@ namespace xchat {
 	     * appropiate events.
 	     */
 	    {
-		string pat = "update_info('";
-		unsigned int pos = l.find(pat);
-		if (pos != string::npos) {
+		static string pat = "update_info('";
+		unsigned int pos;
+		if ((pos = l.find(pat)) != string::npos) {
 		    string admin;
 		    bool locked;
 		    parse_updateinfo(string(l,pos+pat.length()), admin, locked);

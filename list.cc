@@ -19,7 +19,7 @@ namespace xchat {
 	while (s.getline(l)) {
 	    unsigned int a, b, c;
 	    unsigned int pos = 0;
-	    string pat1 = "<option value=\"", pat2 = "\"> ", pat3 = "</option>";
+	    static string pat1 = "<option value=\"", pat2 = "\"> ", pat3 = "</option>";
 
 	    while (((a = l.find(pat1, pos)) != string::npos) &&
 		    ((b = l.find(pat2, a + pat1.length())) != string::npos) &&
