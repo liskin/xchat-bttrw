@@ -384,7 +384,7 @@ main_accept:
 		} else if (dynamic_cast<EvRoomKick*>(e.get())) {
 		    auto_ptr<EvRoomKick> f((EvRoomKick*)e.release());
 
-		    fprintf(*c, ":%s!%s@%s KICK %s %s :%s\n", f->getsrc().c_str(),
+		    fprintf(*c, ":%s!%s@%s KICK #%s %s :%s\n", f->getsrc().c_str(),
 			    hash(f->getsrc()).c_str(), getsexhost(f->getsrc()),
 			    f->getrid().c_str(), f->gettarget().nick.c_str(),
 			    f->getreason().c_str());
