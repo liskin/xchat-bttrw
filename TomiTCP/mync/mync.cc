@@ -53,12 +53,20 @@ int main(int argc, char *argv[])
     net::TomiTCP *c = 0;
     try {
 	if (listen) {
+	    if (!lport) {
+		cerr << "Need local port" << endl;
+		return -1;
+	    }
 	    net::TomiTCP s(lport);
 	    c = s.accept();
 	    if (verbose)
 		cerr << "Connection from " << tomi_ntop(c->rname) << ":" <<
 		    (int)ntohs(PORT_SOCKADDR(c->rname)) << endl;
 	} else {
+	    if (!host.length() || !port.length()) {
+		cerr << "Need host and port" << endl;
+		return -1;
+	    }
 	    c = new net::TomiTCP;
 	    c->connect(host,port);
 	    if (verbose)
