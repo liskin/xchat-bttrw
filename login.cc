@@ -35,6 +35,6 @@ namespace xchat {
 	TomiHTTP s;
 	int ret = s.GET(makeurl("~~logout/~$" + uid + "~" + sid + "/"),0);
 	if (ret != 302)
-	    throw runtime_error("Not HTTP 200 Ok while logging off");
+	    throw runtime_error("Not HTTP 302 Ok while logging off");
     }
 }
