@@ -400,7 +400,9 @@ namespace net {
 
 #ifdef WIN32
 	DWORD len = 128;
-	if (WSAAddressToString((struct sockaddr*)&name.sa,SIZEOF_SOCKADDR(name),0,tmp,&len))
+	sockaddr_uni name2 = name;
+	PORT_SOCKADDR(name2) = 0;
+	if (WSAAddressToString((struct sockaddr*)&name2.sa,SIZEOF_SOCKADDR(name2),0,tmp,&len))
 	    throw runtime_error(string(strerror(sock_errno)));
 	tmp[len] = 0;
 #else
@@ -419,7 +421,8 @@ namespace net {
     
     void tomi_pton(string p, sockaddr_uni& name)
     {
-	if (name.sa.sa_family == AF_INET6 && p.length() && ((int)p.find_first_of(':'))==-1)
+	if (name.sa.sa_family == AF_INET6 && p.length() &&
+		p.find_first_of(':') == string::npos)
 	    name.sa.sa_family = AF_INET;
 #ifdef WIN32
 	int sz = SIZEOF_SOCKADDR(name);
