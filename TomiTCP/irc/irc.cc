@@ -30,7 +30,7 @@ int safe_mode = 0; // safe mode, needed for dancer ircd, specifies level of nice
 int some_time = 300; // time for waiting for some input during operation
 struct chanmodes isupport;
 
-int slave_port = 12205; // port on which it listens as 'slave'
+int slave_port = 0; // port on which it listens as 'slave'
 string slave_pass = "scosux"; // password for 'slave'
 
 net::TomiTCP slave_s;
@@ -625,7 +625,9 @@ void body(net::TomiTCP &f)
 
 	FD_ZERO(&set);
 	FD_SET(f.sock, &set);
-	FD_SET(slave_s.sock, &set);
+	if (slave_s.ok())
+	    FD_SET(slave_s.sock, &set);
+
 	for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
 	    FD_SET(i->s->sock, &set);
 	}
@@ -645,7 +647,7 @@ void body(net::TomiTCP &f)
 	}
 
 	// new 'slave' connection
-	if (FD_ISSET(slave_s.sock, &set)) {
+	if (slave_s.ok() && FD_ISSET(slave_s.sock, &set)) {
 	    slave_c c;
 	    c.authd = 0;
 	    c.dead = 0;
@@ -762,7 +764,8 @@ int main(int argc, char *argv[])
     }
     try {
 	loadconfig(argv[1],cerr);
-	slave_s.listen(slave_port);
+	if (slave_port)
+	    slave_s.listen(slave_port);
 
 	while (1) {
 	    net::TomiTCP sock(server,port);
