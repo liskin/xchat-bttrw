@@ -2,17 +2,23 @@
 #include <unistd.h>
 #include <fnmatch.h>
 #include "irc.h"
+#include "../str.h"
 using namespace std;
 
 extern "C" {
 
 string autotake;
+vector<string> take_waiting;
 
 void takeover(FILE *f, string chan)
 {
-    if (!channels[chan][nick]) {
-	cout << "Not opped or not in" << endl;
-	return;
+    {
+	string tnick = nick;
+	strtolower(tnick);
+	if (!channels[chan][tnick]) {
+	    cout << "Not opped or not in" << endl;
+	    return;
+	}
     }
 
     // this need not to be here... :)
@@ -36,12 +42,22 @@ void takeover(FILE *f, string chan)
 		    nn = 1;
 		    break;
 		}
+	    if (!nn)
+		for (slaves_t::iterator j = slaves.begin(); j != slaves.end(); j++) {
+		    if (j->mask == (i->first + "!" + users[i->first])) {
+			nn = 1;
+			break;
+		    }
+		}
 	    if (nn)
 		continue;
 	}
 
 	ops.push_back(i->first);
     }
+
+    unsigned int slave = 0;
+    vector<string> sls(slaves.size());
 
     string out;
     for (unsigned int i=0; i<ops.size(); i+=max_modes) {
@@ -50,14 +66,29 @@ void takeover(FILE *f, string chan)
 	    c += "o";
 	for (unsigned int j=i; j<(ops.size() <? (i+max_modes)); j++)
 	    c += " "+ops[j];
-	if (safe_mode > 1) {
-	    S(f,"%s\n",c.c_str());
-	    if (safe_mode)
-		processsome(f);
+	if (slave == 0) {
+	    if (safe_mode > 1) {
+		S(f,"%s\n",c.c_str());
+		if (safe_mode)
+		    processsome(f);
+	    } else {
+		out += c + "\n";
+	    }
 	} else {
-	    out += c + "\n";
+	    sls[slave - 1] += c + "\n";
+	}
+
+	slave++;
+	if (slave > slaves.size()) {
+	    slave = 0;
 	}
     }
+
+    slave = 0;
+    for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
+	fprintf(*(i->s),"%s",sls[slave++].c_str());
+    }
+
     if (safe_mode < 2) {
 	if (out.length())
 	    S(f,"%s",out.c_str());
@@ -72,7 +103,7 @@ void m_take_cmd(FILE *f, string snick, vector<string> cl)
 	if (cl.size() != 2) {
 	    S(f,"PRIVMSG %s :Need 1 parameters\n",snick.c_str());
 	} else {
-	    autotake = cl[1].c_str();
+	    autotake = strtolower(cl[1]);
 	    S(f,"PRIVMSG %s :autotake = %s\n",snick.c_str(),autotake.c_str());
 	}
 	return;
@@ -82,7 +113,19 @@ void m_take_cmd(FILE *f, string snick, vector<string> cl)
 	if (cl.size() != 2) {
 	    S(f,"PRIVMSG %s :Need 1 parameters\n",snick.c_str());
 	} else {
-	    takeover(f,cl[1]);
+	    strtolower(cl[1]);
+	    for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
+		string slnick,slhost;
+		splitprefix(i->mask,slnick,slhost);
+
+		if (!channels[cl[1]][slnick]) {
+		    fprintf(*(i->s),"JOIN %s\n",cl[1].c_str());
+		}
+	    }
+	    if (!slaves.size())
+		takeover(f,cl[1]);
+	    else
+		take_waiting.push_back(cl[1]);
 	}
 	return;
     }
@@ -90,11 +133,55 @@ void m_take_cmd(FILE *f, string snick, vector<string> cl)
 
 void m_take_mode(FILE *f, string snick, string shost, string chan, vector<string> modes)
 {
+    strtolower(chan);
+    bool me_opped = 0;
     if (strcasestr(autotake.c_str(),chan.c_str())) {
 	for (vector<string>::iterator it = modes.begin(); it != modes.end(); it++) {
 	    if (!strcasecmp(it->c_str(),(string("+o ")+nick).c_str())) {
-		takeover(f,chan);
+		me_opped = 1;
 		break;
+	    }
+	}
+    }
+
+    if (me_opped) {
+	for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
+	    string slnick,slhost;
+	    splitprefix(i->mask,slnick,slhost);
+
+	    if (!channels[chan][slnick]) {
+		fprintf(*(i->s),"JOIN %s\n",chan.c_str());
+	    }
+	}
+
+	if (!slaves.size())
+	    takeover(f,chan);
+	else
+	    take_waiting.push_back(chan);
+    }
+
+    bool again = 1;
+    while (again) {
+	again = 0;
+	for (vector<string>::iterator i = take_waiting.begin(); i != take_waiting.end(); i++) {
+	    if (*i == chan) {
+		bool slaves_opped = 1;
+		for (slaves_t::iterator j = slaves.begin(); j != slaves.end(); j++) {
+		    string slnick,slhost;
+		    splitprefix(j->mask,slnick,slhost);
+
+		    if (!channels[chan][slnick]) {
+			slaves_opped = 0;
+			break;
+		    }
+		}
+
+		if (slaves_opped) {
+		    takeover(f,chan);
+		    take_waiting.erase(i);
+		    again = 1;
+		    break;
+		}
 	    }
 	}
     }

@@ -234,7 +234,7 @@ void parsein(const char *bufa, string& prefix, vector<string>& cmd)
     }
 }
 
-void parseprefix(string &prefix, string &nick, string &host)
+void splitprefix(string prefix, string &nick, string &host)
 {
     int d = prefix.find('!');
     if (d == -1) {
@@ -243,10 +243,14 @@ void parseprefix(string &prefix, string &nick, string &host)
     } else {
 	nick = string(prefix,0,d);
 	host = string(prefix,d+1);
-
-	// this shouldn't really be here :)
-	users[nick] = host;
     }
+}
+
+void parseprefix(string prefix, string &nick, string &host)
+{
+    splitprefix(prefix,nick,host);
+    if (nick.length() && host.length())
+	users[nick] = host;
 }
 
 void parsecmd(const char *buf, vector<string>& cmd)
@@ -747,16 +751,16 @@ void body(net::TomiTCP &f)
 	    iter = 0;
 	}
 
-	cout << "---\n";
+	/*cout << "---\n";
 	for (map<string,string>::iterator i = users.begin(); i != users.end(); i++) {
 	    cout << i->first << "!" << i->second << endl;
 	}
-	cout << "---\n";
-	cout << "---\n";
+	cout << "---\n";*/
+	/*cout << "---\n";
 	for (channel_t::iterator i = channels["#nomi"].begin(); i != channels["#nomi"].end(); i++) {
 	    cout << i->first << " - op? " << (int)i->second << endl;
 	}
-	cout << "---\n";
+	cout << "---\n";*/
 	/*for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
 	    fprintf(*(i->s),"PRIVMSG Liskni_si :baf\n");
 	}*/
