@@ -73,7 +73,7 @@ namespace xchat {
 	    bool ispart(const string& r, string &m, string &src, string &host);
 	    bool iskick(const string& r, string &m, string &src, string &reason, string &who, string &host);
 
-	    x_nick* findnick(string nick);
+	    x_nick* findnick(string nick, room **r);
 	    const char * getsexhost(string src);
     };
 }

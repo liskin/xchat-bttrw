@@ -147,21 +147,13 @@ int main(int argc, char *argv[])
 			x->sendq_push(cmd[1], cmd[2]);
 		    } else {
 			if (x->rooms.size()) {
-			    bool global = 1;
-			    rooms_t::iterator r;
-			    for (rooms_t::iterator i = x->rooms.begin();
-				    i != x->rooms.end(); i++)
-				if (i->second.nicklist.find(strtolower_nr(cmd[1]))
-					!= i->second.nicklist.end()) {
-				    global = 0;
-				    r = i;
-				    break;
-				}
-
-			    if (global)
-				x->sendq_push(x->rooms.begin()->first, "/m " + cmd[1] + " " + cmd[2]);
+			    room *r;
+			    x_nick *n = x->findnick(cmd[1], &r);
+			    if (n)
+				x->sendq_push(r->rid, "/s " + cmd[1] + " " + cmd[2]);
 			    else
-				x->sendq_push(r->first, "/s " + cmd[1] + " " + cmd[2]);
+				x->sendq_push(x->rooms.begin()->first, "/m " + cmd[1] +
+					" " + cmd[2]);
 			} else {
 			    fprintf(*c, ":%s NOTICE %s :Can't send PRIVMSG's "
 				    "without channel joined\n", me, nick.c_str());
@@ -184,7 +176,7 @@ int main(int argc, char *argv[])
 			}
 			cmd[1] = "#" + cmd[1];
 		    } else {
-			x_nick *n = x->findnick(cmd[1]);
+			x_nick *n = x->findnick(cmd[1], 0);
 			if (n)
 			    fprintf(*c, ":%s 352 %s %s %s %s %s %s %s :%d %s\n", me,
 				    nick.c_str(), "*", hash(n->nick).c_str(),

@@ -209,13 +209,16 @@ namespace xchat {
 	return 0;
     }
 
-    x_nick* XChat::findnick(string nick)
+    x_nick* XChat::findnick(string nick, room **r)
     {
 	strtolower(nick);
 	for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
 	    nicklist_t::iterator n = i->second.nicklist.find(nick);
-	    if (n != i->second.nicklist.end())
+	    if (n != i->second.nicklist.end()) {
+		if (r)
+		    *r = &i->second;
 		return &n->second;
+	    }
 	}
 
 	return 0;
