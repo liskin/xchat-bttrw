@@ -1,8 +1,7 @@
 #include "smiles.h"
 
 /*
- * This does not need any explanation.
- * I want to say only this: CONTRIBUTE!
+ * Mapping of xchat smile numbers to human readable smiles.
  */
 
 const char *smiles[] = {
@@ -107,7 +106,7 @@ const char *smiles[] = {
     [99] "*zelva ninja*",
     [100] "*srdce s voblicejem*",
     [101] "*pirat*",
-    [102] "*bum*"
+    [102] "*bu bu bu*"
 };
 
 const int smiles_count = sizeof(smiles)/sizeof(*smiles);
