@@ -112,8 +112,8 @@ int main(int argc, char *argv[])
 
 		    try { rooms[cmd[1]] = x->join(cmd[1]); }
 		    catch (runtime_error e) {
-			fprintf(*c, ":%s ERROR :%s\n", me, e.what());
-			break;
+			fprintf(*c, ":%s 403 %s #%s :%s\n", me, nick.c_str(),
+				cmd[1].c_str(), e.what());
 		    }
 
 		    rooms[cmd[1]].nicklist[nick] = 0;
@@ -155,18 +155,19 @@ int main(int argc, char *argv[])
 
 			try { x->putmsg(cmd[1], cmd[2]); }
 			catch (runtime_error e) {
-			    fprintf(*c, ":%s ERROR :%s\n", me, e.what());
-			    break;
+			    fprintf(*c, ":%s 403 %s #%s :%s\n", me, nick.c_str(),
+				    cmd[1].c_str(), e.what());
 			}
 		    } else {
 			if (rooms.size()) {
 			    try { x->putmsg(rooms.begin()->first, "/s " + cmd[1] + " " + cmd[2]); }
 			    catch (runtime_error e) {
-				fprintf(*c, ":%s ERROR :%s\n", me, e.what());
-				break;
+				fprintf(*c, ":%s 401 %s %s :%s\n", me, nick.c_str(),
+					cmd[1].c_str(), e.what());
 			    }
 			} else {
-			    fprintf(*c, ":%s NOTICE :Can't send PRIVMSG's without channel joined\n", me);
+			    fprintf(*c, ":%s NOTICE %s :Can't send PRIVMSG's "
+				    "without channel joined\n", me, nick.c_str());
 			}
 		    }
 		} else if (cmd[0] == "MODE" && cmd.size() == 2) {
