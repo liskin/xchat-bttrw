@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <cerrno>
 #ifndef WIN32
 # include <sys/wait.h>
 #endif
