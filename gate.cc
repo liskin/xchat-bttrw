@@ -21,7 +21,7 @@ using namespace std;
 using namespace xchat;
 using namespace net;
 
-#define VERSION "SVN"
+#define VERSION "SVN-" REVISION
 
 /*
  * Hash nick to make unique username
