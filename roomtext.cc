@@ -296,12 +296,12 @@ namespace xchat {
      */
     bool XChat::isadvert(string &m, string &link)
     {
-	static string pat = "<A TARGET=_blank HREF=\"/advert/advert.php";
+	static string pat = "<A TARGET=_blank HREF=\\\"/advert/advert.php";
 	unsigned int pos;
 	if ((pos = m.find(pat)) != string::npos) {
 	    link = "http://xchat.centrum.cz/advert/advert.php" +
 		string(m, pos + pat.length());
-	    link.erase(link.find("\""));
+	    link.erase(link.find("\\\""));
 	    return 1;
 	}
 
