@@ -72,6 +72,9 @@ namespace net {
 	    sockaddr_uni lname,rname;
 	    int sock;
 	    FILE *stream;
+#ifdef WIN32
+	    int w32socket;
+#endif
     };
 }
 

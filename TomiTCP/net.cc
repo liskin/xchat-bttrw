@@ -3,13 +3,17 @@
 #include <sstream>
 #include <unistd.h>
 #include <errno.h>
+#include "net.h"
 #ifndef WIN32
 # include <sys/socket.h>
 # include <arpa/inet.h>
 # include <netinet/tcp.h>
 # include <netdb.h>
+#else
+# include <io.h>
+# include <fcntl.h>
+# include <mswsock.h>
 #endif
-#include "net.h"
 #include "str.h"
 
 #ifndef WIN32
@@ -34,13 +38,21 @@ int winsock_init() {
 	throw 0;
     }
 
+    int iSockOpt = SO_SYNCHRONOUS_NONALERT;
+    setsockopt(INVALID_SOCKET, SOL_SOCKET, SO_OPENTYPE,
+	    (char *)&iSockOpt, sizeof(iSockOpt));
+
     return 0;
 }
 int winsock_init_tmp = winsock_init();
 #endif
 
 namespace net {
-    TomiTCP::TomiTCP() : sock(-1), stream(0) {
+    TomiTCP::TomiTCP() : sock(-1), stream(0)
+#ifdef WIN32
+			 , w32socket(-1)
+#endif
+    {
 	memset(&lname,0,sizeof(lname));
 	memset(&rname,0,sizeof(rname));
     }
@@ -135,7 +147,12 @@ namespace net {
 	    throw runtime_error(string(strerror(sock_errno)));
 	}
 
-	stream = fdopen(sock,"r+");
+#ifdef WIN32
+	w32socket = sock;
+	sock = _open_osfhandle(sock, _O_RDWR | _O_BINARY);
+#endif
+
+	stream = fdopen(sock, "rb+");
 	if (!stream) {
 	    int er = errno;
 	    close();
@@ -230,13 +247,17 @@ namespace net {
 	}
     }
 
+    /*
+     * This takes a "unix file descriptor" as an argument, on Win32, you have
+     * to call _open_osfhandle to get it.
+     */
     void TomiTCP::attach(int filedes)
     {
 	sock = dup(filedes);
 	if (sock < 0)
 	    throw runtime_error(string(strerror(errno)));
 
-	stream = fdopen(sock,"r+");
+	stream = fdopen(sock,"rb+");
 	if (!stream) {
 	    int er = errno;
 	    close();
@@ -264,6 +285,10 @@ namespace net {
 	    ::close(sock);
 	    sock = -1;
 	}
+#ifdef WIN32
+	if (w32socket >= 0)
+	    closesocket(w32socket);
+#endif
     }
 
     bool TomiTCP::ok()
@@ -293,7 +318,12 @@ namespace net {
 	if (ret->sock < 0)
 	    throw runtime_error(string(strerror(sock_errno)));
 
-	ret->stream = fdopen(ret->sock,"r+");
+#ifdef WIN32
+	ret->w32socket = ret->sock;
+	ret->sock = _open_osfhandle(ret->sock, _O_RDWR | _O_BINARY);
+#endif
+
+	ret->stream = fdopen(ret->sock,"rb+");
 	if (!ret->stream) {
 	    int er = errno;
 	    delete ret;
@@ -302,40 +332,6 @@ namespace net {
 	setvbuf(ret->stream,NULL,_IONBF,0); // no buffering
 	
 	return ret;
-    }
-
-    /*
-     * This are considered deprecated, because they are not much useful and not
-     * being tested, and are subject to remove during next cleanup.
-     * Use fread and fwrite instead.
-     */
-    void TomiTCP::send(const char* buf, int sz, unsigned int ms)
-    {
-	while (sz) {
-	    if (output_timeout(sock,ms) <= 0) {
-		throw timeout("Timeout (send)");
-	    }
-	    int retval = TEMP_FAILURE_RETRY(::send(sock,buf,sz,0));
-	    if (retval < 0) {
-		throw runtime_error(string(strerror(sock_errno)));
-	    }
-	    buf += retval;
-	    sz -= retval;
-	}
-    }
-
-    int TomiTCP::recv(char* buf, int sz, unsigned int ms)
-    {
-	if (input_timeout(sock,ms) > 0)
-        {
-            int retval = TEMP_FAILURE_RETRY(::recv(sock,buf,sz,0));
-            if (retval <= 0) {
-		if (retval < 0)
-		    throw runtime_error(string(strerror(sock_errno)));
-            }
-	    return retval;
-        }
-	throw timeout("Timeout (recv)");
     }
 
     /*
@@ -348,7 +344,7 @@ namespace net {
 	if (s < 0)
 	    throw runtime_error(string(strerror(errno)));
 
-	FILE *f = fdopen(s,"r+");
+	FILE *f = fdopen(s,"rb+");
 	if (!f)
 	    throw runtime_error(string(strerror(errno)));
 	setvbuf(f,NULL,_IONBF,0); // no buffering
@@ -519,7 +515,7 @@ namespace net {
 	    case 11002: error = "Non-Authoritative Host not found"; break;
 	    case 11003: error = "Non-Recoverable errors: FORMERR, REFUSED, NOTIMP"; break;
 	    case 11004: error = "Valid name, no data record of requested type"; break;
-	    default: error = strerror(errno); break;
+	    default: error = strerror(err); break;
 	}
 
 	return error;
