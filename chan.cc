@@ -32,7 +32,7 @@ namespace xchat {
 		    getline(ss, nick, '"');
 		    getline(ss, nick, '"');
 
-		    if (nick != "~")
+		    if (nick != "~" && nick != "!")
 			nicklist.push_back(nick);
 		}
 	    }
