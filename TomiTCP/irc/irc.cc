@@ -560,6 +560,18 @@ void processbuf(FILE *f, char *buf)
     }
 }
 
+void users_clean()
+{
+    users_t old = users;
+    users.clear();
+
+    for (channels_t::iterator i = channels.begin(); i != channels.end(); i++) {
+	for (channel_t::iterator j = i->second.begin(); j != i->second.end(); j++) {
+	    users[j->first] = old[j->first];
+	}
+    }
+}
+
 void processsome(FILE *f)
 {
     char buf[4096];
@@ -573,8 +585,11 @@ void processsome(FILE *f)
 void body(net::TomiTCP &f)
 {
     char buf[4096];
+    int iter = 0;
 
     while (1) {
+	iter++;
+
 	if (net::input_timeout(f.sock, 1000) > 0) {
 	    if (! fgets(buf,4096,f))
 		break;
@@ -584,6 +599,12 @@ void body(net::TomiTCP &f)
 	for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 	    if (i->second.timer)
 		i->second.timer(f);
+	}
+
+	// clean users array every 100th iteration
+	if (iter > 100) {
+	    users_clean();
+	    iter = 0;
 	}
 
 	/*cout << "---\n";
