@@ -5,10 +5,7 @@
 #include <errno.h>
 #include "net.h"
 #ifndef WIN32
-# include <sys/socket.h>
-# include <arpa/inet.h>
 # include <netinet/tcp.h>
-# include <netdb.h>
 #else
 # include <io.h>
 # include <fcntl.h>
@@ -16,12 +13,15 @@
 #endif
 #include "str.h"
 
+#ifndef TEMP_FAILURE_RETRY
+# define TEMP_FAILURE_RETRY(a) (a)
+#endif
+
 #ifndef WIN32
 # define sock_errno errno
 #else
 # define sock_errno WSAGetLastError()
 # define EAFNOSUPPORT WSAEAFNOSUPPORT
-# define TEMP_FAILURE_RETRY(a) (a)
 const char * wsock_strerror(int err);
 # define strerror wsock_strerror
 # undef gai_strerror
@@ -201,8 +201,6 @@ namespace net {
 	    throw runtime_error(string(gai_strerror(ret)));
 	}
 	aip = ai;
-
-	string err = "No adress for hostname";
 
 	while (aip) {
 	    memset(&rname,0,sizeof(rname));

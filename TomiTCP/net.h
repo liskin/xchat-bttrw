@@ -15,6 +15,8 @@
 # include <netinet/in.h>
 # include <sys/types.h>
 # include <sys/socket.h>
+# include <arpa/inet.h>
+# include <netdb.h>
 #endif
 
 #define SIZEOF_SOCKADDR(so) ((so).sa.sa_family == AF_INET6 ? \

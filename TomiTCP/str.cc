@@ -199,7 +199,7 @@ namespace std {
 	char *resptr = result;
 
 	while ((fromsize>0) && (tosize>0)) {
-#ifdef WIN32
+#ifdef _LIBICONV_VERSION
 	    if ((int)iconv(conv, &msgptr, &fromsize, &resptr, &tosize) == -1)
 #else
 	    if ((int)iconv(conv, (char **)&msgptr, &fromsize, &resptr, &tosize) == -1)
