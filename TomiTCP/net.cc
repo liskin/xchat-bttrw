@@ -12,15 +12,13 @@
 #include "net.h"
 #include "str.h"
 
-int &c_errno = errno;
-
-#ifdef WIN32
-# undef errno
-# define errno WSAGetLastError()
+#ifndef WIN32
+# define sock_errno errno
+#else
+# define sock_errno WSAGetLastError()
 # define EAFNOSUPPORT WSAEAFNOSUPPORT
 # define TEMP_FAILURE_RETRY(a) (a)
-# define strerror inttostr
-# define NEED_GETLINE
+# define strerror tostr<int>
 int winsock_init() {
     WORD wVersionRequested;
     WSADATA wsaData;
@@ -64,13 +62,13 @@ namespace net {
 	PORT_SOCKADDR(lname) = htons(port);
 
 	sock = ::socket(lname.sa.sa_family, SOCK_STREAM, 0);
-	if (sock < 0 && (errno == EINVAL || errno == EAFNOSUPPORT) && addr == "::") {
+	if (sock < 0 && (sock_errno == EINVAL || sock_errno == EAFNOSUPPORT) && addr == "::") {
                 lname.sin.sin_family = AF_INET;
                 lname.sin.sin_addr.s_addr = INADDR_ANY;
                 
                 sock = ::socket(PF_INET, SOCK_STREAM, 0);
         } else if (sock < 0) {
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error(string(strerror(sock_errno)));
 	}
 
 	int set_opt = 1;
@@ -78,14 +76,14 @@ namespace net {
 	    cerr << "Could not set SO_REUSEADDR" << endl;
 
 	if (::bind(sock,&lname.sa,SIZEOF_SOCKADDR(lname))) {
-	    int er = errno;
+	    int er = sock_errno;
 	    ::close(sock);
 	    sock = -1;
 	    throw runtime_error(string(strerror(er)));
 	}
 
 	if (::listen(sock,5)) {
-	    int er = errno;
+	    int er = sock_errno;
 	    ::close(sock);
 	    sock = -1;
 	    throw runtime_error(string(strerror(er)));
@@ -115,10 +113,10 @@ namespace net {
 
 	    sock = ::socket(rname.sa.sa_family, SOCK_STREAM, 0);
 	    if (socket < 0) {
-		err = strerror(errno);
+		err = strerror(sock_errno);
 	    } else {
 		if (::connect(sock,(const sockaddr*)&rname,SIZEOF_SOCKADDR(rname))) {
-		    int er = errno;
+		    int er = sock_errno;
 		    close();
 		    err = strerror(er);
 		} else {
@@ -132,12 +130,12 @@ namespace net {
 
 	socklen_t len = SIZEOF_SOCKADDR(lname);
 	if (getsockname(sock,(sockaddr*)&lname,&len)) {
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error(string(strerror(sock_errno)));
 	}
 
 	stream = fdopen(sock,"r+");
 	if (!stream) {
-	    int er = c_errno;
+	    int er = errno;
 	    close();
 	    throw runtime_error(string(strerror(er)));
 	}
@@ -178,10 +176,10 @@ namespace net {
 	PORT_SOCKADDR(addr) = htons(113);
 	int s = ::socket(addr.sa.sa_family, SOCK_STREAM, 0);
 	if (s < 0) {
-	    throw runtime_error(string("Ident: ")+strerror(errno));
+	    throw runtime_error(string("Ident: ")+strerror(sock_errno));
 	}
 	if (::connect(s,(const sockaddr*)&addr,SIZEOF_SOCKADDR(addr))) {
-	    int er = errno;
+	    int er = sock_errno;
 	    ::close(s);
 	    throw runtime_error(string("Ident: ")+strerror(er));
 	}
@@ -191,7 +189,7 @@ namespace net {
 
 	int retval = TEMP_FAILURE_RETRY(::send(s,query,strlen(query),0));
 	if (retval < 0) {
-	    int er = errno;
+	    int er = sock_errno;
 	    ::close(s);
 	    throw runtime_error(string("Ident: ")+string(strerror(er)));
 	}
@@ -202,7 +200,7 @@ namespace net {
 	{
 	    retval = TEMP_FAILURE_RETRY(::recv(s,buffer,512,0));
 	    if (retval <= 0) {
-		int er = errno;
+		int er = sock_errno;
 		::close(s);
 		if (retval < 0)
 		    throw runtime_error(string("Ident: ")+string(strerror(er)));
@@ -238,7 +236,7 @@ namespace net {
 
 	stream = fdopen(sock,"r+");
 	if (!stream) {
-	    int er = c_errno;
+	    int er = errno;
 	    close();
 	    throw runtime_error(string(strerror(er)));
 	}
@@ -254,11 +252,11 @@ namespace net {
     void TomiTCP::close()
     {
 	if (stream) {
-	    fclose(stream);
+	    if (fclose(stream))
+		throw runtime_error(string(strerror(errno)));
 	    stream = 0;
-	}
-
-	if (sock >= 0) {
+	    sock = -1;
+	} else if (sock >= 0) {
 	    ::close(sock);
 	    sock = -1;
 	}
@@ -289,11 +287,11 @@ namespace net {
 	socklen_t len = SIZEOF_SOCKADDR(ret->rname);
 	ret->sock = TEMP_FAILURE_RETRY(::accept(sock,&ret->rname.sa,&len));
 	if (ret->sock < 0)
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error(string(strerror(sock_errno)));
 
 	ret->stream = fdopen(ret->sock,"r+");
 	if (!ret->stream) {
-	    int er = c_errno;
+	    int er = errno;
 	    delete ret;
 	    throw runtime_error(string(strerror(er)));
 	}
@@ -302,6 +300,11 @@ namespace net {
 	return ret;
     }
 
+    /*
+     * This are considered deprecated, because they are not much useful and not
+     * being tested, and are subject to remove during next cleanup.
+     * Use fread and fwrite instead.
+     */
     void TomiTCP::send(const char* buf, int sz, unsigned int ms)
     {
 	while (sz) {
@@ -310,7 +313,7 @@ namespace net {
 	    }
 	    int retval = TEMP_FAILURE_RETRY(::send(sock,buf,sz,0));
 	    if (retval < 0) {
-		throw runtime_error(string(strerror(errno)));
+		throw runtime_error(string(strerror(sock_errno)));
 	    }
 	    buf += retval;
 	    sz -= retval;
@@ -324,7 +327,7 @@ namespace net {
             int retval = TEMP_FAILURE_RETRY(::recv(sock,buf,sz,0));
             if (retval <= 0) {
 		if (retval < 0)
-		    throw runtime_error(string(strerror(errno)));
+		    throw runtime_error(string(strerror(sock_errno)));
             }
 	    return retval;
         }
@@ -332,8 +335,8 @@ namespace net {
     }
 
     /*
-     * Only for compatibility with older programs, will be removed on next
-     * cleanup.
+     * This is considered deprecated and is subject to remove during next
+     * cleanup. Use operator FILE* instead.
      */
     FILE* TomiTCP::makestream()
     {
@@ -343,35 +346,28 @@ namespace net {
 
 	FILE *f = fdopen(s,"r+");
 	if (!f)
-	    throw runtime_error(string(strerror(c_errno)));
+	    throw runtime_error(string(strerror(errno)));
 	setvbuf(f,NULL,_IONBF,0); // no buffering
 
 	return f;
     }
 
-    TomiTCP::operator FILE* ()
+    int TomiTCP::getline(string& s, char delim = '\n')
     {
-	return stream;
-    }
+	char c;
+	int ret;
 
-    int TomiTCP::getline(string& s)
-    {
-#ifdef NEED_GETLINE
-	throw 0;
-	return 0;
-#else
-	char *buf;
-	size_t len = 0;
+	s.clear();
+	while ((ret = read(sock, &c, 1)) == 1 && c != delim) {
+	    s += c;
+	}
 
-	int ret = ::getline(&buf,&len,stream);
 	if (ret == -1)
-	    return 0;
-	s = buf;
-	free(buf);
-	return 1;
-#endif
-    }
+	    throw runtime_error(strerror(errno));
 
+	return s.length();
+    }
+    
     string tomi_ntop(const sockaddr_uni& name)
     {
 	char tmp[128],*p;
@@ -379,13 +375,13 @@ namespace net {
 #ifdef WIN32
 	DWORD len = 128;
 	if (!WSAAddressToString((struct sockaddr*)&name.sa,SIZEOF_SOCKADDR(name),0,tmp,&len))
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error(string(strerror(sock_errno)));
 	tmp[len] = 0;
 #else
 	if (!inet_ntop(name.sa.sa_family,(name.sa.sa_family == AF_INET)?
 		    ((const void *)&name.sin.sin_addr):
 		    ((const void *)&name.sin6.sin6_addr),tmp,128))
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error(string(strerror(sock_errno)));
 #endif
 
 	if (name.sa.sa_family == AF_INET6 && IN6_IS_ADDR_V4MAPPED(&name.sin6.sin6_addr))
@@ -402,13 +398,13 @@ namespace net {
 #ifdef WIN32
 	int sz = SIZEOF_SOCKADDR(name);
 	if (WSAStringToAddress((char*)p.c_str(),name.sa.sa_family,0,(struct sockaddr*)&name.sa,&sz))
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error(string(strerror(sock_errno)));
 #else
 	int ret = inet_pton(name.sa.sa_family,p.c_str(),(name.sa.sa_family == AF_INET)?
 		((void *)&name.sin.sin_addr):
 		((void *)&name.sin6.sin6_addr));
 	if (ret < 0)
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error(string(strerror(sock_errno)));
 	if (ret == 0)
 	    throw runtime_error("Not a valid address");
 #endif

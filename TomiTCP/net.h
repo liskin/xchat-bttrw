@@ -60,10 +60,11 @@ namespace net {
 	    void send(const char* buf, int sz, unsigned int ms = 10);
 	    int recv(char* buf, int sz, unsigned int ms = 5000);
 	    FILE* makestream();
-	    int getline(string& s);
+	    //int getline(string& s);
+	    int getline(string& s, char delim = '\n');
 	    string ident(int ms = 10000);
 
-	    operator FILE* ();
+	    operator FILE* () { return stream; }
 
 	    sockaddr_uni lname,rname;
 	    int sock;

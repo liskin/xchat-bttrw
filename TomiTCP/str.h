@@ -4,9 +4,15 @@
 #pragma interface
 #include <string>
 #include <cstdio>
-#include <ctype.h>
+#include <sstream>
+#include <iomanip>
+#include <algorithm>
+#include <cctype>
 
 namespace std {
+    /*
+     * Whitespace stripping functions
+     */
     inline string& chomp(string &str)
     {
         str.erase(0,str.find_first_not_of("\r\n"));
@@ -21,82 +27,84 @@ namespace std {
 	return str;
     }
     
+    /*
+     * Case modifying functions
+     */
     inline string& strtolower(string &str)
     {
-	for (string::iterator i = str.begin(); i != str.end(); i++)
-	    *i = tolower(*i);
+	transform(str.begin(), str.end(), str.begin(), tolower);
 	return str;
     }
 
     inline string& strtoupper(string &str)
     {
-	for (string::iterator i = str.begin(); i != str.end(); i++)
-	    *i = toupper(*i);
+	transform(str.begin(), str.end(), str.begin(), toupper);
 	return str;
     }
 
-    inline string inttostr(int i)
+    /*
+     * These are versions of above which don't take references and thus can be
+     * used on temporary/constant variables.
+     */
+    inline string chomp_nr(string str) { return chomp(str); }
+    inline string wstrip_nr(string str) { return wstrip(str); }
+    inline string strtolower_nr(string str) { return strtolower(str); }
+    inline string strtoupper_nr(string str) { return strtoupper(str); }
+
+    /*
+     * Something (especially integral types) to string converters
+     */
+    template <typename T> inline string tostr(T a)
     {
-	char a[12];
-	sprintf(a,"%i",i);
-	return string(a);
+	stringstream s; s << a;
+	return s.str();
     }
 
-    inline string llinttostr(long long int i)
+    template <typename T> inline string tostr_hex(T a, bool show_base = 0)
     {
-	char a[21];
-	sprintf(a,"%lli",i);
-	return string(a);
+	stringstream s;
+	if (show_base)
+#if __GNUC__ < 3
+	    s.setf(ios::showbase);
+#else
+	    s.setf(ios_base::showbase);
+#endif
+	s << hex << a;
+	return s.str();
     }
 
-    inline string uinttostr(unsigned int i)
+    template <typename T> inline string tostr_float(T a, int precision = -1)
     {
-	char a[12];
-	sprintf(a,"%u",i);
-	return string(a);
+	stringstream s;
+	if (precision != -1)
+	    s << setprecision(precision);
+	s << a;
+	return s.str();
     }
 
-    inline string ullinttostr(unsigned long long int i)
-    {
-	char a[21];
-	sprintf(a,"%llu",i);
-	return string(a);
-    }
+    /*
+     * These are considered deprecated and are subject to remove during next
+     * cleanup. Use tostr template functions instead.
+     */
+    string (* const inttostr)(int) = tostr<int>;
+    string (* const linttostr)(long int) = tostr<long int>;
+    string (* const llinttostr)(long long int) = tostr<long long int>;
+    string (* const uinttostr)(unsigned int) = tostr<unsigned int>;
+    string (* const ulinttostr)(unsigned long int) = tostr<unsigned long int>;
+    string (* const ullinttostr)(unsigned long long int) = tostr<unsigned long long int>;
+    string (* const uinttohstr)(unsigned int, bool = 0) = tostr_hex<unsigned int>;
+    string (* const ulinttohstr)(unsigned long int, bool = 0) = tostr_hex<unsigned long int>;
+    string (* const ullinttohstr)(unsigned long long int, bool = 0) = tostr_hex<unsigned long long int>;
+    string (* const floattostr)(float, int = -1) = tostr_float<float>;
+    string (* const doubletostr)(double, int = -1) = tostr_float<double>;
+    string (* const ldoubletostr)(long double, int = -1) = tostr_float<long double>;
 
-    inline string uinttohstr(unsigned int i)
-    {
-	char a[9];
-	sprintf(a,"%x",i);
-	return string(a);
-    }
-
-    inline string ullinttohstr(unsigned long long int i)
-    {
-	char a[17];
-	sprintf(a,"%llx",i);
-	return string(a);
-    }
-
-    inline string doubletostr(double d, int precision = 6)
-    {
-	char a[precision + 7];
-	sprintf(a,"%.*g",precision,d);
-	return string(a);
-    }
-
-    inline string ldoubletostr(long double d, int precision = 10)
-    {
-	char a[precision + 7];
-	sprintf(a,"%.*Lg",precision,d);
-	return string(a);
-    }
-
-#define INDENT_DETECT "\033"
-    int len(string s, int ini = 0, int tab = 8);
-    int ntokens(string s);
+    const string INDENT_DETECT = "\033";
+    int len(const string& s, int ini = 0, int tab = 8);
+    int ntokens(const string& s);
     string justify(string in, int width, int maxspaces = 4, int tab = 8);
-    string reformat(string ins, int width, string firstline = "", int tab = 8,
-	    bool firstlinealone = 0, int maxspaces = 4,
+    string reformat(string ins, int width, const string& firstline = "",
+	    int tab = 8, bool firstlinealone = 0, int maxspaces = 4,
 	    string indent = INDENT_DETECT);
 
     string recode(const string& src, const string& from, const string& to);

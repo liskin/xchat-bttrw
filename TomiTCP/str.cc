@@ -5,20 +5,21 @@
 #include <stdexcept>
 #include <iconv.h>
 #include <errno.h>
+#include <stdexcept>
 #include "str.h"
 
 namespace std {
     /*
      * Calculate string length with given tab length
      */
-    int len(string s, int ini, int tab)
+    int len(const string& s, int ini, int tab)
     {
 	if (!tab)
 	    throw invalid_argument("tab cannot be 0, would cause division by zero");
 
 	int ret = ini;
 
-	for (string::iterator i = s.begin(); i != s.end(); i++) {
+	for (string::const_iterator i = s.begin(); i != s.end(); i++) {
 	    if (*i == '\t') {
 		ret = (ret/tab + 1) * tab;
 	    } else {
@@ -32,12 +33,13 @@ namespace std {
     /*
      * Calculate number of tokens (delimited by whitespace)
      */
-    int ntokens(string s)
+    int ntokens(const string& s)
     {
 	stringstream ss(s);
+	string tmp;
 	int n = 0;
 
-	while (ss >> s) {
+	while (ss >> tmp) {
 	    n++;
 	}
 
@@ -119,8 +121,8 @@ namespace std {
      * firstlinealone specifies if not add indent to firstlineindent on first
      * line
      */
-    string reformat(string ins, int width, string firstline, int tab,
-	    bool firstlinealone, int maxspaces, string indent)
+    string reformat(string ins, int width, const string& firstline,
+	    int tab, bool firstlinealone, int maxspaces, string indent)
     {
 	// get indentation
 	int indentw, indentlen;
@@ -193,17 +195,17 @@ namespace std {
 	char *result = new char[fromsize+1];
 	char *resptr = result;
 
-	while ((fromsize>0) && (tosize>0))
-	{
+	while ((fromsize>0) && (tosize>0)) {
 #ifdef WIN32
-	    if ((int)iconv(conv, &msgptr, &fromsize, &resptr, &tosize)==-1)
+	    if ((int)iconv(conv, &msgptr, &fromsize, &resptr, &tosize) == -1)
 #else
-	    if ((int)iconv(conv, (char **)&msgptr, &fromsize, &resptr, &tosize)==-1)
+	    if ((int)iconv(conv, (char **)&msgptr, &fromsize, &resptr, &tosize) == -1)
 #endif
 	    {
+		int err = errno;
+		
 		// array is not big enough
-		if (errno == E2BIG)
-		{
+		if (err == E2BIG) {
 		    // add fromsize + 4 more characters to array
 		    result = (char*) realloc(result,ressize + fromsize + 4);
 		    resptr = result + ressize;
@@ -213,7 +215,15 @@ namespace std {
 		}
 
 		delete []result;
-		return src;
+
+		switch (err) {
+		    case EILSEQ:
+			throw runtime_error("An invalid multibyte sequence has been encountered in the input.");
+		    case EINVAL:
+		       	throw runtime_error("An incomplete multibyte sequence has been encountered in the input.");
+		    default:
+			throw runtime_error("Unknown error during iconv.");
+		}
 	    }
 	}
 

@@ -225,31 +225,31 @@ namespace net {
 	    return 1;
 
 	switch (c) {
-	    case '\x24':
-	    case '\x26':
-	    case '\x2b':
-	    case '\x2c':
-	    case '\x2f':
-	    case '\x3a':
-	    case '\x3b':
-	    case '\x3d':
-	    case '\x3f':
-	    case '\x40':
-	    case '\x20':
-	    case '\x22':
-	    case '\x3c':
-	    case '\x3e':
-	    case '\x23':
-	    case '\x25':
-	    case '\x7b':
-	    case '\x7d':
-	    case '\x7c':
-	    case '\x5c':
-	    case '\x5e':
-	    case '\x7e':
-	    case '\x5b':
-	    case '\x5d':
-	    case '\x60':
+	    case 0x24:
+	    case 0x26:
+	    case 0x2b:
+	    case 0x2c:
+	    case 0x2f:
+	    case 0x3a:
+	    case 0x3b:
+	    case 0x3d:
+	    case 0x3f:
+	    case 0x40:
+	    case 0x20:
+	    case 0x22:
+	    case 0x3c:
+	    case 0x3e:
+	    case 0x23:
+	    case 0x25:
+	    case 0x7b:
+	    case 0x7d:
+	    case 0x7c:
+	    case 0x5c:
+	    case 0x5e:
+	    case 0x7e:
+	    case 0x5b:
+	    case 0x5d:
+	    case 0x60:
 		return 1;
 	}
 
@@ -263,7 +263,7 @@ namespace net {
 	for (string::const_iterator i = s.begin(); i != s.end(); i++) {
 	    if (URLneedencode((unsigned char) *i)) {
 		char c[5];
-		sprintf(c,"%%%.2hhx",(unsigned char)*i);
+		sprintf(c,"%%%.2hhX",(unsigned char)*i);
 		out += c;
 	    } else {
 		out += *i;
