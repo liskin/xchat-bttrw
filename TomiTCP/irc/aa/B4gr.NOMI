@@ -13,6 +13,7 @@ module	channel
 module	take
 module	say
 module	opslaves
+module	massping
 slave_port 12205
 ch_channels	#nomi
 #rj_sleep	0

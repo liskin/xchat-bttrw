@@ -176,6 +176,7 @@ void loadmodule(string name)
 
     m.init = (module_init) dlsym(m.lib,("m_"+name+"_init").c_str());
     if (!m.init) {
+	dlclose(m.lib);
 	throw runtime_error("Loadmodule error (init): "+string(dlerror()));
     }
 
@@ -303,6 +304,10 @@ void restart()
 {
     S(my_f,"QUIT :restarting\n");
     fclose(my_f);
+    slave_s.close();
+    for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
+	delete i->s;
+    }
     sleep(1);
 
     execv(my_argv[0],my_argv);
@@ -428,6 +433,17 @@ void docmd(FILE *f, string &snick, string &cmd)
 	    }
 	}
 	return;
+    }
+
+    if (cl[0] == ".listslaves") {
+	for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
+	    if (i->mask.length()) {
+		string host = tomi_ntop(i->s->rname);
+		int port = ntohs(PORT_SOCKADDR(i->s->rname));
+		S(f,"PRIVMSG %s :%s:%i (%s)\n",snick.c_str(),host.c_str(),port,i->mask.c_str());
+	    }
+	}
+	S(f,"PRIVMSG %s :END of slaves list\n",snick.c_str());
     }
 
     for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
