@@ -234,9 +234,8 @@ void parsein(const char *bufa, string& prefix, vector<string>& cmd)
 {
     char buf[strlen(bufa)];
     strcpy(buf,bufa);
-    const char *p = buf, *e = buf + strlen(buf);
-
     buf[string(buf).find_last_not_of("\r\n")+1] = 0;
+    const char *p = buf, *e = buf + strlen(buf);
 
     if (buf[0] == ':') {
 	p++;
