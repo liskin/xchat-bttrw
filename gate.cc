@@ -442,21 +442,29 @@ main_accept:
 		    } else {
 			fprintf(*c, ":%s 221 %s +\n", me, nick.c_str());
 		    }
-		} else if (cmd[0] == "MODE" && cmd.size() >= 3) {
+		} else if (cmd[0] == "MODE" && cmd.size() >= 3 && cmd[1][0] == '#') {
 		    /*
 		     * Handle MODE command...
 		     */
 		    vector<pair<string, string> > modes;
 		    parsemode(vector<string>(cmd.begin() + 2, cmd.end()), modes);
 
+		    cmd[1].erase(cmd[1].begin());
+
+		    // we don't want to set admin more than once
+		    bool admin = 1; /* x->isadmin(cmd[1], nick); */
+
 		    for (vector<pair<string, string> >::iterator i = modes.begin();
 			    i != modes.end(); i++) {
-			//cout << "\"" << i->first << "\" \"" << i->second << "\"" << endl;
-
-			if (i->first == "?b" && cmd[1][0] == '#') {
+			if (i->first == "?b") {
 			    // just to make client's `channel synchronizing' happy
-			    fprintf(*c, ":%s 368 %s %s :End of Channel Ban List\n", me,
+			    fprintf(*c, ":%s 368 %s #%s :End of Channel Ban List\n", me,
 				    nick.c_str(), cmd[1].c_str());
+			} else if (i->first == "+o") {
+			    if (admin) {
+				x->admin(cmd[1], i->second);
+				admin = 0;
+			    }
 			}
 		    }
 		} else if (cmd[0] == "WHO" && cmd.size() == 2) {
