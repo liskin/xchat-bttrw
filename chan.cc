@@ -88,9 +88,6 @@ namespace xchat {
 
     void XChat::getmsg(room& r)
     {
-	if (time(0) - last_recv < recv_interval)
-	    return;
-
 	TomiHTTP s;
 	int ret = s.GET(makeurl2("modchat?op=roomtopng&js=1&rid="+r.rid+"&inc=1&last_line="+
 		    inttostr(r.l)),0);

@@ -49,6 +49,9 @@ namespace xchat {
 		sendq.push(pair<string,string>(a,b));
 	    }
 	    void do_sendq();
+	    bool should_recv() {
+		return time(0) - last_recv >= recv_interval;
+	    }
 
 	    XChat(const string& user, const string& pass);
 	    ~XChat();

@@ -206,17 +206,18 @@ int main(int argc, char *argv[])
 			    nick.c_str(), e.what());
 		}
 
-		for (rooms_t::iterator j = x->rooms.begin(); j != x->rooms.end(); j++) {
-		    try { x->getmsg(j->second); }
-		    catch (runtime_error e) {
-			string rid = j->first;
-			try { x->part(j->first); } catch (...) { }
-			fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
-				hash(nick).c_str(), x->getsexhost(nick), rid.c_str());
-			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
-				nick.c_str(), e.what());
+		if (x->should_recv())
+		    for (rooms_t::iterator j = x->rooms.begin(); j != x->rooms.end(); j++) {
+			try { x->getmsg(j->second); }
+			catch (runtime_error e) {
+			    string rid = j->first;
+			    try { x->part(j->first); } catch (...) { }
+			    fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
+				    hash(nick).c_str(), x->getsexhost(nick), rid.c_str());
+			    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+				    nick.c_str(), e.what());
+			}
 		    }
-		}
 	    }
 
 	    while (x.get() && !x->recvq.empty()) {
