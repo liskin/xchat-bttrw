@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <ctime>
 #include <memory>
+#include <openssl/md5.h>
 #include "xchat.h"
 #include "irc.h"
 #include "TomiTCP/net.h"
@@ -24,12 +25,23 @@ string striphtml(string a)
     return out;
 }
 
+string hash(const string& s)
+{
+    unsigned char mdbuf[16]; char tmp[10];
+    MD5_CTX md5;
+    MD5_Init(&md5);
+    MD5_Update(&md5, s.c_str(), s.length());
+    MD5_Final(mdbuf, &md5);
+    sprintf(tmp, "%.8x", *((unsigned int*)mdbuf));
+    return tmp;
+}
+
 TomiTCP s;
 auto_ptr<TomiTCP> c;
 auto_ptr<XChat> x;
 
 const char *me = "xchat.cz";
-const char *userhost = "someone@users.xchat.cz";
+const char *userhost = "users.xchat.cz";
 
 int main(int argc, char *argv[])
 {
@@ -70,7 +82,7 @@ int main(int argc, char *argv[])
 			break;
 		    }
 
-		    fprintf(*c, ":%s 001 %s :Smazko!\n", me, nick.c_str());
+		    fprintf(*c, ":%s 001 %s :Vitej Smazko!\n", me, nick.c_str());
 		    try { x.reset(new XChat(nick, pass)); }
 		    catch (runtime_error e) {
 			fprintf(*c, ":%s ERROR :%s\n", me, e.what());
@@ -102,8 +114,8 @@ int main(int argc, char *argv[])
 			break;
 		    }
 
-		    fprintf(*c, ":%s!%s JOIN #%s\n", nick.c_str(), userhost,
-			    cmd[1].c_str());
+		    fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
+			    userhost, cmd[1].c_str());
 		    string tmp; int i; vector<string>::iterator j;
 		    for (i = 1, j = nicklist.begin(); j != nicklist.end(); j++, i++) {
 			tmp += *j + " ";
@@ -158,8 +170,9 @@ int main(int argc, char *argv[])
 			    XChat::striphtmlent(m);
 
 			    if (src != nick)
-				fprintf(*c, ":%s!%s PRIVMSG %s :%s\n", src.c_str(),
-					userhost, target.c_str(), m.c_str());
+				fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", src.c_str(),
+					hash(src).c_str(), userhost,
+					target.c_str(), m.c_str());
 			}
 		    }
 		}

@@ -4,7 +4,7 @@ DEBUG=no
 
 CFLAGS=-Wall -D_GNU_SOURCE -I./TomiTCP
 CXXFLAGS=$(CFLAGS)
-LDLIBS=-lrecode
+LDLIBS=-lrecode -lcrypto
 LDFLAGS=
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
