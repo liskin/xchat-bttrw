@@ -580,7 +580,7 @@ void processbuf(const char *buf)
     }
 
     if (!strcasecmp(cmd[0].c_str(),"MODE")) {
-	if (cmd.size() >= 4) {
+	if (cmd.size() >= 3) {
 	    vector<string> tcmd(cmd.begin() + 2,cmd.end());
 	    vector<string> modes;
 	    parsemode(tcmd,modes);
