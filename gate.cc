@@ -39,6 +39,20 @@ string hash(string s)
 }
 
 /*
+ * Is it a notice from bttrw?
+ */
+bool is_notice(string &s)
+{
+    static string pat = "Notice: ";
+    if (!s.compare(0, pat.length(), pat)) {
+	s.erase(0, pat.length());
+	return true;
+    }
+
+    return false;
+}
+
+/*
  * Some global variables
  */
 TomiTCP s;
@@ -524,22 +538,31 @@ main_accept:
 			    f->str().c_str());
 		} else if (dynamic_cast<EvRoomMsg*>(e.get())) {
 		    auto_ptr<EvRoomMsg> f((EvRoomMsg*)e.release());
+		    string str = f->str();
+		    bool notice = is_notice(str);
 
-		    fprintf(*c, ":%s!%s@%s PRIVMSG #%s :%s\n", f->getsrc().nick.c_str(),
+		    fprintf(*c, ":%s!%s@%s %s #%s :%s\n", f->getsrc().nick.c_str(),
 			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
-			    f->getrid().c_str(), f->str().c_str());
+			    notice?"NOTICE":"PRIVMSG", f->getrid().c_str(),
+			    str.c_str());
 		} else if (dynamic_cast<EvRoomWhisper*>(e.get())) {
 		    auto_ptr<EvRoomWhisper> f((EvRoomWhisper*)e.release());
+		    string str = f->str();
+		    bool notice = is_notice(str);
 
-		    fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", f->getsrc().nick.c_str(),
+		    fprintf(*c, ":%s!%s@%s %s %s :%s\n", f->getsrc().nick.c_str(),
 			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
-			    f->gettarget().c_str(), f->str().c_str());
+			    notice?"NOTICE":"PRIVMSG", f->gettarget().c_str(),
+			    str.c_str());
 		} else if (dynamic_cast<EvWhisper*>(e.get())) {
 		    auto_ptr<EvWhisper> f((EvWhisper*)e.release());
+		    string str = f->str();
+		    bool notice = is_notice(str);
 
-		    fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", f->getsrc().nick.c_str(),
+		    fprintf(*c, ":%s!%s@%s %s %s :%s\n", f->getsrc().nick.c_str(),
 			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
-			    f->gettarget().c_str(), f->str().c_str());
+			    notice?"NOTICE":"PRIVMSG", f->gettarget().c_str(),
+			    str.c_str());
 		} else if (dynamic_cast<EvRoomJoin*>(e.get())) {
 		    auto_ptr<EvRoomJoin> f((EvRoomJoin*)e.release());
 
