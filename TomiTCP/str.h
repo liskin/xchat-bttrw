@@ -3,6 +3,7 @@
 
 #pragma interface
 #include <string>
+#include <cstdio>
 #include <ctype.h>
 
 namespace std {

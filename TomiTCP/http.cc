@@ -166,7 +166,7 @@ namespace net {
 		"Accept: text/html, text/plain, text/*, */*\r\n"
 		"Content-type: application/x-www-form-urlencoded\r\n"
 		"Content-length: %i\r\n",
-		path.c_str(), host.c_str(), data.length() );
+		path.c_str(), host.c_str(), (int)data.length() );
 	/* cookies... */
 	if (cookies) {
 	    string c;
@@ -263,7 +263,7 @@ namespace net {
 	for (string::const_iterator i = s.begin(); i != s.end(); i++) {
 	    if (URLneedencode((unsigned char) *i)) {
 		char c[5];
-		sprintf(c,"%%%.hhx",(unsigned char)*i);
+		sprintf(c,"%%%.2hhx",(unsigned char)*i);
 		out += c;
 	    } else {
 		out += *i;

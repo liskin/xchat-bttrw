@@ -4,6 +4,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <iconv.h>
+#include <errno.h>
 #include "str.h"
 
 namespace std {
