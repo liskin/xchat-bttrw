@@ -5,6 +5,7 @@
 #include <iostream>
 #include "xchat.h"
 #include "smiles.h"
+#include "idle.h"
 #include "TomiTCP/str.h"
 
 namespace xchat {
@@ -127,7 +128,7 @@ namespace xchat {
 	}
     }
 
-    bool XChat::isjoin(string &m, rooms_t &rooms, string &src, const string& room)
+    bool XChat::isjoin(const string& r, string &m, string &src)
     {
 	unsigned int a,b;
 	if ((a = m.find("Uzivatel")) != string::npos &&
@@ -135,11 +136,11 @@ namespace xchat {
 	    if (m.find("Uzivatelka") != string::npos) {
 		src = string(m, a + sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 1);
 		wstrip(src);
-		rooms[room].nicklist[strtolower_nr(src)] = (struct x_nick){src, 0};
+		rooms[r].nicklist[strtolower_nr(src)] = (struct x_nick){src, 0};
 	    } else {
 		src = string(m, a + sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 1);
 		wstrip(src);
-		rooms[room].nicklist[strtolower_nr(src)] = (struct x_nick){src, 1};
+		rooms[r].nicklist[strtolower_nr(src)] = (struct x_nick){src, 1};
 	    }
 	    return 1;
 	}
@@ -147,7 +148,7 @@ namespace xchat {
 	return 0;
     }
 
-    bool XChat::ispart(string &m, rooms_t &rooms, string &src)
+    bool XChat::ispart(const string& r, string &m, string &src, string &host)
     {
 	unsigned int a,b;
 	if ((a = m.find("Uzivatel")) != string::npos &&
@@ -159,13 +160,16 @@ namespace xchat {
 		src = string(m, a + sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 1);
 		wstrip(src);
 	    }
+
+	    host = getsexhost(src);
+	    rooms[r].nicklist.erase(strtolower_nr(src));
 	    return 1;
 	}
 
 	return 0;
     }
 
-    bool XChat::iskick(string &m, rooms_t &rooms, string &src, string &reason, string &who)
+    bool XChat::iskick(const string& r, string &m, string &src, string &reason, string &who, string &host)
     {
 	unsigned int a,b;
 	if ((a = m.find("Uzivatel")) != string::npos &&
@@ -196,9 +200,55 @@ namespace xchat {
 		    (b = m.find_last_of(")")) != string::npos) {
 		reason = string(m, a + 1, b - a - 1);
 	    }
+
+	    host = getsexhost(src);
+	    rooms[r].nicklist.erase(strtolower_nr(src));
 	    return 1;
 	}
 
 	return 0;
+    }
+
+    x_nick* XChat::findnick(string nick)
+    {
+	strtolower(nick);
+	for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
+	    nicklist_t::iterator n = i->second.nicklist.find(nick);
+	    if (n != i->second.nicklist.end())
+		return &n->second;
+	}
+
+	return 0;
+    }
+
+    const char * XChat::getsexhost(string src)
+    {
+	strtolower(src);
+	if (src == strtolower_nr(nick))
+	    return sexhost[mysex];
+
+	for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++)
+	    if (i->second.nicklist.find(src) != i->second.nicklist.end())
+		return sexhost[i->second.nicklist[src].sex];
+
+	return userhost;
+    }
+
+    void XChat::do_sendq()
+    {
+	if (!sendq.empty() && time(0) - last_sent >= send_interval) {
+	    pair<string,string> msg = sendq.front(); sendq.pop();
+	    putmsg(rooms[msg.first], msg.second);
+	}
+
+	// f00king idler
+	if (sendq.empty()) {
+	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
+		if (time(0) - i->second.last_sent >= idle_interval) {
+		    sendq_push(i->first, "/s " + nick + " " +
+			    idle_msgs[rand() % idle_msgs_count]);
+		}
+	    }
+	}
     }
 }

@@ -7,6 +7,7 @@ using namespace net;
 
 namespace xchat {
     XChat::XChat(const string& user, const string& pass)
+	: nick(user), mysex(1), last_sent(0), last_recv(0)
     {
 	TomiHTTP s;
 	int ret = s.POST(makeurl("~guest~/login/"),
@@ -31,6 +32,10 @@ namespace xchat {
 
     XChat::~XChat()
     {
+	for (rooms_t::iterator j = rooms.begin(); j != rooms.end(); j++) {
+	    try { part(j->first); } catch (...) { }
+	}
+
 	TomiHTTP s;
 	int ret = s.GET(makeurl("~~logout/~$" + uid + "~" + sid + "/"),0);
 	if (ret != 302)

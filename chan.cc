@@ -8,12 +8,13 @@
 using namespace net;
 
 namespace xchat {
-    room XChat::join(const string& rid)
+    void XChat::join(const string& rid)
     {
 	TomiHTTP s;
 	string l;
 	room r;
 
+	r.rid = rid;
 	r.last_sent = 0;
 
 	int ret = s.GET(makeurl2("modchat?op=mainframeset&rid="+rid),0);
@@ -43,6 +44,9 @@ namespace xchat {
 
 		    if (nick != "~" && nick != "!")
 			r.nicklist[strtolower_nr(nick)] = (struct x_nick){nick, muz};
+
+		    if (strtolower_nr(nick) == strtolower_nr(this->nick))
+			mysex = muz;
 		}
 	    }
 	}
@@ -61,7 +65,9 @@ namespace xchat {
 
 		getline(ss,lastline,'"');
 		r.l = atol(lastline.c_str());
-		return r;
+		
+		rooms[rid] = r;
+		return;
 	    }
 	}
 
@@ -76,19 +82,24 @@ namespace xchat {
 		    "&leftroom="+rid),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while parting channel");
+	
+	rooms.erase(rid);
     }
 
-    int XChat::getmsg(const string& rid, int lastmsg, vector<string>& msgs)
+    void XChat::getmsg(room& r)
     {
+	if (time(0) - last_recv < recv_interval)
+	    return;
+
 	TomiHTTP s;
-	int ret = s.GET(makeurl2("modchat?op=roomtopng&js=1&rid="+rid+"&inc=1&last_line="+
-		    inttostr(lastmsg)),0);
+	int ret = s.GET(makeurl2("modchat?op=roomtopng&js=1&rid="+r.rid+"&inc=1&last_line="+
+		    inttostr(r.l)),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
 
 	vector<string> dbg;
 
-	lastmsg = -1;
+	r.l = -1;
 	string l;
 	bool expect_apos = false;
 	vector<string> tv;
@@ -96,9 +107,8 @@ namespace xchat {
 	    wstrip(l);
 	    if (!l.length()) continue;
 	    dbg.push_back(l);
-	    //cout << l << endl;
 
-	    if (lastmsg == -1) {
+	    if (r.l == -1) {
 		string pat = "&inc=1&last_line=";
 		unsigned int pos = l.find(pat);
 		if (pos != string::npos) {
@@ -106,7 +116,7 @@ namespace xchat {
 		    string lastline;
 
 		    getline(ss,lastline,'"');
-		    lastmsg = atol(lastline.c_str());
+		    r.l = atol(lastline.c_str());
 		}
 	    }
 
@@ -142,24 +152,25 @@ namespace xchat {
 	}
 
 	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++) {
-	    msgs.push_back(*i);
+	    recvq.push(pair<string,string>(r.rid,*i));
 	}
 
-	if (lastmsg == -1) {
+	if (r.l == -1) {
 	    for (vector<string>::iterator i = dbg.begin(); i != dbg.end(); i++)
 		cout << *i << endl;
 	    throw runtime_error("Parse error");
 	}
 
-	return lastmsg;
+	last_recv = time(0);
     }
 
-    void XChat::putmsg(const string& rid, const string& msg)
+    void XChat::putmsg(room &r, const string& msg)
     {
 	TomiHTTP s;
-	int ret = s.POST(makeurl2("modchat"),"op=textpage&rid="+rid+"&aid=0"+
+	int ret = s.POST(makeurl2("modchat"),"op=textpage&rid="+r.rid+"&aid=0"+
 		"&target=~&textarea="+TomiHTTP::URLencode(msg),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while posting msg");
+	r.last_sent = last_sent = time(0);
     }
 }
