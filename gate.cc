@@ -460,7 +460,8 @@ main_accept:
 		    }
 		} else {
 		    cout << l << endl;
-		    fprintf(*c, ":%s NOTICE %s :Unknown command\n", me, nick.c_str());
+		    fprintf(*c, ":%s 421 %s %s :Unknown command\n", me, nick.c_str(),
+			    cmd[0].c_str());
 		}
 	    }
 
