@@ -97,6 +97,7 @@ namespace xchat {
 	    void msg(const string &room, const string &msg);
 	    void whisper(const string &room, const string &target, const string &msg);
 	    void whisper(const string &target, const string &msg);
+	    void kick(const string &room, const string &user, const string &reason);
 
 	    x_nick* findnick(string src, room **r);
     };
@@ -135,6 +136,10 @@ namespace xchat {
 	} else {
 	    throw runtime_error("Can't send PRIVMSG's without channel joined");
 	}
+    }
+
+    inline void XChat::kick(const string &room, const string &user, const string &reason) {
+	sendq_push(room, "/kick " + user + " " + reason);
     }
 }
 

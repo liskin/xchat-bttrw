@@ -334,6 +334,12 @@ main_accept:
 				"xchat.cz user");
 		    fprintf(*c, ":%s 318 %s %s :End of /WHOIS list.\n", me,
 			    nick.c_str(), cmd[1].c_str());
+		} else if (cmd[0] == "KICK" && cmd.size() >= 3) {
+		    if (cmd[1][0] == '#') {
+			cmd[1].erase(cmd[1].begin());
+		    }
+
+		    x->kick(cmd[1], cmd[2], (cmd.size() > 3)?cmd[3]:"");
 		} else {
 		    cout << l << endl;
 		    fprintf(*c, ":%s NOTICE %s :Unknown command\n", me, nick.c_str());
