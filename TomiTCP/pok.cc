@@ -8,13 +8,14 @@ int main(int argc, char *argv[])
 
     try {
 	net::TomiCookies c;
+	try {
+	    c.load("cookies");
+	} catch (...) {
+	}
 	net::TomiHTTP s;
 	int ret = s.GET(argv[1],&c);
 	cout << ret << endl;
-	cout << s.headers["content-type"] << endl;
-	string aaa;
-	c.http_getcookies(aaa);
-	cout << aaa;
+	c.save("cookies");
 
 	string l;
 	while (s.getline(l)) {

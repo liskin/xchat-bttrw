@@ -21,6 +21,9 @@ namespace net {
 
 	    void http_setcookie(string cookie);
 	    void http_getcookies(string& out);
+
+	    void save(const string& file);
+	    void load(const string& file);
     };
 }
 

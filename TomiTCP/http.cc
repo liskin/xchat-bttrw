@@ -15,7 +15,7 @@ namespace net {
     int TomiHTTP::GET(string address, TomiCookies* cookies)
     {
 	string host, path;
-	int port;
+	int port = 0;
 
 	headers.clear();
 
