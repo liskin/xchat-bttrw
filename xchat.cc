@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <stdbool.h>
 #include <recodext.h>
+#include <iostream>
 #include "xchat.h"
 #include "TomiTCP/str.h"
 
@@ -75,5 +76,67 @@ namespace xchat {
 	recode_delete_task (task);
 	recode_delete_request (request);
 	recode_delete_outer (outer);
+    }
+    
+    bool XChat::isjoin(string &m, rooms_t &rooms, string &src, const string& room)
+    {
+	unsigned int a,b;
+	if ((a = m.find("Uzivatel")) != string::npos &&
+		(b = m.find("vstoupil")) != string::npos) {
+	    if (m.find("Uzivatelka") != string::npos) {
+		src = string(m, sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 2);
+		wstrip(src);
+		rooms[room].nicklist[src] = 0;
+	    } else {
+		src = string(m, sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 2);
+		wstrip(src);
+		rooms[room].nicklist[src] = 1;
+	    }
+	    return 1;
+	}
+
+	return 0;
+    }
+
+    bool XChat::ispart(string &m, rooms_t &rooms, string &src)
+    {
+	unsigned int a,b;
+	if ((a = m.find("Uzivatel")) != string::npos &&
+		(b = m.find("opustil")) != string::npos) {
+	    if (m.find("Uzivatelka") != string::npos) {
+		src = string(m, sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 2);
+		wstrip(src);
+	    } else {
+		src = string(m, sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 2);
+		wstrip(src);
+	    }
+	    return 1;
+	}
+
+	return 0;
+    }
+
+    bool XChat::isidlekick(string &m, rooms_t &rooms, string &src, string &reason)
+    {
+	unsigned int a,b;
+	if ((a = m.find("Uzivatel")) != string::npos &&
+		(((b = m.find("byl  vyhozen")) != string::npos) ||
+		(b = m.find("byla vyhozena")) != string::npos)) {
+	    if (m.find("Uzivatelka") != string::npos) {
+		src = string(m, sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 2);
+		wstrip(src);
+	    } else {
+		src = string(m, sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 2);
+		wstrip(src);
+	    }
+
+	    if ((a = m.find_last_of("(")) != string::npos &&
+		    (b = m.find_last_of(")")) != string::npos) {
+		reason = string(m, a + 1, b - a - 1);
+	    }
+	    return 1;
+	}
+
+	return 0;
     }
 }

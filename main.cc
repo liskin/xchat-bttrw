@@ -191,11 +191,25 @@ int main(int argc, char *argv[])
 			for (vector<string>::iterator i = m.begin(); i != m.end(); i++) {
 			    string m = striphtml(*i);
 			    XChat::stripdate(m);
-			    string src = me, target = "#" + j->first;
+			    string src = me, target = "#" + j->first, reason;
 			    XChat::getnick(m, src, target);
 			    XChat::striphtmlent(m);
 
-			    if (src != nick)
+			    if (src == me && XChat::isjoin(m, rooms, src, j->first)) {
+				fprintf(*c, ":%s!%s@%s JOIN #%s\n", src.c_str(),
+					hash(src).c_str(), getsexhost(src),
+					j->first.c_str());
+			    } else if (src == me && XChat::ispart(m, rooms, src)) {
+				fprintf(*c, ":%s!%s@%s PART #%s :No reason\n", src.c_str(),
+					hash(src).c_str(), getsexhost(src),
+					j->first.c_str());
+				j->second.nicklist.erase(src);
+			    } else if (src == me && XChat::isidlekick(m, rooms, src, reason)) {
+				fprintf(*c, ":%s!%s@%s PART #%s :%s\n", src.c_str(),
+					hash(src).c_str(), getsexhost(src),
+					j->first.c_str(), reason.c_str());
+				j->second.nicklist.erase(src);
+			    } else if (src != nick)
 				fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", src.c_str(),
 					hash(src).c_str(), getsexhost(src),
 					target.c_str(), m.c_str());
