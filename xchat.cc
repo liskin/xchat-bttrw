@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <stdbool.h>
 #include <iostream>
+#include <set>
 #include "xchat.h"
 #include "smiles.h"
 #include "idle.h"
@@ -85,10 +86,14 @@ namespace xchat {
     void XChat::fill_recvq()
     {
 	if (time(0) - last_recv >= recv_interval) {
+	    set<string> srooms;
 	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
-		try { getmsg(i->second); }
+		srooms.insert(i->first);
+	    }
+	    for (set<string>::iterator i = srooms.begin(); i != srooms.end(); i++) {
+		try { getmsg(rooms[*i]); }
 		catch (runtime_error e) {
-		    throw runtime_error(i->first + ": " + e.what());
+		    throw runtime_error(*i + ": " + e.what());
 		}
 	    }
 

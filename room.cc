@@ -49,7 +49,7 @@ namespace xchat {
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
 	while (s.getline(l)) {
-	    static string pat1 = "px;\">", pat2 = "<br><SCRIPT";
+	    static string pat1 = "<h3 class=\"hdrsuccess\">", pat2 = "</h3>";
 	    unsigned int a, b;
 	    if ((a = l.find(pat1)) != string::npos &&
 		    (b = l.find(pat2, a + pat1.length())) != string::npos) {
@@ -297,11 +297,11 @@ namespace xchat {
 	    /*
 	     * If we got a redirect to error page, look at the error message.
 	     */
-	    static string pat1 = "window.open(\"", pat2 = "modchat?op=fullscreenmessage";
+	    static string pat1 = "top.location='", pat2 = "modchat?op=fullscreenmessage";
 	    unsigned int a, b, c;
 	    if ((a = l.find(pat1)) != string::npos &&
 		    (b = l.find(pat2, a)) != string::npos &&
-		    (c = l.find('"', b)) != string::npos) {
+		    (c = l.find('\'', b)) != string::npos) {
 		string url(l, b, c - b);
 
 		static string pat3 = "&kicking_nick=", pat4 = "&text=";
@@ -327,7 +327,7 @@ namespace xchat {
 			if (ret != 200)
 			    throw 0;
 			while (c.getline(m)) {
-			    static string pat1 = "px;\">", pat2 = "<br><SCRIPT";
+			    static string pat1 = "<h3 class=\"hdrsuccess\">", pat2 = "</h3>";
 			    unsigned int a, b;
 			    if ((a = m.find(pat1)) != string::npos &&
 				    (b = m.find(pat2, a + pat1.length())) != string::npos) {
@@ -348,7 +348,7 @@ namespace xchat {
 	/*
 	 * Push messages to recvq in reverse.
 	 */
-	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++)
+	for (vector<string>::iterator i = tv.begin(); i != tv.end(); i++)
 	    recvq_parse_push(*i, r);
 
 
