@@ -234,6 +234,9 @@ void parseprefix(string &prefix, string &nick, string &host)
     } else {
 	nick = string(prefix,0,d);
 	host = string(prefix,d+1);
+
+	// this shouldn't really be here :)
+	users[nick] = host;
     }
 }
 
@@ -484,6 +487,17 @@ void processbuf(FILE *f, char *buf)
     if (!strcasecmp(cmd[0].c_str(),"JOIN")) {
     }
 
+    if (!strcasecmp(cmd[0].c_str(),"NICK")) {
+	if (cmd.size() >= 2) {
+	    users.erase(snick);
+	    users[cmd[1]] = shost;
+	}
+    }
+
+    if (!strcasecmp(cmd[0].c_str(),"QUIT")) {
+	users.erase(snick);
+    }
+
     for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
 	if (i->second.msg)
 	    i->second.msg(f,snick,shost,cmd);
@@ -515,6 +529,12 @@ void body(net::TomiTCP &f)
 	    if (i->second.timer)
 		i->second.timer(f);
 	}
+
+	cout << "---\n";
+	for (map<string,string>::iterator i = users.begin(); i != users.end(); i++) {
+	    cout << i->first << "!" << i->second << endl;
+	}
+	cout << "---\n";
     }
 }
 
