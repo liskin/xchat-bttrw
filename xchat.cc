@@ -122,7 +122,6 @@ namespace xchat {
     {
 	if (!sendq.empty() && time(0) - last_sent >= send_interval) {
 	    send_item &e = sendq.front(), f = e;
-	    bool pop = true;
 	    string prepend;
 
 	    /*
@@ -158,11 +157,14 @@ namespace xchat {
 		    ev->rid = e.room;
 		    ev->fatal = false;
 		    recvq_push(ev);
+
+		    sendq.pop();
 		} else {
 		    if (u8strlen(prepend.c_str()) >= max_msg_length) {
 			sendq.pop();
 			throw runtime_error("Fuck... this should have never happened!");
 		    }
+
 		    int split = u8strlimit(e.msg.c_str(),
 			    max_msg_length - u8strlen(prepend.c_str()));
 		    f.msg.erase(split);
@@ -174,16 +176,12 @@ namespace xchat {
 		    if (e.msg.length() && e.msg[0] == '/') {
 			e.msg.insert(0, " ");
 		    }
-
-		    pop = false;
 		}
-	    }
+	    } else
+		sendq.pop();
 
 	    if (rooms.find(f.room) != rooms.end())
 		putmsg(rooms[f.room], f.target, prepend + f.msg);
-
-	    if (pop)
-		sendq.pop();
 	}
 
 	// f00king idler
