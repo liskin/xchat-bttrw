@@ -10,10 +10,8 @@ LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
 ifeq ($(DEBUG),yes)
  CFLAGS += -g -DDEBUG
- CXXFLAGS += -g -DDEBUG
 else
  CFLAGS += -DNDEBUG
- CXXFLAGS += -DNDEBUG
 endif
 
 %.so: %.cc
