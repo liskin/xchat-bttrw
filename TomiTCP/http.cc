@@ -2,6 +2,7 @@
 #include "http.h"
 #include "str.h"
 #include <cstdio>
+#include <sstream>
 
 namespace net {
     TomiHTTP::TomiHTTP()
@@ -49,6 +50,12 @@ namespace net {
 	    port = 80;
 
 	connect(host,port);
+
+	if (port != 80) {
+	    stringstream s;
+	    s << host << ":" << port;
+	    host = s.str();
+	}
 
 	fprintf(stream,
 		"GET %s HTTP/1.0\r\n"
