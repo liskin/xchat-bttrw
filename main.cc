@@ -87,6 +87,8 @@ main_accept:
 
 		strtoupper(cmd[0]);
 
+		//cout << l << endl;
+
 		/*
 		 * User registration
 		 */
@@ -292,6 +294,15 @@ main_accept:
 			fprintf(*c, ":%s NOTICE %s :Can't send PRIVMSG's "
 				"without channel joined\n", me, nick.c_str());
 		    }
+
+		    x_nick *n = x->findnick(cmd[1], 0);
+		    if (n)
+			fprintf(*c, ":%s 311 %s %s %s %s * :%s\n", me,
+				nick.c_str(), n->nick.c_str(),
+				hash(n->nick).c_str(), sexhost[n->sex],
+				"xchat.cz user");
+		    fprintf(*c, ":%s 318 %s %s :End of /WHOIS list.\n", me,
+			    nick.c_str(), cmd[1].c_str());
 		} else {
 		    cout << l << endl;
 		    fprintf(*c, ":%s NOTICE %s :Unknown command\n", me, nick.c_str());

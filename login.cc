@@ -10,7 +10,7 @@ namespace xchat {
      * Init variables, connect to the xchat.cz network.
      */
     XChat::XChat(const string& user, const string& pass)
-	: nick(user), mysex(1), last_sent(0), last_recv(0)
+	: nick(user), last_sent(0), last_recv(0)
     {
 	// prepare list of available servers
 	resolve("xchat.centrum.cz", "", servers);

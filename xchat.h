@@ -23,7 +23,7 @@ namespace xchat {
 
     struct x_nick {
 	string nick;
-	bool sex;
+	int sex;
     };
 
     typedef map<string,x_nick> nicklist_t;
@@ -36,10 +36,10 @@ namespace xchat {
     typedef map<string,room> rooms_t;
 
     const char * const me = "xchat.cz";
-    const char * const userhost = "users.xchat.cz";
     const char * const sexhost[] = {
 	"girls.xchat.cz",
-	"boys.xchat.cz"
+	"boys.xchat.cz",
+	"users.xchat.cz"
     };
 
     /*
@@ -54,7 +54,6 @@ namespace xchat {
 	    vector<net::sockaddr_uni> servers;
 
 	    string uid, sid, nick;
-	    int mysex;
 	    rooms_t rooms;
 
 	    time_t last_sent, last_recv;
@@ -89,7 +88,7 @@ namespace xchat {
 	    bool ispart(const string& r, string &m, string &src, string &host);
 	    bool iskick(const string& r, string &m, string &src, string &reason, string &who, string &host);
 
-	    x_nick* findnick(string nick, room **r);
+	    x_nick* findnick(string src, room **r);
 	    const char * getsexhost(string src);
     };
 }

@@ -251,11 +251,11 @@ namespace xchat {
     /*
      * Find a nick structure in rooms we are
      */
-    x_nick* XChat::findnick(string nick, room **r)
+    x_nick* XChat::findnick(string src, room **r)
     {
-	strtolower(nick);
+	strtolower(src);
 	for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
-	    nicklist_t::iterator n = i->second.nicklist.find(nick);
+	    nicklist_t::iterator n = i->second.nicklist.find(src);
 	    if (n != i->second.nicklist.end()) {
 		if (r)
 		    *r = &i->second;
@@ -272,14 +272,12 @@ namespace xchat {
     const char * XChat::getsexhost(string src)
     {
 	strtolower(src);
-	if (src == strtolower_nr(nick))
-	    return sexhost[mysex];
 
 	for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++)
 	    if (i->second.nicklist.find(src) != i->second.nicklist.end())
 		return sexhost[i->second.nicklist[src].sex];
 
-	return userhost;
+	return sexhost[2];
     }
 
     /*
