@@ -87,7 +87,11 @@ void confslave(string l)
 	return;
     }
 
-    addslave(host,atol(port.c_str()),pass);
+    try {
+	addslave(host,atol(port.c_str()),pass);
+    } catch (runtime_error e) {
+	cerr << e.what() << endl;
+    }
 }
 
 void loadconfig(const char *fname, ostream &out)
