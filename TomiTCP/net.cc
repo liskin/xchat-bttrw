@@ -309,7 +309,7 @@ namespace net {
         FD_SET(filedes, &set);
 
         timeout.tv_sec = ms / 1000;
-        timeout.tv_usec = ms * 1000;
+        timeout.tv_usec = (ms % 1000) * 1000;
         return TEMP_FAILURE_RETRY(select(FD_SETSIZE,&set,NULL,NULL,&timeout));
     }
 
@@ -322,7 +322,7 @@ namespace net {
         FD_SET(filedes, &set);
 
         timeout.tv_sec = ms / 1000;
-        timeout.tv_usec = ms * 1000;
+        timeout.tv_usec = (ms % 1000) * 1000;
         return TEMP_FAILURE_RETRY(select(FD_SETSIZE,NULL,&set,NULL,&timeout));
     }
 }
