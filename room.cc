@@ -348,7 +348,7 @@ namespace xchat {
 	/*
 	 * Push messages to recvq in reverse.
 	 */
-	for (vector<string>::iterator i = tv.begin(); i != tv.end(); i++)
+	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++)
 	    recvq_parse_push(*i, r);
 
 
@@ -400,6 +400,17 @@ parse_error:
 		"&target=~&textarea="+TomiHTTP::URLencode(msg),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while posting msg");
-	r.last_sent = last_sent = time(0);
+
+	/*
+	 * Update last_sent, if
+	 *  - it does not begin with "/"
+	 *  - it begins with "/s "
+	 *  - it begins with "/m "
+	 *  - it begins with "/msg "
+	 */
+	if (msg.compare(0, 1, "/") || !msg.compare(0, 3, "/s ") ||
+		!msg.compare(0, 3, "/m ") || !msg.compare(0, 5, "/msg ")) {
+	    r.last_sent = last_sent = time(0);
+	}
     }
 }

@@ -301,6 +301,9 @@ namespace xchat {
 	return false;
     }
 
+    /*
+     * Check if this whisper is already in queue
+     */
     bool XChat::whisper_in_queue(string &m, string &src)
     {
 	for (deque<recv_item>::iterator i = recvq.begin();

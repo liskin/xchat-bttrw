@@ -118,7 +118,7 @@ namespace xchat {
     }
 
     inline void XChat::recvq_push(Event *e) {
-	recvq.push_front(recv_item(e));
+	recvq.push_back(recv_item(e));
     }
 
     inline Event * XChat::recvq_pop() {
