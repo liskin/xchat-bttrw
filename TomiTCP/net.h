@@ -12,7 +12,7 @@
 #include <stdexcept>
 
 #define SIZEOF_SOCKADDR(so) ((so).sa.sa_family == AF_INET6 ? \
-    sizeof(so.sin6) : sizeof(so.sin))
+    sizeof((so).sin6) : sizeof((so).sin))
 
 #define PORT_SOCKADDR(so) (((so).sa.sa_family == AF_INET) ? \
 	((so).sin.sin_port):((so).sin6.sin6_port))

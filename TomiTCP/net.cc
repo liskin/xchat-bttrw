@@ -46,8 +46,6 @@ namespace net {
 	int set_opt = 1;
         if (::setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char*)&set_opt,sizeof(set_opt)))
 	    cerr << "Could not set SO_REUSEADDR" << endl;
-	if (::setsockopt(sock,SOL_SOCKET,SO_KEEPALIVE,(char*)&set_opt,sizeof(set_opt)))
-	    cerr << "Could not set SO_KEEPALIVE" << endl;
 
 	if (::bind(sock,&lname.sa,SIZEOF_SOCKADDR(lname))) {
 	    int er = errno;
@@ -75,52 +73,36 @@ namespace net {
 	    close();
 	}
 
-	memset(&rname,0,sizeof(rname));
-
-	struct addrinfo *ai,*aip,hints;
-	int ret;
-
-	memset(&hints,0,sizeof(hints));
-	hints.ai_socktype = SOCK_STREAM;
-
-	ret = getaddrinfo(hostname.c_str(),0,&hints,&ai);
-	if (ret) {
-	    throw runtime_error(string(gai_strerror(ret)));
-	}
-	aip = ai;
+	vector<sockaddr_uni> addrs;
+	resolve(hostname,addrs);
 
 	string err = "No adress to connect to";
 
-	while (!ok()) {
-	    if (!aip) {
-		freeaddrinfo(ai);
-		throw runtime_error(err);
-	    }
-
-	    memcpy(&rname,aip->ai_addr,aip->ai_addrlen);
-	    rname.sa.sa_family = aip->ai_family;
+	for (vector<sockaddr_uni>::iterator i = addrs.begin(); i != addrs.end(); i++) {
+	    memcpy(&rname,&(*i),SIZEOF_SOCKADDR(*i));
 	    PORT_SOCKADDR(rname) = htons(port);
-	    sock = ::socket(aip->ai_family, SOCK_STREAM, 0);
+
+	    sock = ::socket(rname.sa.sa_family, SOCK_STREAM, 0);
 	    if (socket < 0) {
 		err = strerror(errno);
 	    } else {
-		ret = ::connect(sock,(const sockaddr*)&rname,SIZEOF_SOCKADDR(rname));
-		if (ret) {
+		if (::connect(sock,(const sockaddr*)&rname,SIZEOF_SOCKADDR(rname))) {
+		    int er = errno;
 		    close();
-		    err = strerror(errno);
+		    err = strerror(er);
 		} else {
 		    break;
 		}
 	    }
-	    aip = aip->ai_next;
 	}
+
+	if (!ok())
+	    throw (runtime_error(err));
 
 	socklen_t len = SIZEOF_SOCKADDR(lname);
 	if (getsockname(sock,(sockaddr*)&lname,&len)) {
 	    throw runtime_error(string(strerror(errno)));
 	}
-
-	freeaddrinfo(ai);
 
 	stream = fdopen(sock,"r+");
 	if (!stream) {
@@ -157,8 +139,6 @@ namespace net {
 	}
 
 	freeaddrinfo(ai);
-	if (!addrs.size())
-	    throw runtime_error(err);
     }
 
     string TomiTCP::ident(int ms)
