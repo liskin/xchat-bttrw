@@ -52,8 +52,12 @@ typedef void (*pend_func_t)(FILE*,string&,string&,string&,vector<string>&,map<st
 typedef map<string,pair<pend_func_t,map<string,string> > > pend_t;
 extern pend_t pend;
 
-extern map<string,string> users; // nick -> hostmask (a@b)
-extern map<string,vector<string> > channels; // channel -> @+nick
+typedef map<string,string> users_t;
+extern users_t users; // nick -> hostmask (a@b)
+
+typedef map<string,bool> channel_t; // nick -> ?op
+typedef map<string,channel_t> channels_t; // channel -> list of nicks and ?ops
+extern channels_t channels;
 
 extern void processsome(FILE *f);
 extern void S(FILE *f, const char* fmt, ...);

@@ -9,7 +9,7 @@ masternick Liskni_s?
 #oname	Liskni_si
 #opassword	xxx
 max_modes	4
-module	rejoin
+#module	rejoin
 module	channel
 module	take
 module	say

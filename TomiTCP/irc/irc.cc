@@ -36,8 +36,8 @@ string config;
 
 pend_t pend;
 
-map<string,string> users;
-map<string,vector<string> > channels;
+users_t users;
+channels_t channels;
 
 map<string,module> modules;
 
@@ -447,6 +447,15 @@ void processbuf(FILE *f, char *buf)
 		    if (i->second.connected)
 			i->second.connected(f);
 		}
+	    } else if (n == 353) {
+		stringstream nicks(cmd[4]);
+		string nick;
+		while (nicks >> nick) {
+		    bool op = (nick.length() && nick[0] == '@');
+		    nick.erase(0,nick.find_first_not_of("@+"));
+
+		    channels[cmd[3]][nick] = op;
+		}
 	    }
 	}
     }
@@ -477,6 +486,13 @@ void processbuf(FILE *f, char *buf)
 	    vector<string> modes;
 	    parsemode(tcmd,modes);
 
+	    // set ?op on the nick in channel
+	    for (vector<string>::iterator i = modes.begin(); i != modes.end(); i++) {
+		if (i->length() > 3 && (*i)[1] == 'o') {
+		    channels[cmd[1]][string(*i,3)] = ((*i)[0] == '+');
+		}
+	    }
+
 	    for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
 		if (i->second.mode)
 		    i->second.mode(f,snick,shost,cmd[1],modes);
@@ -485,17 +501,52 @@ void processbuf(FILE *f, char *buf)
     }
 
     if (!strcasecmp(cmd[0].c_str(),"JOIN")) {
+	if (cmd.size() >= 2)
+	    channels[cmd[1]][snick] = 0;
+    }
+
+    if (!strcasecmp(cmd[0].c_str(),"PART")) {
+	if (cmd.size() >= 2) {
+	    if (snick == nick)
+		channels.erase(cmd[1]);
+	    else
+		channels[cmd[1]].erase(snick);
+	}
+    }
+
+    if (!strcasecmp(cmd[0].c_str(),"KICK")) {
+	if (cmd.size() >= 3) {
+	    if (cmd[2] == nick)
+		channels.erase(cmd[1]);
+	    else
+		channels[cmd[1]].erase(cmd[2]);
+	}
     }
 
     if (!strcasecmp(cmd[0].c_str(),"NICK")) {
 	if (cmd.size() >= 2) {
 	    users.erase(snick);
 	    users[cmd[1]] = shost;
+
+	    // change nick in channels
+	    for (channels_t::iterator i = channels.begin(); i != channels.end(); i++) {
+		channel_t::iterator j = i->second.find(snick);
+		if (j != i->second.end()) {
+		    bool op = j->second;
+		    i->second.erase(j->first);
+
+		    i->second[cmd[1]] = op;
+		}
+	    }
 	}
     }
 
     if (!strcasecmp(cmd[0].c_str(),"QUIT")) {
 	users.erase(snick);
+
+	for (channels_t::iterator i = channels.begin(); i != channels.end(); i++) {
+	    i->second.erase(snick);
+	}
     }
 
     for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
@@ -535,6 +586,11 @@ void body(net::TomiTCP &f)
 	    cout << i->first << "!" << i->second << endl;
 	}
 	cout << "---\n";*/
+	/*cout << "---\n";
+	for (channel_t::iterator i = channels["#nomi"].begin(); i != channels["#nomi"].end(); i++) {
+	    cout << i->first << " - op? " << (int)i->second << endl;
+	}
+	cout << "---\n";*/
     }
 }
 
@@ -559,6 +615,9 @@ int main(int argc, char *argv[])
 	    net::TomiTCP sock(server,port);
 	    FILE *f = sock;
 	    my_f = f;
+
+	    users.clear();
+	    channels.clear();
 
 	    login(f);
 	    body(sock);
