@@ -39,6 +39,7 @@ const char *sexhost[] = {
     "girls.xchat.cz",
     "boys.xchat.cz"
 };
+const int mysex = 1;
 
 x_nick* findnick(string nick)
 {
@@ -128,10 +129,10 @@ int main(int argc, char *argv[])
 			rooms[cmd[1]] = x->join(cmd[1]);
 
 			rooms[cmd[1]].nicklist[strtolower_nr(nick)] =
-			    (struct x_nick){nick, 1};
+			    (struct x_nick){nick, mysex};
 
 			fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
-				getsexhost(nick), cmd[1].c_str());
+				sexhost[mysex], cmd[1].c_str());
 			string tmp; int i; nicklist_t::iterator j;
 			for (i = 1, j = rooms[cmd[1]].nicklist.begin();
 				j != rooms[cmd[1]].nicklist.end(); j++, i++) {
@@ -160,7 +161,7 @@ int main(int argc, char *argv[])
 			x->part(cmd[1]);
 			rooms.erase(cmd[1]);
 			fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
-				hash(nick).c_str(), userhost, cmd[1].c_str());
+				hash(nick).c_str(), sexhost[mysex], cmd[1].c_str());
 		    } else {
 			fprintf(*c, ":%s 403 %s %s :No such channel\n", me,
 				nick.c_str(), cmd[1].c_str());
@@ -253,7 +254,16 @@ int main(int argc, char *argv[])
 		try {
 		    for (rooms_t::iterator j = rooms.begin(); j != rooms.end(); j++) {
 			vector<string> m;
-			j->second.l = x->getmsg(j->first, j->second.l, m);
+			try {
+			    j->second.l = x->getmsg(j->first, j->second.l, m);
+			} catch (runtime_error e) {
+			    x->part(j->first);
+			    fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
+				    hash(nick).c_str(), sexhost[mysex], j->first.c_str());
+			    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+				    nick.c_str(), e.what());
+			    rooms.erase(j->first);
+			}
 			for (vector<string>::iterator i = m.begin(); i != m.end(); i++) {
 			    string m = XChat::striphtml(*i);
 			    XChat::stripdate(m);
@@ -283,7 +293,7 @@ int main(int argc, char *argv[])
 			    } else if (strtolower_nr(src) == "system" && 
 				    strtolower_nr(target) == strtolower_nr(nick)) {
 				fprintf(*c, ":%s NOTICE %s :System: %s\n", me,
-					target.c_str(), m.c_str());
+					nick.c_str(), m.c_str());
 			    } else if (strtolower_nr(src) != strtolower_nr(nick))
 				fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", src.c_str(),
 					hash(src).c_str(), getsexhost(src),
