@@ -14,6 +14,10 @@ else
  CFLAGS += -DNDEBUG
 endif
 
+ifeq ($(TARGET),i386-mingw32msvc)
+ LDLIBS += -liconv -lws2_32 -lintl
+endif
+
 .PHONY: all clean dep dummy
 
 all: libxchat-bttrw.a gate

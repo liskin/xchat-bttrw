@@ -1,6 +1,8 @@
 #include "charset.h"
 
 namespace xchat {
+    extern "C" const char *program_name = "xchat-bttrw";
+
     /*
      * Init recode library.
      */

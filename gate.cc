@@ -7,7 +7,9 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+#ifndef WIN32
+# include <sys/wait.h>
+#endif
 #include <typeinfo>
 #include "md5.h"
 #include "xchat.h"
@@ -61,14 +63,18 @@ const char * getsexhost(string src)
     return sexhost[2];
 }
 
+#ifndef WIN32
 void sigchld(int) {
     wait(0);
 }
+#endif
 
 int main(int argc, char *argv[])
 {
     xchat_init();
+#ifndef WIN32
     signal(SIGCHLD, sigchld);
+#endif
 
     int port = 6669;
     if (argc == 2 && atol(argv[1]))
@@ -79,6 +85,7 @@ int main(int argc, char *argv[])
 main_accept:
 	c.reset(s.accept());
 
+#ifndef WIN32
 	pid_t pid = fork();
 	if (pid < 0)
 	    return -1;
@@ -86,6 +93,7 @@ main_accept:
 	    c.reset(0);
 	    goto main_accept;
 	}
+#endif
 
 	string nick, pass;
 
@@ -457,6 +465,10 @@ main_accept:
 		}
 	    }
 	}
+
+#ifdef WIN32
+	goto main_accept;
+#endif
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
     }
