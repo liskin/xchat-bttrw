@@ -75,13 +75,9 @@ void addslave(string host, int port, string pass)
     fprintf(*(s.s),"%s\n",pass.c_str());
 }
 
-bool rehashing = false;
 // host port pass
 void confslave(string l)
 {
-    if (rehashing)
-	return;
-
     string host,port,pass;
     stringstream s(l);
     s >> host >> port >> pass;
@@ -182,8 +178,6 @@ void loadconfig(const char *fname, ostream &out)
 	out << "some_time = 0, safe mode may not work properly" << endl;
     if (safe_mode)
 	out << "Using safe mode" << endl;
-
-    rehashing = true;
 }
 
 void unloadmodule(string name)
@@ -767,9 +761,24 @@ void body(net::TomiTCP &f)
 		    chomp(buf);
 		    if (! i->maskd) { // has not told his hostmask
 			i->mask = strtolower(buf);
-			i->maskd = 1;
-			cout << "[1mSlave " << tomi_ntop(i->s->rname) << ":" <<
-			    (int)ntohs(PORT_SOCKADDR(i->s->rname)) << " ready[0m" << endl;
+
+			bool already = 0;
+			for (slaves_t::iterator j = slaves.begin(); j != slaves.end(); j++) {
+			    if (j != i && j->mask == i->mask) {
+				already = 1;
+				break;
+			    }
+			}
+			if (already) {
+			    i->dead = 1;
+			    cout << "[1mSlave " << tomi_ntop(i->s->rname) << ":" <<
+				(int)ntohs(PORT_SOCKADDR(i->s->rname)) <<
+				" dropped, already here[0m" << endl;
+			} else {
+			    i->maskd = 1;
+			    cout << "[1mSlave " << tomi_ntop(i->s->rname) << ":" <<
+				(int)ntohs(PORT_SOCKADDR(i->s->rname)) << " ready[0m" << endl;
+			}
 		    } else {
 			cout << "slave said: " << buf << endl;
 		    }
