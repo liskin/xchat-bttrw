@@ -128,6 +128,16 @@ namespace xchat {
 	    virtual const string & getnow() { return now; }
 	    virtual ~EvRoomAdminChange() {}
     };
+
+    class EvRoomLockChange : public EvRoomOther {
+	    friend class XChat;
+	private:
+	    bool before, now;
+	public:
+	    virtual const bool & getbefore() { return before; }
+	    virtual const bool & getnow() { return now; }
+	    virtual ~EvRoomLockChange() {}
+    };
 }
 
 #include "xchat.h"

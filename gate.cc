@@ -264,8 +264,18 @@ main_accept:
 			}
 		    }
 		} else if (cmd[0] == "MODE" && cmd.size() == 2) {
-		    // just to make client's `channel synchronizing' happy
-		    fprintf(*c, ":%s 324 %s %s +\n", me, nick.c_str(), cmd[1].c_str());
+		    if (cmd[1][0] == '#') {
+			cmd[1].erase(cmd[1].begin());
+
+			if (x->rooms.find(cmd[1]) == x->rooms.end())
+			    fprintf(*c, ":%s 403 %s #%s :No such channel\n", me, nick.c_str(),
+				    cmd[1].c_str());
+			else
+			    fprintf(*c, ":%s 324 %s #%s +%s\n", me, nick.c_str(),
+				    cmd[1].c_str(), (x->rooms[cmd[1]].locked)?"i":"");
+		    } else {
+			fprintf(*c, ":%s 221 %s +\n", me, nick.c_str());
+		    }
 		} else if (cmd[0] == "MODE" && cmd.size() == 3 && cmd[2][0] == 'b') {
 		    // just to make client's `channel synchronizing' happy
 		    fprintf(*c, ":%s 368 %s %s :End of Channel Ban List\n", me,
@@ -417,6 +427,11 @@ main_accept:
 		    fprintf(*c, ":%s MODE #%s -o+o %s %s\n", me,
 			    f->getrid().c_str(), f->getbefore().c_str(),
 			    f->getnow().c_str());
+		} else if (dynamic_cast<EvRoomLockChange*>(e.get())) {
+		    auto_ptr<EvRoomLockChange> f((EvRoomLockChange*)e.release());
+
+		    fprintf(*c, ":%s MODE #%s %si\n", me,
+			    f->getrid().c_str(), (f->getnow())?"+":"-");
 		} else if (dynamic_cast<EvRoomAdvert*>(e.get())) {
 		    auto_ptr<EvRoomAdvert> f((EvRoomAdvert*)e.release());
 

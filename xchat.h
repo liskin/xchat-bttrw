@@ -28,6 +28,7 @@ namespace xchat {
 	nicklist_t nicklist;
 	time_t last_sent;
 	string admin;
+	bool locked;
     };
     typedef map<string,room> rooms_t;
 }

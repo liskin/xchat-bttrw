@@ -7,16 +7,20 @@
 
 using namespace net;
 
-string parse_updateinfo(string s)
+void parse_updateinfo(string s, string &admin, bool &locked)
 {
     s.erase(0, s.find(',') + 1);
-    s.erase(0, s.find(',') + 1);
+    string slocked(s, 0, s.find(','));
+    locked = atol(slocked.c_str());
+    s.erase(0, slocked.length() + 1);
     s.erase(0, s.find(',') + 1);
     s.erase(0, s.find(',') + 1);
     s.erase(s.find(')'));
 
-    if (!s.length())
-	return s;
+    if (!s.length()) {
+	admin = "";
+	return;
+    }
 
     if (s[0] == '\'' || s[0] == '"') {
 	s.erase(s.begin());
@@ -24,8 +28,7 @@ string parse_updateinfo(string s)
     }
 
     strtolower(s);
-
-    return s;
+    admin = s;
 }
 
 namespace xchat {
@@ -95,7 +98,7 @@ namespace xchat {
 	    pat = "update_info('";
 	    pos = l.find(pat);
 	    if (pos != string::npos) {
-		r.admin = parse_updateinfo(string(l,pos+pat.length()));
+		parse_updateinfo(string(l,pos+pat.length()), r.admin, r.locked);
 	    }
 	}
 
@@ -199,13 +202,16 @@ namespace xchat {
 	    }
 
 	    /*
-	     * Check for current admin and eventually emit AdminChange event.
+	     * Check for current admin and locked status, and eventually emit
+	     * appropiate events.
 	     */
 	    {
 		string pat = "update_info('";
 		unsigned int pos = l.find(pat);
 		if (pos != string::npos) {
-		    string admin = parse_updateinfo(string(l,pos+pat.length()));
+		    string admin;
+		    bool locked;
+		    parse_updateinfo(string(l,pos+pat.length()), admin, locked);
 		    if (r.admin != admin) {
 			EvRoomAdminChange *e = new EvRoomAdminChange;
 			e->s = "Admin change: " + r.admin + " => " + admin;
@@ -213,6 +219,16 @@ namespace xchat {
 			e->before = r.admin;
 			e->now = admin;
 			r.admin = admin;
+			recvq_push(e);
+		    }
+
+		    if (r.locked != locked) {
+			EvRoomLockChange *e = new EvRoomLockChange;
+			e->s = "Locked change: " + r.admin + " => " + admin;
+			e->rid = r.rid;
+			e->before = r.locked;
+			e->now = locked;
+			r.locked = locked;
 			recvq_push(e);
 		    }
 		}
