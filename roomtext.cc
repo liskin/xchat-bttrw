@@ -10,11 +10,23 @@ namespace xchat {
     /*
      * Recode to client_charset
      */
-    string XChat::recode_to_client(const string& s) {
+    string XChat::recode_to_client(string s) {
 	if (!client_charset.length())
 	    return s;
 
 	try {
+	    /*
+	     * Some exceptions...
+	     */
+	    if (client_charset != "UTF-8") {
+		unsigned int a, pos = 0;
+
+		while ((a = s.find("\xe2\x97\x8f", pos)) != string::npos) {
+		    s.replace(a, 3, "*");
+		    pos++;
+		}
+	    }
+
 	    return recode(s, "UTF-8", client_charset);
 	} catch (runtime_error er) {
 	    EvError *e = new EvError;
@@ -133,8 +145,7 @@ namespace xchat {
 	    if (!fail) {
 		int smile = atol(string(s.begin() + a + 1, s.begin() + b).c_str());
 		if (smile < smiles_count && smiles[smile]) {
-		    s.erase(s.begin() + a, s.begin() + b + 1);
-		    s.insert(a, string("\002") + smiles[smile] + "\002");
+		    s.replace(a, b - a + 1, string("\002") + smiles[smile] + "\002");
 
 		    int add = 2;
 		    if (s[a + strlen(smiles[smile]) + 2] != ' ') {

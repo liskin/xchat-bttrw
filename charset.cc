@@ -445,8 +445,7 @@ namespace xchat {
 
 	    char *ret = striphtmlent_recode(end);
 	    if (ret) {
-		m.erase(m.begin() + a, m.begin() + a + (end - begin));
-		m.insert(a, ret);
+		m.replace(a, end - begin, ret);
 
 		pos = a + strlen(ret);
 		free(ret);

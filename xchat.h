@@ -88,7 +88,7 @@ namespace xchat {
 	    void recvq_push(Event *e);
 	    void recvq_parse_push(string m, room& r);
 	    Event * recvq_pop();
-	    string recode_to_client(const string& s);
+	    string recode_to_client(string s);
 
 	    XChat(const string& user, const string& pass);
 	    ~XChat();
