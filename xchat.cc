@@ -4,6 +4,7 @@
 #include <recodext.h>
 #include <iostream>
 #include "xchat.h"
+#include "smiles.h"
 #include "TomiTCP/str.h"
 
 namespace xchat {
@@ -18,17 +19,14 @@ namespace xchat {
 	    uid + "~" + sid + "/" + path;
     }
 
-    string XChat::striphtml(string a)
+    void XChat::striphtml(string &s)
     {
-	string out;
-	stringstream s(a);
+	unsigned int a, b;
 
-	while (getline(s,a,'<')) {
-	    out += a;
-	    getline(s,a,'>');
+	while (((a = s.find('<')) != string::npos) &&
+		((b = string(s, a).find('>')) != string::npos)) {
+	    s.erase(s.begin() + a, s.begin() + a + b + 1);
 	}
-
-	return out;
     }
 
     void XChat::stripdate(string &m)
@@ -91,7 +89,31 @@ namespace xchat {
 	recode_delete_request (request);
 	recode_delete_outer (outer);
     }
-    
+
+    void XChat::unsmilize(string &s)
+    {
+	unsigned int a, b;
+	unsigned int pos = 0;
+
+	while (((a = s.find('*', pos)) != string::npos) &&
+		((b = s.find('*', a + 1)) != string::npos)) {
+	    bool fail = 0;
+	    for (string::iterator i = s.begin() + a + 1; i != s.begin() + b; i++)
+		fail |= !isdigit(*i);
+
+	    if (!fail) {
+		int smile = atol(string(s.begin() + a + 1, s.begin() + b).c_str());
+		if (smile < smiles_count && smiles[smile]) {
+		    s.erase(s.begin() + a, s.begin() + b + 1);
+		    s.insert(a, smiles[smile]);
+		}
+		pos = a + strlen(smiles[smile]);
+	    } else {
+		pos = a + 1;
+	    }
+	}
+    }
+
     bool XChat::isjoin(string &m, rooms_t &rooms, string &src, const string& room)
     {
 	unsigned int a,b;

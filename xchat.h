@@ -39,10 +39,11 @@ namespace xchat {
 	    static string makeurl(const string& url);
 	    string makeurl2(const string& url);
 
-	    static string striphtml(string a);
+	    static void striphtml(string &s);
 	    static void stripdate(string &m);
 	    static void getnick(string &m, string &src, string &target);
 	    static void striphtmlent(string &m);
+	    static void unsmilize(string &s);
 	    static bool isjoin(string &m, rooms_t &rooms, string &src, const string& room);
 	    static bool ispart(string &m, rooms_t &rooms, string &src);
 	    static bool iskick(string &m, rooms_t &rooms, string &src,

@@ -278,11 +278,13 @@ int main(int argc, char *argv[])
 			    rooms.erase(j->first);
 			}
 			for (vector<string>::iterator i = m.begin(); i != m.end(); i++) {
-			    string m = XChat::striphtml(*i);
+			    string &m = *i;
+			    XChat::striphtml(m);
 			    XChat::stripdate(m);
 			    string src = me, target = "#" + j->first, reason, who;
 			    XChat::getnick(m, src, target);
 			    XChat::striphtmlent(m);
+			    XChat::unsmilize(m);
 
 			    if (src == me && XChat::isjoin(m, rooms, src, j->first)) {
 				fprintf(*c, ":%s!%s@%s JOIN #%s\n", src.c_str(),
