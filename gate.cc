@@ -408,8 +408,14 @@ main_accept:
 			}
 		    }
 		} else if ((cmd[0] == "PRIVMSG" || cmd[0] == "NOTICE") && cmd.size() == 3) {
-		    if (cmd[0] == "NOTICE")
+		    if (cmd[0] == "NOTICE") {
+			static string ver = "\x01VERSION ";
+			if (!cmd[2].compare(0, ver.length(), ver))
+			    cmd[2].insert(ver.length(), "[xchat-bttrw r." REVISION
+				    ", TomiTCP r." TOMITCP_REV "] ");
+
 			cmd[2] = "Notice: " + cmd[2];
+		    }
 
 		    if (cmd[1][0] == '#') {
 			cmd[1].erase(cmd[1].begin());
