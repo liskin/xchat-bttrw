@@ -111,15 +111,15 @@ namespace xchat {
     bool XChat::isjoin(room& r, string &m, string &src, int &sex)
     {
 	unsigned int a,b;
-	if ((a = m.find("Uzivatel")) != string::npos &&
+	if ((a = m.find("Uživatel")) != string::npos &&
 		(b = m.find("vstoupil")) != string::npos) {
-	    if (m.find("Uzivatelka") != string::npos) {
-		src = string(m, a + sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 1);
+	    if (m.find("Uživatelka") != string::npos) {
+		src = string(m, a + sizeof("Uživatelka ") - 1, b - a - sizeof("Uživatelka ") + 1);
 		wstrip(src);
 		r.nicklist[strtolower_nr(src)] = (struct x_nick){src, 0};
 		sex = 0;
 	    } else {
-		src = string(m, a + sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 1);
+		src = string(m, a + sizeof("Uživatel ") - 1, b - a - sizeof("Uživatel ") + 1);
 		wstrip(src);
 		r.nicklist[strtolower_nr(src)] = (struct x_nick){src, 1};
 		sex = 1;
@@ -136,13 +136,13 @@ namespace xchat {
     bool XChat::isleave(room& r, string &m, string &src, int &sex)
     {
 	unsigned int a,b;
-	if ((a = m.find("Uzivatel")) != string::npos &&
+	if ((a = m.find("Uživatel")) != string::npos &&
 		(b = m.find("opustil")) != string::npos) {
-	    if (m.find("Uzivatelka") != string::npos) {
-		src = string(m, a + sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 1);
+	    if (m.find("Uživatelka") != string::npos) {
+		src = string(m, a + sizeof("Uživatelka ") - 1, b - a - sizeof("Uživatelka ") + 1);
 		wstrip(src);
 	    } else {
-		src = string(m, a + sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 1);
+		src = string(m, a + sizeof("Uživatel ") - 1, b - a - sizeof("Uživatel ") + 1);
 		wstrip(src);
 	    }
 
@@ -160,27 +160,27 @@ namespace xchat {
     bool XChat::iskick(room& r, string &m, string &src, string &reason, string &who, int &sex)
     {
 	unsigned int a,b;
-	if ((a = m.find("Uzivatel")) != string::npos &&
+	if ((a = m.find("Uživatel")) != string::npos &&
 		(((b = m.find("byl  vyhozen")) != string::npos) ||
 		(b = m.find("byla vyhozena")) != string::npos)) {
-	    if (m.find("Uzivatelka") != string::npos) {
-		src = string(m, a + sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 1);
+	    if (m.find("Uživatelka") != string::npos) {
+		src = string(m, a + sizeof("Uživatelka ") - 1, b - a - sizeof("Uživatelka ") + 1);
 		wstrip(src);
 	    } else {
-		src = string(m, a + sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 1);
+		src = string(m, a + sizeof("Uživatel ") - 1, b - a - sizeof("Uživatel ") + 1);
 		wstrip(src);
 	    }
 
-	    if ((a = m.find("spravcem")) != string::npos &&
-		    (b = m.find("z mistnosti")) != string::npos) {
-		who = string(m, a + sizeof("spravcem ") - 1, b - a - sizeof("spravcem ") + 1);
+	    if ((a = m.find("správcem")) != string::npos &&
+		    (b = m.find("z místnosti")) != string::npos) {
+		who = string(m, a + sizeof("správcem ") - 1, b - a - sizeof("správcem ") + 1);
 		wstrip(who);
 	    }
 	    
-	    if ((a = m.find("administratorem")) != string::npos &&
-		    (b = m.find("z mistnosti")) != string::npos) {
-		who = string(m, a + sizeof("administratorem ") - 1,
-			b - a - sizeof("administratorem ") + 1);
+	    if ((a = m.find("administrátorem")) != string::npos &&
+		    (b = m.find("z místnosti")) != string::npos) {
+		who = string(m, a + sizeof("administrátorem ") - 1,
+			b - a - sizeof("administrátorem ") + 1);
 		wstrip(who);
 	    }
 
