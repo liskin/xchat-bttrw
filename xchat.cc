@@ -65,16 +65,6 @@ namespace xchat {
      */
     void XChat::do_sendq()
     {
-	/*
-	    // decide if we have to send global msg
-	    room *r;
-	    x_nick *n = findnick(target, &r);
-	    if (n)
-		sendq.push(send_item(r->rid, target, msg));
-	    else
-		sendq.push(send_item(rooms.begin()->first,
-			    "~", "/m " + target + " " + msg));
-			    */
 	if (!sendq.empty() && time(0) - last_sent >= send_interval) {
 	    send_item &e = sendq.front(), f = e;
 	    bool pop = true;
