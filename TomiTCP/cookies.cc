@@ -35,7 +35,7 @@ namespace net {
 	    i++;
 
 	    if (i == cookies.end()) {
-		out += "\r\n";
+		out += "\n";
 	    } else {
 		out += "; ";
 	    }
