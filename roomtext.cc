@@ -276,16 +276,21 @@ namespace xchat {
 	// Info
 	static string pat1 = "INFO: ";
 	if (!m.compare(0, pat1.length(), pat1)) {
-	    return 1;
+	    return true;
 	}
 
 	// Info2
 	static string pat2 = "Info2: ";
 	if (!m.compare(0, pat2.length(), pat2)) {
-	    return 1;
+	    return true;
 	}
 
-	return 0;
+	static string pat3 = "není v žádné místnosti";
+	if (!m.compare(0, pat3.length(), pat3)) {
+	    return true;
+	}
+
+	return false;
     }
 
     bool XChat::whisper_in_queue(string &m, string &src)
