@@ -352,11 +352,12 @@ void goon(int a, int b)
 	    int sz = TEMP_FAILURE_RETRY(read(a, buffer, 4096));
 	    if (sz == -1)
 		throw runtime_error("error in read: " + string(strerror(errno)));
-	    else if (!sz) {
+	    else if (!sz && !a) {
 		if (b >= 0)
 		    shutdown(b, SHUT_WR);
 		a = -1;
-	    }
+	    } else if (!sz)
+		break;
 
 	    sz = sendall(b, buffer, sz);
 	    if (sz == -1)
