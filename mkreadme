@@ -1,0 +1,14 @@
+#!/bin/sh
+
+exec >README
+
+echo "FAQ:"
+echo
+echo "Q: What IRC commands does it implement?"
+echo "A:" "`perl -ne 'BEGIN{$\="\n"} print $1 if/cmd\[0\] == "(.*?)"/' gate.cc | sort | uniq | fmt -70`"
+echo
+echo "Q: What vars could I SET?"
+echo "A:" "`perl -ne 'BEGIN{$\="\n"} print $1 if/cmd\[1\] == "(.*?)"/' gate.cc | sort | fmt -70`"
+echo
+echo "Q: How could I set a HTTP proxy to use?"
+echo "A: Use environment vars PROXYHOST and PROXYPORT."

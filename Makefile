@@ -32,7 +32,7 @@ endif
 
 .PHONY: all clean dep dummy
 
-all: libxchat-bttrw.a gate
+all: libxchat-bttrw.a gate README
 
 MAKEDEP=gcc -MM $(wildcard *.c *.cc) > .depend
 dep:
@@ -61,3 +61,7 @@ clean:
 
 TomiTCP/libTomiTCP.a: dummy
 	$(MAKE) -C TomiTCP DEBUG=$(DEBUG)
+
+# docs
+README: gate.cc
+	./mkreadme
