@@ -1,4 +1,5 @@
 #include "irc.h"
+#include "TomiTCP/str.h"
 
 namespace std {
     /*
@@ -27,10 +28,16 @@ namespace std {
 	    } else {
 		char* d = strchr(p,' ');
 		if (d) {
-		    cmd.push_back(string(p,0,(d-p)));
+		    string s = string(p,0,(d-p));
+		    wstrip(s);
+		    if (s.length())
+			cmd.push_back(s);
 		    p = d+1;
 		} else {
-		    cmd.push_back(string(p));
+		    string s = string(p);
+		    wstrip(s);
+		    if (s.length())
+			cmd.push_back(s);
 		    p = e;
 		}
 	    }
