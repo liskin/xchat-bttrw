@@ -9,17 +9,26 @@
 #include "TomiTCP/str.h"
 
 namespace xchat {
+    /*
+     * Prepare URL with given full path.
+     */
     string XChat::makeurl(const string& path)
     {
 	return "http://x" + inttostr(1 + (rand() % servers)) + ".xchat.centrum.cz/" + path;
     }
 
+    /*
+     * Prepare URL with given the path which should be appended to uid and sid
+     */
     string XChat::makeurl2(const string& path)
     {
 	return "http://x" + inttostr(1 + (rand() % servers)) + ".xchat.centrum.cz/~$" +
 	    uid + "~" + sid + "/" + path;
     }
 
+    /*
+     * Strip HTML tags
+     */
     void XChat::striphtml(string &s)
     {
 	unsigned int a, b;
@@ -30,6 +39,9 @@ namespace xchat {
 	}
     }
 
+    /*
+     * Strip date, if it is there.
+     */
     void XChat::stripdate(string &m)
     {
 	string n = m, d;
@@ -46,6 +58,9 @@ namespace xchat {
 	}
     }
 
+    /*
+     * Get nick (source) and, if given, target nick
+     */
     void XChat::getnick(string &m, string &src, string &target)
     {
 	string t = string(m, 0, m.find(": "));
@@ -61,6 +76,9 @@ namespace xchat {
 	    target = string(t, src.length() + 2);
     }
 
+    /*
+     * Convert HTML entities to plain 7-bit ascii
+     */
     void XChat::striphtmlent(string &m)
     {
 	RECODE_OUTER outer = recode_new_outer (false);
@@ -91,6 +109,9 @@ namespace xchat {
 	recode_delete_outer (outer);
     }
 
+    /*
+     * Convert xchat smilies to human readable ones
+     */
     void XChat::unsmilize(string &s)
     {
 	unsigned int a, b;
@@ -128,6 +149,9 @@ namespace xchat {
 	}
     }
 
+    /*
+     * Check for user joining a room
+     */
     bool XChat::isjoin(const string& r, string &m, string &src)
     {
 	unsigned int a,b;
@@ -148,6 +172,9 @@ namespace xchat {
 	return 0;
     }
 
+    /*
+     * Check for user leaving a room
+     */
     bool XChat::ispart(const string& r, string &m, string &src, string &host)
     {
 	unsigned int a,b;
@@ -169,6 +196,9 @@ namespace xchat {
 	return 0;
     }
 
+    /*
+     * Check for user being kicked from room
+     */
     bool XChat::iskick(const string& r, string &m, string &src, string &reason, string &who, string &host)
     {
 	unsigned int a,b;
@@ -209,6 +239,9 @@ namespace xchat {
 	return 0;
     }
 
+    /*
+     * Find a nick structure in rooms we are
+     */
     x_nick* XChat::findnick(string nick, room **r)
     {
 	strtolower(nick);
@@ -224,6 +257,9 @@ namespace xchat {
 	return 0;
     }
 
+    /*
+     * Get a host for user based on his/her sex
+     */
     const char * XChat::getsexhost(string src)
     {
 	strtolower(src);
@@ -237,6 +273,10 @@ namespace xchat {
 	return userhost;
     }
 
+    /*
+     * Go through sendq and send messages, take flood protection into account.
+     * Then, send anti-idle messages if necessary.
+     */
     void XChat::do_sendq()
     {
 	if (!sendq.empty() && time(0) - last_sent >= send_interval) {
@@ -245,12 +285,10 @@ namespace xchat {
 	}
 
 	// f00king idler
-	if (sendq.empty()) {
-	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
-		if (time(0) - i->second.last_sent >= idle_interval) {
-		    sendq_push(i->first, "/s " + nick + " " +
-			    idle_msgs[rand() % idle_msgs_count]);
-		}
+	for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
+	    if (time(0) - i->second.last_sent >= idle_interval) {
+		sendq_push(i->first, "/s " + nick + " " +
+			idle_msgs[rand() % idle_msgs_count]);
 	    }
 	}
     }

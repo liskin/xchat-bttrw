@@ -33,6 +33,9 @@ namespace xchat {
 	"boys.xchat.cz"
     };
 
+    /*
+     * Flood protection, refresh rate and idle protection
+     */
     const int send_interval = 5, recv_interval = 3, idle_interval = 840;
 
     class XChat {

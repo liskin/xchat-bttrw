@@ -15,6 +15,9 @@ using namespace net;
 
 #define VERSION "SVN"
 
+/*
+ * Hash nick to make unique username
+ */
 string hash(string s)
 {
     strtolower(s);
@@ -27,6 +30,9 @@ string hash(string s)
     return tmp;
 }
 
+/*
+ * Some global variables
+ */
 TomiTCP s;
 auto_ptr<TomiTCP> c;
 auto_ptr<XChat> x;
@@ -47,6 +53,9 @@ int main(int argc, char *argv[])
 
 	while (1) {
 	    if (input_timeout(c->sock, 1000) > 0) {
+		/*
+		 * Got message from IRC client
+		 */
 		string l, prefix;
 		vector<string> cmd;
 		c->getline(l); chomp(l); if (!l.length()) break;
@@ -56,11 +65,14 @@ int main(int argc, char *argv[])
 
 		strtoupper(cmd[0]);
 
-		if (cmd[0] == "NICK" && cmd.size() >= 2) {
+		/*
+		 * User registration
+		 */
+		if (!x.get() && cmd[0] == "NICK" && cmd.size() >= 2) {
 		    nick = cmd[1];
-		} else if (cmd[0] == "PASS" && cmd.size() >= 2) {
+		} else if (!x.get() && cmd[0] == "PASS" && cmd.size() >= 2) {
 		    pass = cmd[1];
-		} else if (cmd[0] == "USER" && cmd.size() > 1) {
+		} else if (!x.get() && cmd[0] == "USER" && cmd.size() > 1) {
 		    if (!nick.length() || !pass.length()) {
 			fprintf(*c, ":%s ERROR :Need password and nick!\n", me);
 			break;
@@ -71,6 +83,11 @@ int main(int argc, char *argv[])
 			fprintf(*c, ":%s ERROR :%s\n", me, e.what());
 			break;
 		    }
+
+		    /*
+		     * Successful login, so output some numerics to make
+		     * client happy.
+		     */
 
 		    fprintf(*c, ":%s 001 %s :Vitej Smazko na xchat.cz!\n", me, nick.c_str());
 		    fprintf(*c, ":%s 002 %s :Your host is %s[%s/%i]"
@@ -83,9 +100,18 @@ int main(int argc, char *argv[])
 		    fprintf(*c, ":%s 005 %s :MODES=1 MAXTARGETS=1 NICKLEN=256\n", me, nick.c_str());
 		    fprintf(*c, ":%s 005 %s :CHANTYPES=# PREFIX=() CHANMODES=,,,"
 			    " NETWORK=xchat.cz CASEMAPPING=ascii\n", me, nick.c_str());
-		} else if (!x.get()) { // -- registered command boundary --
+		} else if (!x.get()) {
+		    /*
+		     * If the user is not registered and sends some other
+		     * command, quit him.
+		     */
 		    fprintf(*c, ":%s ERROR :Not registered\n", me);
 		    break;
+
+		    /*
+		     * And here follow commands, which can be invoked after
+		     * successful registration.
+		     */
 		} else if (cmd[0] == "PING") {
 		    if (cmd.size() >= 2) {
 			fprintf(*c, ":%s PONG :%s\n", me, cmd[1].c_str());
@@ -95,58 +121,84 @@ int main(int argc, char *argv[])
 		} else if (cmd[0] == "QUIT") {
 		    break;
 		} else if (cmd[0] == "JOIN" && cmd.size() >= 2) {
-		    if (cmd[1][0] == '#')
-			cmd[1].erase(cmd[1].begin());
+		    stringstream s(cmd[1]);
+		    string chan;
 
-		    try {
-			x->join(cmd[1]);
+		    /*
+		     * Join comma separated list of channels
+		     */
+		    while (getline(s, chan, ',')) {
+			if (chan[0] == '#')
+			    chan.erase(chan.begin());
 
-			fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
-				x->getsexhost(nick), cmd[1].c_str());
-			string tmp; int i; nicklist_t::iterator j;
-			for (i = 1, j = x->rooms[cmd[1]].nicklist.begin();
-				j != x->rooms[cmd[1]].nicklist.end(); j++, i++) {
-			    tmp += j->second.nick + " ";
-			    if (i % 5 == 0) {
-				fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
-					cmd[1].c_str(), tmp.c_str());
-				tmp.clear();
+			try {
+			    x->join(chan);
+
+			    fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
+				    x->getsexhost(nick), chan.c_str());
+
+			    // output userlist (NAMES)
+			    string tmp; int i; nicklist_t::iterator j;
+			    for (i = 1, j = x->rooms[chan].nicklist.begin();
+				    j != x->rooms[chan].nicklist.end(); j++, i++) {
+				tmp += j->second.nick + " ";
+				if (i % 5 == 0) {
+				    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
+					    chan.c_str(), tmp.c_str());
+				    tmp.clear();
+				}
 			    }
+			    if (tmp.length()) {
+				fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
+					chan.c_str(), tmp.c_str());
+			    }
+			    fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
+				    nick.c_str(), chan.c_str());
+			} catch (runtime_error e) {
+			    fprintf(*c, ":%s 403 %s #%s :%s\n", me, nick.c_str(),
+				    chan.c_str(), e.what());
 			}
-			if (tmp.length()) {
-			    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
-				    cmd[1].c_str(), tmp.c_str());
-			}
-			fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
-				nick.c_str(), cmd[1].c_str());
-		    } catch (runtime_error e) {
-			fprintf(*c, ":%s 403 %s #%s :%s\n", me, nick.c_str(),
-				cmd[1].c_str(), e.what());
 		    }
 		} else if (cmd[0] == "PART" && cmd.size() >= 2) {
-		    if (cmd[1][0] == '#')
-			cmd[1].erase(cmd[1].begin());
+		    stringstream s(cmd[1]);
+		    string chan;
 
-		    if (x->rooms.find(cmd[1]) != x->rooms.end()) {
-			try {
-			    x->part(cmd[1]);
-			    fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
-				    hash(nick).c_str(), x->getsexhost(nick), cmd[1].c_str());
-			} catch (runtime_error e) {
-			    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
-				    nick.c_str(), e.what());
+		    /*
+		     * Part comma separated list of channels
+		     */
+		    while (getline(s, chan, ',')) {
+			if (chan[0] == '#')
+			    chan.erase(chan.begin());
+
+			if (x->rooms.find(chan) != x->rooms.end()) {
+			    try {
+				x->part(chan);
+				fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
+					hash(nick).c_str(), x->getsexhost(nick),
+					chan.c_str());
+			    } catch (runtime_error e) {
+				fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+					nick.c_str(), e.what());
+			    }
+			} else {
+			    fprintf(*c, ":%s 403 %s %s :No such channel\n", me,
+				    nick.c_str(), chan.c_str());
 			}
-		    } else {
-			fprintf(*c, ":%s 403 %s %s :No such channel\n", me,
-				nick.c_str(), cmd[1].c_str());
 		    }
 		} else if (cmd[0] == "PRIVMSG" && cmd.size() == 3) {
 		    if (cmd[1][0] == '#') {
 			cmd[1].erase(cmd[1].begin());
 
+			/*
+			 * Channel message
+			 */
 			x->sendq_push(cmd[1], cmd[2]);
 		    } else {
+			/*
+			 * Private message
+			 */
 			if (x->rooms.size()) {
+			    // decide if we have to send global msg
 			    room *r;
 			    x_nick *n = x->findnick(cmd[1], &r);
 			    if (n)
@@ -160,13 +212,19 @@ int main(int argc, char *argv[])
 			}
 		    }
 		} else if (cmd[0] == "MODE" && cmd.size() == 2) {
+		    // just to make client's `channel synchronizing' happy
 		    fprintf(*c, ":%s 324 %s %s +\n", me, nick.c_str(), cmd[1].c_str());
 		} else if (cmd[0] == "MODE" && cmd.size() == 3 && cmd[2][0] == 'b') {
+		    // just to make client's `channel synchronizing' happy
 		    fprintf(*c, ":%s 368 %s %s :End of Channel Ban List\n", me,
 			    nick.c_str(), cmd[1].c_str());
 		} else if (cmd[0] == "WHO" && cmd.size() == 2) {
 		    if (cmd[1][0] == '#') {
 			cmd[1].erase(cmd[1].begin());
+
+			/*
+			 * Output channel WHO
+			 */
 			for (nicklist_t::iterator i = x->rooms[cmd[1]].nicklist.begin();
 				i != x->rooms[cmd[1]].nicklist.end(); i++) {
 			    fprintf(*c, ":%s 352 %s #%s %s %s %s %s %s :%d %s\n", me,
@@ -176,6 +234,9 @@ int main(int argc, char *argv[])
 			}
 			cmd[1] = "#" + cmd[1];
 		    } else {
+			/*
+			 * Output user WHO
+			 */
 			x_nick *n = x->findnick(cmd[1], 0);
 			if (n)
 			    fprintf(*c, ":%s 352 %s %s %s %s %s %s %s :%d %s\n", me,
@@ -192,12 +253,18 @@ int main(int argc, char *argv[])
 	    }
 
 	    if (x.get()) {
+		/*
+		 * Let x do it's job on send queue
+		 */
 		try { x->do_sendq(); }
 		catch (runtime_error e) {
 		    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
 			    nick.c_str(), e.what());
 		}
 
+		/*
+		 * Receive some data sometimes
+		 */
 		if (x->should_recv())
 		    for (rooms_t::iterator j = x->rooms.begin(); j != x->rooms.end(); j++) {
 			try { x->getmsg(j->second); }
@@ -212,6 +279,9 @@ int main(int argc, char *argv[])
 		    }
 	    }
 
+	    /*
+	     * Go through recv queue and process messages
+	     */
 	    while (x.get() && !x->recvq.empty()) {
 		pair<string,string> i = x->recvq.front(); x->recvq.pop();
 		string &m = i.second, src = me, target = "#" + i.first,
@@ -222,6 +292,11 @@ int main(int argc, char *argv[])
 		XChat::getnick(m, src, target);
 		XChat::striphtmlent(m);
 		XChat::unsmilize(m);
+
+		/*
+		 * Now we should have it somewhat parsed, so try if it a
+		 * system message, and display it properly.
+		 */
 
 		if (src == me && x->isjoin(i.first, m, src)) {
 		    fprintf(*c, ":%s!%s@%s JOIN %s\n", src.c_str(),
@@ -244,6 +319,8 @@ int main(int argc, char *argv[])
 			strtolower_nr(target) == strtolower_nr(nick)) {
 		    fprintf(*c, ":%s NOTICE %s :System: %s\n", me,
 			    nick.c_str(), m.c_str());
+		} else if (strtolower_nr(src) == "tip") {
+		    // spam protection ;)
 		} else if (strtolower_nr(src) != strtolower_nr(nick)) {
 		    fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", src.c_str(),
 			    hash(src).c_str(), x->getsexhost(src),

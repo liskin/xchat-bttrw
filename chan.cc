@@ -8,6 +8,9 @@
 using namespace net;
 
 namespace xchat {
+    /*
+     * Join channel and get all needed info about it
+     */
     void XChat::join(const string& rid)
     {
 	TomiHTTP s;
@@ -74,6 +77,9 @@ namespace xchat {
 	throw runtime_error("Parse error");
     }
 
+    /*
+     * Part channel.
+     */
     void XChat::part(const string& rid)
     {
 	TomiHTTP s;
@@ -86,6 +92,9 @@ namespace xchat {
 	rooms.erase(rid);
     }
 
+    /*
+     * Get new messages.
+     */
     void XChat::getmsg(room& r)
     {
 	TomiHTTP s;
@@ -105,6 +114,7 @@ namespace xchat {
 	    if (!l.length()) continue;
 	    dbg.push_back(l);
 
+	    // look for next last_line number
 	    if (r.l == -1) {
 		string pat = "&inc=1&last_line=";
 		unsigned int pos = l.find(pat);
@@ -117,6 +127,12 @@ namespace xchat {
 		}
 	    }
 
+	    /*
+	     * Parse that scary javascript adding new messages to the list.
+	     * (yes, this parsing code is much more scary, so try to fix it
+	     * only if you are curios, otherwise, just report it's not
+	     * working)
+	     */
 	    if (expect_apos) {
 		expect_apos = false;
 		if (l[0] == '\'') {
@@ -143,15 +159,25 @@ namespace xchat {
 			}
 		    }
 		}
-
-		// window.open("/~$3249019~2a899f0fea802195d52861d6b8e15c1c/modchat?op=fullscreenmessage&key=403&kicking_nick=&text=", '_top');
 	    }
+
+	    /*
+	     * If we got a redirect to error page, look at the error message.
+	     */
+	    // window.open("/~$3249019~2a899f0fea802195d52861d6b8e15c1c/modchat?op=fullscreenmessage&key=403&kicking_nick=&text=", '_top');
 	}
 
+	/*
+	 * Push messages to recvq in reverse.
+	 */
 	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++) {
 	    recvq.push(pair<string,string>(r.rid,*i));
 	}
 
+	/*
+	 * And don't forget to report parse error if we didn't get valid
+	 * last_line.
+	 */
 	if (r.l == -1) {
 	    for (vector<string>::iterator i = dbg.begin(); i != dbg.end(); i++)
 		cout << *i << endl;
@@ -161,6 +187,9 @@ namespace xchat {
 	last_recv = time(0);
     }
 
+    /*
+     * Send a message.
+     */
     void XChat::putmsg(room &r, const string& msg)
     {
 	TomiHTTP s;

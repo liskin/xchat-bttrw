@@ -1,5 +1,10 @@
 #include "smiles.h"
 
+/*
+ * This does not need any explanation.
+ * I want to say only this: CONTRIBUTE!
+ */
+
 const char *smiles[] = {
     [1] ":D",
     [2] ":))",

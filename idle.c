@@ -1,5 +1,10 @@
 #include "idle.h"
 
+/*
+ * Just a bunch of non-sense idle messages.
+ * They can be funny only if their number grow, so contribute.
+ */
+
 const char *idle_msgs[] = {
     "Spravna krychle tuhne rychle.",
     "Nevstupovat, vstupuje samo.",
