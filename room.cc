@@ -60,15 +60,14 @@ namespace xchat {
 		    if (l.find("</select>") != string::npos)
 			break;
 
-		    string nick;
-		    stringstream ss(l);
-		    getline(ss, nick, '"');
-		    getline(ss, nick, '"');
+		    unsigned int pos;
+		    l.erase(0, l.find('"') + 1);
+		    string nick(l, 0, l.find('"'));
+		    l.erase(0, nick.length() + 1);
 
 		    bool muz = 0;
-		    unsigned int n = l.find(")</option>");
-		    if (n != string::npos && n != 0) {
-			muz = (l[n-1] == 'M');
+		    if ((pos = l.find(")</option>")) != string::npos && pos != 0) {
+			muz = (l[pos-1] == 'M');
 		    }
 
 		    if (nick != "~" && nick != "!")
@@ -198,28 +197,29 @@ namespace xchat {
 	     * working)
 	     */
 	    if (expect_apos) {
+		cout << l << endl;
 		expect_apos = false;
 		if (l[0] == '\'') {
 		    unsigned int pos;
-		    if ((pos = string(l,1).find('\'')) != string::npos) {
-			tv.push_back(string(l,1,pos));
-			if (l[pos+2] == ',') {
+		    if ((pos = l.find('\'', 1)) != string::npos) {
+			tv.push_back(string(l, 1, pos - 1));
+			if (l[pos + 2] == ',') {
 			    expect_apos = true;
 			}
 		    }
 		}
 	    } else {
-		unsigned int pos = 0, pos2, pos3;
-		while ((pos3 = string(l,pos).find(".addText(")) != string::npos) {
-		    pos += pos3 + 9;
-		    if ((pos2 = string(l,pos).find("Array(")) != string::npos) {
-			if (l[pos+pos2+6] == '\'') {
-			    if ((pos3 = string(l,pos+pos2+7).find('\'')) != string::npos) {
-				tv.push_back(string(l,pos+pos2+7,pos3));
-				if (l[pos+pos2+7+pos3+1] == ',') {
-				    expect_apos = true;
-				}
-			    }
+		unsigned int pos1, pos2, pos3;
+		static string pat1 = ".addText(", pat2 = "Array('";
+
+		if ((pos1 = l.find(pat1)) != string::npos) {
+		    cout << l << endl;
+		    if ((pos2 = l.find(pat2, pos1 + pat1.length())) != string::npos) {
+			if ((pos3 = l.find('\'', pos2 + pat2.length())) != string::npos) {
+			    tv.push_back(string(l, pos2 + pat2.length(),
+					pos3 - pos2 - pat2.length()));
+			    if (l[pos3 + 1] == ',')
+				expect_apos = true;
 			}
 		    }
 		}
