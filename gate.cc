@@ -683,6 +683,9 @@ main_accept:
 				rpl += n + " ";
 		    }
 		    fprintf(*c, ":%s 303 %s :%s\n", me, nick.c_str(), rpl.c_str());
+		} else if (cmd[0] == "AWAY") {
+		    fprintf(*c, ":%s 305 %s :You are no longer marked as being away\n",
+			    me, nick.c_str());
 		} else {
 #ifdef LOG_ENABLED
 		    log(tomi_ntop(c->rname) + " - Unknown command (" + l + ")");
