@@ -29,6 +29,7 @@ auto_ptr<TomiTCP> c;
 auto_ptr<XChat> x;
 
 const char *me = "xchat.cz";
+const char *userhost = "someone@users.xchat.cz";
 
 int main(int argc, char *argv[])
 {
@@ -101,7 +102,8 @@ int main(int argc, char *argv[])
 			break;
 		    }
 
-		    fprintf(*c, ":%s!@ JOIN #%s\n", nick.c_str(), cmd[1].c_str());
+		    fprintf(*c, ":%s!%s JOIN #%s\n", nick.c_str(), userhost,
+			    cmd[1].c_str());
 		    string tmp; int i; vector<string>::iterator j;
 		    for (i = 1, j = nicklist.begin(); j != nicklist.end(); j++, i++) {
 			tmp += *j + " ";
@@ -154,8 +156,8 @@ int main(int argc, char *argv[])
 			    XChat::getnick(m, src, target);
 
 			    if (src != nick)
-				fprintf(*c, ":%s!@ PRIVMSG %s :%s\n", src.c_str(),
-					target.c_str(), m.c_str());
+				fprintf(*c, ":%s!%s PRIVMSG %s :%s\n", src.c_str(),
+					userhost, target.c_str(), m.c_str());
 			}
 		    }
 		}
