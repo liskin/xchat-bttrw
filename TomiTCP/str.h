@@ -34,11 +34,13 @@ namespace std {
 	return str;
     }
 
+#define INDENT_DETECT "\033"
     int len(string s, int ini = 0, int tab = 8);
     int ntokens(string s);
     string justify(string in, int width, int maxspaces = 4, int tab = 8);
     string reformat(string ins, int width, string firstline = "", int tab = 8,
-	    bool firstlinealone = 0, int maxspaces = 4);
+	    bool firstlinealone = 0, int maxspaces = 4,
+	    string indent = INDENT_DETECT);
 }
 
 #endif /* STR_H_INCLUDED */

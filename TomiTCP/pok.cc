@@ -69,5 +69,5 @@ int main(int argc, char *argv[])
  effect.  A non-interactive  shell  invoked with  the  name  sh does not\
  attempt to read any other startup files.  When invoked as sh, bash enters\
  posix mode after the startup files are read."
- ,40," - ",8,1);
+ ,40,"  -  ",8,1,4," - - ");
 }

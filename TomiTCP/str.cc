@@ -59,15 +59,7 @@ namespace std {
 	    return in;
 
 	string out;
-	string indent;
 	
-	// get indentation
-	{
-	    int indentw = in.find_first_not_of(" \f\n\r\t\v");
-	    indent = string(in,0,indentw);
-	    in.erase(0,indentw);
-	}
-
 	// go through string a add spaces while it is needed
 	int phase = 0;
 	while (need) {
@@ -117,7 +109,7 @@ namespace std {
 	    phase++;
 	}
 
-	return indent + out;
+	return out;
     }
 
     /*
@@ -126,13 +118,15 @@ namespace std {
      * line
      */
     string reformat(string ins, int width, string firstline, int tab,
-	    bool firstlinealone, int maxspaces)
+	    bool firstlinealone, int maxspaces, string indent)
     {
 	// get indentation
-	int indentw = ins.find_first_not_of(" \f\n\r\t\v");
-	string indent = string(ins,0,indentw);
-	ins.erase(0,indentw);
-	indentw = len(indent,0,tab);
+	int indentw, indentlen;
+	if (indent == INDENT_DETECT) {
+	    indentw = ins.find_first_not_of(" \f\n\r\t\v");
+	    indent = string(ins,0,indentw);
+	    ins.erase(0,indentw);
+	}
 
 	stringstream out, in(ins);
 
@@ -146,6 +140,8 @@ namespace std {
 	    line = indent + firstline;
 	    linew = len(firstline,indentw,tab);
 	}
+	indentw = len(line,0,tab);
+	indentlen = line.length();
 	bool nline = 1;
 
 	// walk through tokens
@@ -160,10 +156,14 @@ namespace std {
 		linew = len(line,0,tab);
 		nline = 0;
 	    } else if (neww > width) {
-		// line would be too long
-		out << justify(line,width,maxspaces,tab) << endl;
+		// line would be too long, so output it
+		out << string(line,0,indentlen) <<
+		    justify(string(line,indentlen), width - indentw,
+			    maxspaces, tab) << endl;
 		line = indent + s;
 		linew = len(line,0,tab);
+		indentlen = indent.length();
+		indentw = len(indent,0,tab);
 	    } else {
 		// add token
 		linew = neww;
