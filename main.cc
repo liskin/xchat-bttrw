@@ -4,9 +4,11 @@
 #include <ctime>
 #include <memory>
 #include <map>
+#include <queue>
 #include <openssl/md5.h>
 #include "xchat.h"
 #include "irc.h"
+#include "idle.h"
 #include "TomiTCP/net.h"
 #include "TomiTCP/str.h"
 using namespace std;
@@ -59,6 +61,13 @@ const char * getsexhost(const string& src)
     return userhost;
 }
 
+time_t last_sent = 0, last_recv = 0;
+int send_interval = 9, recv_interval = 3, idle_interval = 840;
+queue<pair<string,string> > sendq;
+inline void sendq_push(const string& a, const string& b) {
+    sendq.push(pair<string,string>(a,b));
+}
+
 int main(int argc, char *argv[])
 {
     int port = 6669;
@@ -72,7 +81,7 @@ int main(int argc, char *argv[])
 	string nick, pass;
 
 	while (1) {
-	    if (input_timeout(c->sock, 3000) > 0) {
+	    if (input_timeout(c->sock, 1000) > 0) {
 		string l, prefix;
 		vector<string> cmd;
 		c->getline(l); chomp(l); if (!l.length()) break;
@@ -171,9 +180,9 @@ int main(int argc, char *argv[])
 					global = 0;
 
 				if (global)
-				    x->putmsg(rooms.begin()->first, "/m " + cmd[1] + " " + cmd[2]);
+				    sendq_push(rooms.begin()->first, "/m " + cmd[1] + " " + cmd[2]);
 				else
-				    x->putmsg(rooms.begin()->first, "/s " + cmd[1] + " " + cmd[2]);
+				    sendq_push(rooms.begin()->first, "/s " + cmd[1] + " " + cmd[2]);
 			    } catch (runtime_error e) {
 				fprintf(*c, ":%s 401 %s %s :%s\n", me, nick.c_str(),
 					cmd[1].c_str(), e.what());
@@ -213,7 +222,13 @@ int main(int argc, char *argv[])
 		}
 	    }
 
-	    if (x.get()) {
+	    if (time(0) - last_sent >= send_interval && x.get() && !sendq.empty()) {
+		pair<string,string> msg = sendq.front(); sendq.pop();
+		x->putmsg(msg.first, msg.second);
+		last_sent = time(0);
+	    }
+
+	    if (time(0) - last_recv >= recv_interval && x.get()) {
 		try {
 		    for (rooms_t::iterator j = rooms.begin(); j != rooms.end(); j++) {
 			vector<string> m;
@@ -250,6 +265,7 @@ int main(int argc, char *argv[])
 		    fprintf(*c, ":%s ERROR :%s\n", me, e.what());
 		    break;
 		}
+		last_recv = time(0);
 	    }
 	}
     } catch (runtime_error e) {
