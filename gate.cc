@@ -1,3 +1,6 @@
+#undef LOG_ENABLED
+#undef RESTRICT_GATEWAY
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -10,6 +13,9 @@
 #include <sys/types.h>
 #ifndef WIN32
 # include <sys/wait.h>
+#endif
+#ifdef RESTRICT_GATEWAY
+# include <fnmatch.h>
 #endif
 #include <typeinfo>
 #include "md5.h"
@@ -51,6 +57,41 @@ bool is_notice(string &s)
 
     return false;
 }
+
+#ifdef LOG_ENABLED
+void log(const string& s)
+{
+    time_t t = time(0);
+    struct tm lt;
+    char st[128];
+
+    localtime_r(&t, &lt);
+    strftime(st, 128, "%F %H:%M:%S", &lt);
+
+    FILE *f = fopen("gate-log", "a");
+    if (f) {
+	flockfile(f);
+	funlockfile(f);
+	fprintf(f, "%s [%i] - %s\n", st, getpid(), s.c_str());
+	fclose(f);
+    }
+}
+#endif
+
+#ifdef RESTRICT_GATEWAY
+bool check_restrict(const string& nick)
+{
+    ifstream f("gate-restrict");
+    string l;
+
+    while (getline(f, l)) {
+	if (!fnmatch(l.c_str(), nick.c_str(), FNM_CASEFOLD))
+	    return true;
+    }
+
+    return false;
+}
+#endif
 
 /*
  * Some global variables
@@ -127,6 +168,10 @@ main_accept:
 	}
 #endif
 
+#ifdef LOG_ENABLED
+	log(tomi_ntop(c->rname) + " - Connected");
+#endif
+
 	string nick, pass;
 	bool user = false;
 
@@ -172,6 +217,20 @@ main_accept:
 			    fprintf(*c, ":%s NOTICE AUTH :Need password!\n", me);
 			    continue;
 			}
+
+#ifdef RESTRICT_GATEWAY
+			if (!check_restrict(nick)) {
+			    fprintf(*c, ":%s ERROR :Unauthorized user!\n", me);
+# ifdef LOG_ENABLED
+			    log(tomi_ntop(c->rname) + " - Unauthorized - " + nick);
+# endif
+			    break;
+			}
+#endif
+
+#ifdef LOG_ENABLED
+			log(tomi_ntop(c->rname) + " - Logging in - " + nick);
+#endif
 
 			try { x.reset(new XChat(nick, pass)); }
 			catch (runtime_error e) {
@@ -648,6 +707,10 @@ main_accept:
 		}
 	    }
 	}
+
+#ifdef LOG_ENABLED
+	log(tomi_ntop(c->rname) + " - Disconnected (" + nick + ")");
+#endif
 
 #ifdef WIN32
 	goto main_accept;
