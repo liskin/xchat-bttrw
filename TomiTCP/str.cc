@@ -45,7 +45,7 @@ namespace std {
     }
 
     /*
-     * Justify line, maxspaces is the maximal number of spaces between toknes
+     * Justify line, maxspaces is the maximal number of spaces between tokens
      */
     string justify(string in, int width, int maxspaces, int tab)
     {
@@ -53,7 +53,7 @@ namespace std {
 	int need = width - inw;
 
 	// nothing is needed to do
-	if (!need)
+	if (need <= 0)
 	    return in;
 
 	// more spaces between tokens is needed
