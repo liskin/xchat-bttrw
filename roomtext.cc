@@ -192,7 +192,10 @@ namespace xchat {
 		wstrip(src);
 	    }
 
-	    sex = r.nicklist[strtolower_nr(src)].sex;
+	    if (r.nicklist.find(strtolower_nr(src)) == r.nicklist.end())
+		sex = 2;
+	    else
+		sex = r.nicklist[strtolower_nr(src)].sex;
 	    r.nicklist.erase(strtolower_nr(src));
 	    return 1;
 	}
@@ -235,7 +238,10 @@ namespace xchat {
 		reason = string(m, a + 1, b - a - 1);
 	    }
 
-	    sex = r.nicklist[strtolower_nr(src)].sex;
+	    if (r.nicklist.find(strtolower_nr(src)) == r.nicklist.end())
+		sex = 2;
+	    else
+    		sex = r.nicklist[strtolower_nr(src)].sex;
 	    r.nicklist.erase(strtolower_nr(src));
 	    return 1;
 	}
