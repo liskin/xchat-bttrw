@@ -106,8 +106,8 @@ void loadconfig(const char *fname, ostream &out)
     string l;
     while (getline(in,l)) {
 	if (l.length() && l[0]!='#') {
-	    int d = l.find_first_of(" \f\n\r\t\v");
-	    if (d > 0) {
+	    unsigned int d = l.find_first_of(" \f\n\r\t\v");
+	    if (d > 0 && d != string::npos) {
 		string a(l,0,d),b(l,d+1);
 		wstrip(a); wstrip(b);
 		if (!strcasecmp(a.c_str(),"server"))
