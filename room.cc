@@ -408,9 +408,10 @@ parse_error:
 	 *  - it begins with "/m "
 	 *  - it begins with "/msg "
 	 */
+	last_sent = time(0);
 	if (msg.compare(0, 1, "/") || !msg.compare(0, 3, "/s ") ||
 		!msg.compare(0, 3, "/m ") || !msg.compare(0, 5, "/msg ")) {
-	    r.last_sent = last_sent = time(0);
+	    r.last_sent = last_sent;
 	}
     }
 }
