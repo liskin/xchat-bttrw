@@ -9,6 +9,9 @@
 #include "str.h"
 
 namespace std {
+    char char_toupper(char c) { return toupper(c); }
+    char char_tolower(char c) { return tolower(c); }
+
     /*
      * Calculate string length with given tab length
      */

@@ -30,8 +30,8 @@ namespace std {
     /*
      * Case modifying functions
      */
-    char char_toupper(char c) { return toupper(c); }
-    char char_tolower(char c) { return tolower(c); }
+    char char_toupper(char c);
+    char char_tolower(char c);
     
     inline string& strtolower(string &str)
     {
