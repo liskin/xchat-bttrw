@@ -191,6 +191,10 @@ void login(FILE *f)
 	S(f,"PASS %s\n",password.c_str());
     S(f,"NICK %s\n",nick.c_str());
     S(f,"USER %s 8 * :%s\n",nick.c_str(),nick.c_str());
+}
+
+void loper(FILE *f)
+{
     if (opassword.length() && oname.length())
 	S(f,"OPER %s %s\n",oname.c_str(),opassword.c_str());
 }
@@ -499,7 +503,7 @@ void processbuf(FILE *f, char *buf)
 		nick[nick.length()-1]++;
 		S(f,"NICK %s\n",nick.c_str());
 	    }
-	    if (n == 431 || n == 436 || n == 451 || n == 464 || n == 465) {
+	    if (n == 431 || n == 436 || /*n == 451 ||*/ n == 464 || n == 465) {
 		fclose(f);
 		cout << "Server returned fatal error" << endl;
 	    }
@@ -507,6 +511,7 @@ void processbuf(FILE *f, char *buf)
 		oper = 1;
 	    }
 	    if (n == 1) {
+		loper(f);
 		for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
 		    i->second.connected(f);
 		}
@@ -602,7 +607,7 @@ int main(int argc, char *argv[])
 	    login(f);
 	    body(f);
 	    fclose(f);
-	    sleep(5);
+	    sleep(10);
 	}
     } catch (std::runtime_error e) {
 	std::cerr << e.what() << std::endl;

@@ -47,6 +47,7 @@ extern void processsome(FILE *f);
 extern void S(FILE *f, const char* fmt, ...);
 extern void loadmodule(string name);
 extern void unloadmodule(string name);
+extern void login(FILE *f);
 
 }
 

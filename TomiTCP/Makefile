@@ -8,7 +8,11 @@ LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 %.so: %.cc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -fPIC -DPIC -shared $(TARGET_ARCH) $< $(LOADLIBES) -o $@
 
+.PHONY: all clean
+
 all: pok irc $(patsubst %.cc,%.so,$(wildcard m_*.cc))
+clean:
+	$(RM) pok irc *.{o,so}
 pok: pok.o net.o
 irc: irc.o net.o
 pok.o: pok.cc net.h

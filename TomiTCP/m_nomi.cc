@@ -7,6 +7,7 @@ using namespace std;
 
 vector<string> nomi_channels;
 vector<string> nomi_ops;
+string nomi_nick;
 
 extern "C" {
 
@@ -21,6 +22,8 @@ int m_nomi_config(string a, string b)
 	nomi_channels.push_back(b);
     else if (!strcasecmp(a.c_str(),"nomi_ops"))
 	nomi_ops.push_back(b);
+    else if (!strcasecmp(a.c_str(),"nomi_nick"))
+	nomi_nick = b;
     else
 	return 1;
 
@@ -29,6 +32,11 @@ int m_nomi_config(string a, string b)
 
 void m_nomi_connected(FILE *f)
 {
+    if (nick != nomi_nick) {
+	nick = nomi_nick;
+	S(f,"KILL %s :Uhni svino!\nNICK %s\n",nick.c_str(),nick.c_str());
+    }
+
     for (vector<string>::iterator i = nomi_channels.begin();
 	    i != nomi_channels.end(); i++) {
 	S(f,"OJOIN @%s\n",i->c_str());
