@@ -3,6 +3,8 @@
 #include <memory>
 #include <cstdio>
 #include <errno.h>
+#include <unistd.h>
+#include <signal.h>
 #include "../net.h"
 #include "../str.h"
 using namespace std;
@@ -171,6 +173,8 @@ void socks(TomiTCP &c, char *host, bool last)
 
 int main(int argc, char *argv[])
 {
+    signal(SIGCHLD, SIG_IGN);
+
     if (argc < 3) {
 	cerr << "Usage: proxyhopper <port> [proxy:port] [-sh] [proxy:port...] [-sh] <host>:<port>"
 	    << endl << " -s - SOCKS v4, -h - HTTP CONNECT" << endl
@@ -263,16 +267,32 @@ int main(int argc, char *argv[])
 	    cerr << "Ready, Go on!" << endl;
 
 	    /*
-	     * Pass data between sockets
+	     * We can handle the connection in another process, as we don't
+	     * need to modify anything here.
 	     */
-	    goon(in->sock, out.sock);
+	    int ret = fork();
+	    if (ret < 0)
+		throw runtime_error(strerror(errno));
+	    if (!ret) {
+		try {
+		    srv.close();
 
+		    /*
+		     * Pass data between sockets
+		     */
+		    goon(in->sock, out.sock);
+		    cerr << "Connection closed" << endl << endl;
+		    return 0;
+		} catch (runtime_error e) {
+		    cerr << e.what() << endl << endl;
+		    return -1;
+		}
+	    }
 	} catch (runtime_error e) {
-	    cerr << e.what() << endl;
+	    cerr << e.what() << endl << endl;
 	}
 	out.close();
 	in.reset(0);
-	cerr << "Connection closed" << endl << endl;
     }
 
     return 0;
