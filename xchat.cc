@@ -106,10 +106,11 @@ namespace xchat {
 		if (smile < smiles_count && smiles[smile]) {
 		    s.erase(s.begin() + a, s.begin() + b + 1);
 		    s.insert(a, smiles[smile]);
+		    pos = a + strlen(smiles[smile]);
+		} else {
+		    pos = a + 1;
 		}
-		pos = a + strlen(smiles[smile]);
 	    } else {
-		pos = a + 1;
 	    }
 	}
     }
