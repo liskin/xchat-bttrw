@@ -6,12 +6,13 @@ else
  DEBUG=yes
 endif
 
-CFLAGS=-Wall -D_GNU_SOURCE \
-       -DREVISION=\"$(shell svn info | perl -ne 'if(/Revision: (\d+)/){print $$1;}')\" \
-       -DTOMITCP_REV=\"$(shell svn info TomiTCP | perl -ne 'if(/Revision: (\d+)/){print $$1;}')\"
+CFLAGS=-Wall -D_GNU_SOURCE
 CXXFLAGS=$(CFLAGS)
 LDLIBS=
 LDFLAGS=
+REVISIONS=-DREVISION=\"$(shell svn info | perl -ne 'if(/Revision: (\d+)/){print $$1;}')\" \
+	-DTOMITCP_REV=\"$(shell svn info TomiTCP | perl -ne 'if(/Revision: (\d+)/){print $$1;}')\" \
+
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
 ifeq ($(DEBUG),yes)
@@ -46,6 +47,9 @@ gate: gate.o md5.o libxchat-bttrw.a TomiTCP/libTomiTCP.a
 ifeq ($(TARGET),i386-mingw32msvc)
 	strip $@
 endif
+
+gate.o: gate.cc
+	$(COMPILE.cc) $(REVISIONS) $(OUTPUT_OPTION) $<
 
 clean:
 	$(RM) libxchat-bttrw.a gate *.o
