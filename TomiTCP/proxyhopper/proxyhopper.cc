@@ -25,6 +25,9 @@ void pconnect(TomiTCP &c, char *host)
     if (!host || !*host)
 	return;
 
+    char *mylasthost = lasthost;
+    lasthost = host;
+
     cout << "Proxy connecting to " << host << endl;
     fprintf(c, "CONNECT %s HTTP/1.0\n\n", host);
 
@@ -47,9 +50,9 @@ void pconnect(TomiTCP &c, char *host)
 	    /*
 	     * The proxy replied with some unknown garbage.
 	     */
-	    if (lasthost) {
-		cerr << "Removing " << lasthost << endl;
-		*lasthost = 0;
+	    if (mylasthost) {
+		cerr << "Removing " << mylasthost << endl;
+		*mylasthost = 0;
 	    }
 	    throw runtime_error("Parse error on HTTP response");
 	}
@@ -64,9 +67,9 @@ void pconnect(TomiTCP &c, char *host)
 	    /*
 	     * The proxy didn't want to connect.
 	     */
-	    else if (code >= 400 && lasthost) {
-		cerr << "Removing " << lasthost << endl;
-		*lasthost = 0;
+	    else if (code >= 400 && mylasthost) {
+		cerr << "Removing " << mylasthost << endl;
+		*mylasthost = 0;
 	    }
 
 	    throw runtime_error("HTTP not ok! (" + tostr<int>(code) + " " +
@@ -76,9 +79,9 @@ void pconnect(TomiTCP &c, char *host)
 	/*
 	 * The proxy didn't want to talk.
 	 */
-	if (lasthost) {
-	    cerr << "Removing " << lasthost << endl;
-	    *lasthost = 0;
+	if (mylasthost) {
+	    cerr << "Removing " << mylasthost << endl;
+	    *mylasthost = 0;
 	}
 	throw runtime_error("Zero sized HTTP reply");
     }
@@ -152,10 +155,8 @@ int main(int argc, char *argv[])
 	    /*
 	     * Hop over proxys
 	     */
-	    while (marg < argc) {
+	    while (marg < argc)
 		pconnect(out, argv[marg++]);
-		lasthost = argv[marg - 1];
-	    }
 
 	    cerr << "Ready, Go on!" << endl;
 
