@@ -402,17 +402,7 @@ namespace xchat {
 	    e->rid = r.rid;
 	    e->fatal = true;
 	    recvq_push(e);
-	} else
-	    goto parse_error;
-
-	return;
-
-parse_error:
-	/*
-	 * And don't forget to report parse error if we didn't get valid
-	 * last_line.
-	 */
-	if (r.l == -1) {
+	} else if (r.l == -1) {
 	    for (vector<string>::iterator i = dbg.begin(); i != dbg.end(); i++)
 		cout << *i << endl;
 	    EvRoomError *e = new EvRoomError;
