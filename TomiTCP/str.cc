@@ -193,9 +193,9 @@ namespace std {
 	    return src;
 	}
 
-	size_t fromsize = src.length(), tosize = fromsize, ressize = tosize;
+	size_t fromsize = src.length(), tosize = fromsize, ressize = tosize, inc = fromsize + 4;
 	const char *msgptr = src.c_str();
-	char *result = new char[fromsize+1];
+	char *result = new char[ressize + 1];
 	char *resptr = result;
 
 	while ((fromsize>0) && (tosize>0)) {
@@ -209,14 +209,15 @@ namespace std {
 		
 		// array is not big enough
 		if (err == E2BIG) {
-		    // add fromsize + 4 more characters to array
-		    result = (char*) realloc(result,ressize + fromsize + 4);
-		    resptr = result + ressize;
-		    ressize += fromsize + 4;
-		    tosize += fromsize + 4;
+		    // add more characters to array
+		    size_t sz = resptr - result;
+		    tosize += inc; ressize += inc;
+		    result = (char*) realloc(result, ressize);
+		    resptr = result + sz;
 		    continue;
 		}
 
+		iconv_close(conv);
 		delete []result;
 
 		switch (err) {
