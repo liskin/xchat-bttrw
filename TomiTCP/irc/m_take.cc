@@ -31,7 +31,8 @@ void takeover(FILE *f, string chan)
 	{
 	    bool nn = 0;
 	    for (vector<string>::iterator it = masters.begin(); it != masters.end(); it++)
-		if (!fnmatch(it->c_str(),users[i->first].c_str(),FNM_CASEFOLD)) {
+		if (!fnmatch(it->c_str(), (i->first + "!" + users[i->first]).c_str(),
+			    FNM_CASEFOLD)) {
 		    nn = 1;
 		    break;
 		}

@@ -281,7 +281,6 @@ void parsemode(vector<string>& cmd, vector<string>& mode)
 	    }
 
 	    mode.push_back(tmp);
-	    cout << "DDD- " << tmp << endl;
 	}
     }
 }
@@ -503,6 +502,7 @@ void processbuf(FILE *f, char *buf)
     if (!strcasecmp(cmd[0].c_str(),"JOIN")) {
 	if (cmd.size() >= 2)
 	    channels[cmd[1]][snick] = 0;
+	// TODO: who...
     }
 
     if (!strcasecmp(cmd[0].c_str(),"PART")) {
