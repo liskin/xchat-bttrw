@@ -1,3 +1,4 @@
+#include <iostream>
 #include <map>
 #include <stdexcept>
 #include <iconv.h>
@@ -44,7 +45,8 @@ namespace xchat {
 	ENTRY (124, "verbar");
 	ENTRY (125, "rcub");
 	ENTRY (126, "tilde");
-	ENTRY (160, "nbsp");
+	ENTRY (32, "nbsp"); // tralala :]
+//	ENTRY (160, "nbsp");
 	ENTRY (161, "iexcl");
 	ENTRY (162, "cent");
 	ENTRY (163, "pound");
@@ -384,7 +386,7 @@ namespace xchat {
     /*
      * Parse and convert _one_ HTML entity
      */
-    char *striphtmlent_recode(const char *input)
+    char *striphtmlent_recode(const char * &input)
     {
 	if (*input != '&')
 	    return 0;
@@ -444,12 +446,16 @@ namespace xchat {
 		    valid = false;
 		else
 		    value = i->second;
+		input = semicolon;
 	    }
 	} else
 	    return 0;
 
 	if (!valid || !value)
 	    return 0;
+
+	if (*input == ';')
+	    input++;
 	
 	static char buf[3] = {0, 0, 0};
 	*(unsigned short*)buf = value;
@@ -462,32 +468,19 @@ namespace xchat {
      */
     void striphtmlent(string &m)
     {
-	unsigned int a, b;
+	unsigned int a;
 	unsigned int pos = 0;
 
-	while (((a = m.find('&', pos)) != string::npos) &&
-		((b = m.find(';', a + 1)) != string::npos)) {
-	    bool fail = 0;
-	    for (string::iterator i = m.begin() + a + 1; i != m.begin() + b; i++)
-		fail |= isspace(*i);
+	while (((a = m.find('&', pos)) != string::npos)) {
+	    const char *begin = m.c_str() + a, *end = begin;
 
-	    if (!fail) {
-		string token = string(m.begin() + a, m.begin() + b + 1).c_str();
-		char *ret = 0;
-		
-		if (token == "&nbsp;")
-		    ret = " ";
-		if (!ret)
-		    ret = striphtmlent_recode(token.c_str());
-		if (ret) {
-		    m.erase(m.begin() + a, m.begin() + b + 1);
-		    m.insert(a, ret);
+	    char *ret = striphtmlent_recode(end);
+	    if (ret) {
+		m.erase(m.begin() + a, m.begin() + a + (end - begin));
+		m.insert(a, ret);
 
-		    pos = a + strlen(ret);
-		    free(ret);
-		} else {
-		    pos = a + 1;
-		}
+		pos = a + strlen(ret);
+		free(ret);
 	    } else {
 		pos = a + 1;
 	    }
