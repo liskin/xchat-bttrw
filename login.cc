@@ -28,14 +28,14 @@ namespace xchat {
 
 	unsigned int pos = l.find("xchat.centrum.cz/~$");
 	if (pos == string::npos)
-	    throw runtime_error("Parse error while logging in");
+	    throw runtime_error("Parse error while logging in: " + l);
 
 	stringstream ss(string(l,pos+19));
 	getline(ss,uid,'~');
 	getline(ss,sid,'/');
 
 	if (!uid.length() || !sid.length())
-	    throw runtime_error("Parse error while logging in");
+	    throw runtime_error("Parse error while logging in: " + l);
     }
 
     /*

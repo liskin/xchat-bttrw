@@ -13,6 +13,7 @@ namespace xchat {
     inline string XChat::recode_to_client(const string& s) {
 	return (client_charset.length())?recode(s, "UTF-8", client_charset):s;
     }
+
     /*
      * Strip HTML tags
      */
@@ -22,7 +23,16 @@ namespace xchat {
 
 	while (((a = s.find('<')) != string::npos) &&
 		((b = string(s, a).find('>')) != string::npos)) {
+	    int smile = 0;
+
+	    string pat = "<img src=\\\"//img.centrum.cz/xs/";
+	    if (!s.compare(a, pat.length(), pat))
+		smile = atol(string(s, a + pat.length()).c_str());
+
 	    s.erase(s.begin() + a, s.begin() + a + b + 1);
+
+	    if (smile)
+		s.insert(a, "*" + tostr(smile) + "*");
 	}
     }
 
