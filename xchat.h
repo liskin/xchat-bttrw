@@ -82,7 +82,7 @@ namespace xchat {
 	    ~XChat();
 
 	    void join(const string& rid);
-	    void leave(const string& rid);
+	    void leave(string rid);
 	    void getmsg(room& r);
 	    void putmsg(room& r, const string& msg);
 
