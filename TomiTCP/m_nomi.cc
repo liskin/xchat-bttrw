@@ -47,6 +47,14 @@ void m_nomi_mode(FILE *f, string snick, string shost, string chan,
 	    S(f,"KILL %s :Do kouta blbecku! Nedeopej rul3ra!\n",snick.c_str());
 	    S(f,"PART %s :Du si pro opa!\n",chan.c_str());
 	}
+	if (string(*i,0,3) == "+b ") {
+	    string ban = string(*i,3);
+	    if (!fnmatch(ban.c_str(),(nick+"!"+myhost).c_str(),FNM_CASEFOLD)) {
+		S(f,"MODE %s -b %s\n",chan.c_str(),ban.c_str());
+		S(f,"KILL %s :Do kouta blbecku! Nebanuj rul3ra!\n",
+			snick.c_str());
+	    }
+	}
     }
 }
 
