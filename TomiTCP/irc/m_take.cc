@@ -10,7 +10,7 @@ extern "C" {
 string autotake;
 vector<string> take_waiting;
 
-void takeover(net::TomiTCP &f, string chan)
+void takeover(string chan)
 {
     {
 	string tnick = nick;
@@ -23,7 +23,7 @@ void takeover(net::TomiTCP &f, string chan)
 
     // this need not to be here... :)
     if (safe_mode)
-	processsome(f);
+	processsome();
 
     vector<string> ops;
 
@@ -70,7 +70,7 @@ void takeover(net::TomiTCP &f, string chan)
 	    if (safe_mode > 1) {
 		S(f,"%s\n",c.c_str());
 		if (safe_mode)
-		    processsome(f);
+		    processsome();
 	    } else {
 		out += c + "\n";
 	    }
@@ -93,11 +93,11 @@ void takeover(net::TomiTCP &f, string chan)
 	if (out.length())
 	    S(f,"%s",out.c_str());
 	if (safe_mode)
-	    processsome(f);
+	    processsome();
     }
 }
 
-void m_take_cmd(net::TomiTCP &f, string snick, vector<string> cl)
+void m_take_cmd(string snick, vector<string> cl)
 {
     if (cl[0] == ".autotake") {
 	if (cl.size() != 2) {
@@ -123,7 +123,7 @@ void m_take_cmd(net::TomiTCP &f, string snick, vector<string> cl)
 		}
 	    }
 	    if (!slaves.size())
-		takeover(f,cl[1]);
+		takeover(cl[1]);
 	    else
 		take_waiting.push_back(cl[1]);
 	}
@@ -131,7 +131,7 @@ void m_take_cmd(net::TomiTCP &f, string snick, vector<string> cl)
     }
 }
 
-void m_take_mode(net::TomiTCP &f, string snick, string shost, string chan, vector<string> modes)
+void m_take_mode(string snick, string shost, string chan, vector<string> modes)
 {
     strtolower(chan);
     bool me_opped = 0;
@@ -155,7 +155,7 @@ void m_take_mode(net::TomiTCP &f, string snick, string shost, string chan, vecto
 	}
 
 	if (!slaves.size())
-	    takeover(f,chan);
+	    takeover(chan);
 	else
 	    take_waiting.push_back(chan);
     }
@@ -177,7 +177,7 @@ void m_take_mode(net::TomiTCP &f, string snick, string shost, string chan, vecto
 		}
 
 		if (slaves_opped) {
-		    takeover(f,chan);
+		    takeover(chan);
 		    take_waiting.erase(i);
 		    again = 1;
 		    break;

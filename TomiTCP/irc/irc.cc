@@ -220,7 +220,7 @@ void loadmodule(string name)
     modules[name] = m;
 }
 
-void login(net::TomiTCP &f)
+void login()
 {
     if (password.length())
 	S(f,"PASS %s\n",password.c_str());
@@ -228,7 +228,7 @@ void login(net::TomiTCP &f)
     S(f,"USER %s 8 * :%s\n",username.c_str(),realname.c_str());
 }
 
-void loper(net::TomiTCP &f)
+void loper()
 {
     if (opassword.length() && oname.length())
 	S(f,"OPER %s %s\n",oname.c_str(),opassword.c_str());
@@ -346,7 +346,7 @@ void restart()
     exit(-1);
 }
 
-void docmd(net::TomiTCP &f, string &snick, string &cmd)
+void docmd(string &snick, string &cmd)
 {
     if (string(cmd,0,3) == ".q " && cmd.length() > 3) {
 	S(f,"%s\n",cmd.c_str() + 3);
@@ -486,11 +486,11 @@ void docmd(net::TomiTCP &f, string &snick, string &cmd)
 
     for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 	if (i->second.cmd)
-	    i->second.cmd(f,snick,cl);
+	    i->second.cmd(snick,cl);
     }
 }
 
-void processbuf(net::TomiTCP &f, const char *buf)
+void processbuf(const char *buf)
 {
     int lastbad = 0;
 #define B ({bool ret;if ((time(0)-lastbad)>5){lastbad=time(0);ret=1;}else{ret=0;}ret;})
@@ -509,7 +509,7 @@ void processbuf(net::TomiTCP &f, const char *buf)
 	    pend_func_t func = it->second.first;
 	    param_t param = it->second.second;
 	    pend.erase(it);
-	    func(f,prefix,snick,shost,cmd,param);
+	    func(prefix,snick,shost,cmd,param);
 	}
     }
 
@@ -530,10 +530,10 @@ void processbuf(net::TomiTCP &f, const char *buf)
 		strtolower(myhost);
 	    } else if (n == 1) {
 		S(f,"WHOIS %s\n",nick.c_str());
-		loper(f);
+		loper();
 		for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 		    if (i->second.connected)
-			i->second.connected(f);
+			i->second.connected();
 		}
 	    } else if (n == 353) {
 		stringstream nicks(cmd[4]);
@@ -575,7 +575,7 @@ void processbuf(net::TomiTCP &f, const char *buf)
 	if (!nn) {
 	    if (B) S(f,"PRIVMSG %s :Unpriv\n",snick.c_str());
 	} else {
-	    docmd(f,snick,cmd[2]);
+	    docmd(snick,cmd[2]);
 	}
     }
 
@@ -595,7 +595,7 @@ void processbuf(net::TomiTCP &f, const char *buf)
 
 	    for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 		if (i->second.mode)
-		    i->second.mode(f,snick,shost,cmd[1],modes);
+		    i->second.mode(snick,shost,cmd[1],modes);
 	    }
 	}
     }
@@ -658,7 +658,7 @@ void processbuf(net::TomiTCP &f, const char *buf)
 
     for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 	if (i->second.msg)
-	    i->second.msg(f,snick,shost,cmd);
+	    i->second.msg(snick,shost,cmd);
     }
 }
 
@@ -674,7 +674,7 @@ void users_clean()
     }
 }
 
-void processsome(net::TomiTCP &f)
+void processsome()
 {
     string buf;
 
@@ -683,11 +683,11 @@ void processsome(net::TomiTCP &f)
 	if (!f.getline(buf))
 	    break;
 	buf.erase(string(buf).find_last_not_of("\r\n")+1);
-	processbuf(f,buf.c_str());
+	processbuf(buf.c_str());
     }
 }
 
-void body(net::TomiTCP &f)
+void body()
 {
     string buf;
     int iter = 0;
@@ -721,7 +721,7 @@ void body(net::TomiTCP &f)
 	    if (! f.getline(buf))
 		break;
 	    buf.erase(string(buf).find_last_not_of("\r\n")+1);
-	    processbuf(f,buf.c_str());
+	    processbuf(buf.c_str());
 	}
 
 	// new 'slave' connection
@@ -823,7 +823,7 @@ void body(net::TomiTCP &f)
 
 	for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 	    if (i->second.timer)
-		i->second.timer(f);
+		i->second.timer();
 	}
 
 	// clean users array every 100th iteration
@@ -879,8 +879,8 @@ int main(int argc, char *argv[])
 	    users.clear();
 	    channels.clear();
 
-	    login(sock);
-	    body(sock);
+	    login();
+	    body();
 	} catch (std::runtime_error e) {
 	    std::cerr << e.what() << std::endl;
 	}

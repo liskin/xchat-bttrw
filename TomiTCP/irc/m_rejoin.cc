@@ -3,6 +3,11 @@
 #include "irc.h"
 using namespace std;
 
+/*
+ * TODO:
+ * We should have some array of pending rejoins and make use of module_timer
+ */
+
 int rj_sleep = 5;
 
 extern "C" {
@@ -17,7 +22,7 @@ int m_rejoin_config(string a, string b)
     return 0;
 }
 
-void m_rejoin_msg(net::TomiTCP &f, string snick, string shost, vector<string> cmd)
+void m_rejoin_msg(string snick, string shost, vector<string> cmd)
 {
     if (!strcasecmp(cmd[0].c_str(),"KICK") && !strcasecmp(cmd[2].c_str(),nick.c_str())) {
 	sleep(rj_sleep);

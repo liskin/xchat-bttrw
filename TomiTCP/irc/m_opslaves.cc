@@ -7,7 +7,7 @@ using namespace std;
 
 extern "C" {
 
-void m_opslaves_msg(net::TomiTCP &f, string snick, string shost, vector<string> cmd)
+void m_opslaves_msg(string snick, string shost, vector<string> cmd)
 {
     if (!strcasecmp(cmd[0].c_str(),"JOIN")) {
 	for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {

@@ -19,7 +19,7 @@ int m_channel_config(string a, string b)
     return 0;
 }
 
-void m_channel_connected(net::TomiTCP &f)
+void m_channel_connected()
 {
     for (vector<string>::iterator i = ch_channels.begin();
 	    i != ch_channels.end(); i++) {

@@ -14,14 +14,14 @@ struct module;
 typedef void (*module_init)(struct module &);
 typedef int (*module_config)(string,string);
 			    // a      b
-typedef void (*module_connected)(net::TomiTCP &f);
-typedef void (*module_mode)(net::TomiTCP &f,string,string,string,vector<string>);
-				// nick   host   chan   modes
-typedef void (*module_msg)(net::TomiTCP &f,string,string,vector<string>);
-				// nick  host   cmd
-typedef void (*module_cmd)(net::TomiTCP &f,string,vector<string>);
-				// nick  cmd list
-typedef void (*module_timer)(net::TomiTCP &f);
+typedef void (*module_connected)();
+typedef void (*module_mode)(string,string,string,vector<string>);
+			 // nick   host   chan   modes
+typedef void (*module_msg)(string,string,vector<string>);
+			// nick  host   cmd
+typedef void (*module_cmd)(string,vector<string>);
+			// nick  cmd list
+typedef void (*module_timer)();
 
 struct module {
     void *lib;
@@ -51,7 +51,7 @@ extern struct chanmodes {
 } isupport;
 
 typedef map<string,string> param_t;
-typedef void (*pend_func_t)(FILE*,string&,string&,string&,vector<string>&,param_t&);
+typedef void (*pend_func_t)(string&,string&,string&,vector<string>&,param_t&);
 typedef map<string,pair<pend_func_t,map<string,string> > > pend_t;
 extern pend_t pend;
 
@@ -80,14 +80,15 @@ typedef vector<slave> slaves_t;
 extern slavec_t slavec;
 extern slaves_t slaves;
 
-extern void processsome(net::TomiTCP &f);
+extern void processsome();
 extern void S(net::TomiTCP &f, const char* fmt, ...);
 extern void loadmodule(string name);
 extern void unloadmodule(string name);
-extern void login(net::TomiTCP &f);
+extern void login();
 extern void splitprefix(string prefix, string &nick, string &host);
 
 extern net::TomiTCP sock;
+extern net::TomiTCP &f;
 
 }
 
