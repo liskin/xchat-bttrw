@@ -19,7 +19,7 @@ const char *smiles[] = {
     [16] "*kytka*",
     [17] ":{",
     [18] "=)",
-    [19] "=|",
+    [19] "*skaredy_pohled*",
     [20] ":.)",
     [21] "*mimo*",
     [22] "*pivo*",
@@ -42,10 +42,16 @@ const char *smiles[] = {
     [39] ">E",
     [40] ":-F",
     [43] "8",
+    [47] ":DD",
+    [53] "|-O",
+    [54] "*stopa*",
     [55] "*vozickar*",
+    [61] "*kocka*",
     [64] "*pichacka*",
     [87] "*mava*",
-    [99] "*zelva_ninja*"
+    [90] "*!*",
+    [99] "*zelva_ninja*",
+    [102] "*bum*"
 };
 
 const int smiles_count = sizeof(smiles)/sizeof(*smiles);
