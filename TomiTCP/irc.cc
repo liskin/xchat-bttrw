@@ -272,7 +272,8 @@ void parsemode(vector<string>& cmd, vector<string>& mode)
     }
 }
 
-void takeover(FILE *f, string &prefix, string &snick, string &shost, vector<string> &cmd, map<string,string> &param)
+void takeover(FILE *f, string &prefix, string &snick, string &shost,
+	vector<string> &cmd, map<string,string> &param)
 {
     if (cmd.size() != 5) {
 	cout << "CH\n";
@@ -349,12 +350,15 @@ void takeover(FILE *f, string &prefix, string &snick, string &shost, vector<stri
     }
 }
 
-void restart(int)
+void restart()
 {
     S(my_f,"QUIT :restarting\n");
     fclose(my_f);
     sleep(1);
+
     execv(my_argv[0],my_argv);
+    cerr << "Could not exec!" << endl;
+    exit(-1);
 }
 
 void docmd(FILE *f, string &snick, string &cmd)
@@ -472,7 +476,7 @@ void docmd(FILE *f, string &snick, string &cmd)
 	    S(f,"PRIVMSG %s :Need no parameters\n",snick.c_str());
 	} else {
 	    S(f,"PRIVMSG %s :Restarting...\n",snick.c_str());
-	    restart(0);
+	    restart();
 	    throw runtime_error("Could not restart :(");
 	}
 	return;
@@ -603,7 +607,6 @@ void body(FILE *f)
 int main(int argc, char *argv[])
 {
     my_argv = argv;
-    signal(SIGHUP,restart);
 
     if (argc != 2) {
 	cout << "need config file as parameter" << endl;
