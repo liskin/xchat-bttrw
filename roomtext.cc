@@ -74,7 +74,7 @@ namespace xchat {
 	    int smile = 0;
 	    bool br = 0;
 
-	    static string pat = "<img src=\\\"//img.centrum.cz/xs/";
+	    static string pat = "<img src=\"//img.centrum.cz/xs/";
 	    if (!s.compare(a, pat.length(), pat))
 		smile = atol(string(s, a + pat.length()).c_str());
 	    
@@ -296,12 +296,12 @@ namespace xchat {
      */
     bool XChat::isadvert(string &m, string &link)
     {
-	static string pat = "<A TARGET=_blank HREF=\\\"/advert/advert.php";
+	static string pat = "<A TARGET=_blank HREF=\"/advert/advert.php";
 	unsigned int pos;
 	if ((pos = m.find(pat)) != string::npos) {
 	    link = "http://xchat.centrum.cz/advert/advert.php" +
 		string(m, pos + pat.length());
-	    link.erase(link.find("\\\""));
+	    link.erase(link.find("\""));
 	    return 1;
 	}
 
