@@ -155,7 +155,8 @@ namespace net {
 			if (!::bind(sock, &j->sa, SIZEOF_SOCKADDR(*j)))
 			    break;
 
-		if (::connect(sock,(const sockaddr*)&rname,SIZEOF_SOCKADDR(rname))) {
+		if (TEMP_FAILURE_RETRY(::connect(sock,
+				(const sockaddr*)&rname, SIZEOF_SOCKADDR(rname)))) {
 		    int er = sock_errno;
 		    close();
 		    err = strerror(er);
@@ -382,7 +383,7 @@ namespace net {
 	int ret;
 
 	s.clear();
-	while ((ret = read(sock, &c, 1)) == 1 && c != delim) {
+	while ((ret = TEMP_FAILURE_RETRY(read(sock, &c, 1))) == 1 && c != delim) {
 	    s += c;
 	}
 
