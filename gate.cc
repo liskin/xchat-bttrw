@@ -408,6 +408,23 @@ main_accept:
 			fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
 				nick.c_str(), cmd[1].c_str());
 		    }
+		} else if (cmd[0] == "LIST" && cmd.size() >= 1) {
+		    /*
+		     * Get a list of rooms
+		     */
+		    try {
+			listout_t listout;
+			x->list(listout);
+			for (listout_t::iterator i = listout.begin();
+				i != listout.end(); i++) {
+			    fprintf(*c, ":%s 322 %s #%s %i :%s\n", me, nick.c_str(),
+				    i->first.c_str(), 0, i->second.c_str());
+			}
+			fprintf(*c, ":%s 323 %s :End of /LIST\n", me, nick.c_str());
+		    } catch (runtime_error e) {
+			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+				nick.c_str(), e.what());
+		    }
 		} else {
 		    cout << l << endl;
 		    fprintf(*c, ":%s NOTICE %s :Unknown command\n", me, nick.c_str());
@@ -522,6 +539,16 @@ main_accept:
 		    fprintf(*c, ":%s NOTICE #%s :Other: %s - %s\n", me,
 			    f->getrid().c_str(), typeid(*(f.get())).name(),
 			    f->str().c_str());
+		} else if (dynamic_cast<EvError*>(e.get())) {
+		    auto_ptr<EvError> f((EvError*)e.release());
+
+		    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+			    nick.c_str(), f->str().c_str());
+		} else if (dynamic_cast<EvSysMsg*>(e.get())) {
+		    auto_ptr<EvSysMsg> f((EvSysMsg*)e.release());
+
+		    fprintf(*c, ":%s NOTICE %s :System: %s\n", me,
+			    nick.c_str(), f->str().c_str());
 		} else {
 		    fprintf(*c, ":%s NOTICE %s :Other: %s - %s\n", me,
 			    nick.c_str(), typeid(*(e.get())).name(),

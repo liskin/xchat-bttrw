@@ -33,6 +33,7 @@ namespace xchat {
 	vector<string> admins;
     };
     typedef map<string,room> rooms_t;
+    typedef vector<pair<string, string> > listout_t;
 }
 
 #include "events.h"
@@ -103,6 +104,8 @@ namespace xchat {
 
 	    x_nick* findnick(string src, room **r);
 	    bool isadmin(const string &rid, string nick);
+
+	    void list(listout_t &listout);
     };
 
     inline void XChat::sendq_push(const string& a, const string& b) {

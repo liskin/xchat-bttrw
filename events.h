@@ -17,7 +17,7 @@ namespace xchat {
 
     class Event {
 	    friend class XChat;
-	private:
+	protected:
 	    string s;
 	public:
 	    virtual const string & str() { return s; }
@@ -26,7 +26,7 @@ namespace xchat {
 
     class EvRoomOther : public Event {
 	    friend class XChat;
-	private:
+	protected:
 	    string rid;
 	public:
 	    virtual const string & getrid() { return rid; }
@@ -35,13 +35,16 @@ namespace xchat {
     
     class EvRoomError : public EvRoomOther {
 	    friend class XChat;
+	private:
+	    string s2;
 	public:
+	    virtual const string & str() { s2 = rid + ": " + s; return s2; }
 	    virtual ~EvRoomError() {}
     };
     
     class EvRoomMsg : public EvRoomOther {
 	    friend class XChat;
-	private:
+	protected:
 	    string src;
 	public:
 	    virtual const string & getsrc() { return src; }
@@ -50,7 +53,7 @@ namespace xchat {
     
     class EvRoomWhisper : public EvRoomOther {
 	    friend class XChat;
-	private:
+	protected:
 	    string src;
 	    string target;
 	public:
@@ -61,7 +64,7 @@ namespace xchat {
     
     class EvRoomJoin : public EvRoomOther {
 	    friend class XChat;
-	private:
+	protected:
 	    x_nick src;
 	public:
 	    virtual const x_nick & getsrc() { return src; }
@@ -70,7 +73,7 @@ namespace xchat {
     
     class EvRoomLeave : public EvRoomOther {
 	    friend class XChat;
-	private:
+	protected:
 	    x_nick src;
 	    string reason;
 	public:
@@ -81,7 +84,7 @@ namespace xchat {
     
     class EvRoomKick : public EvRoomOther {
 	    friend class XChat;
-	private:
+	protected:
 	    string src;
 	    x_nick target;
 	    string reason;
@@ -94,7 +97,7 @@ namespace xchat {
     
     class EvRoomAdvert : public EvRoomOther {
 	    friend class XChat;
-	private:
+	protected:
 	    string link;
 	public:
 	    virtual const string & getlink() { return link; }
@@ -121,7 +124,7 @@ namespace xchat {
     
     class EvRoomAdminChange : public EvRoomOther {
 	    friend class XChat;
-	private:
+	protected:
 	    string before, now;
 	public:
 	    virtual const string & getbefore() { return before; }
@@ -131,12 +134,24 @@ namespace xchat {
 
     class EvRoomLockChange : public EvRoomOther {
 	    friend class XChat;
-	private:
+	protected:
 	    bool before, now;
 	public:
 	    virtual const bool & getbefore() { return before; }
 	    virtual const bool & getnow() { return now; }
 	    virtual ~EvRoomLockChange() {}
+    };
+    
+    class EvError : public Event {
+	    friend class XChat;
+	public:
+	    virtual ~EvError() {}
+    };
+    
+    class EvSysMsg : public Event {
+	    friend class XChat;
+	public:
+	    virtual ~EvSysMsg() {}
     };
 }
 

@@ -287,7 +287,7 @@ namespace xchat {
 	    for (vector<string>::iterator i = dbg.begin(); i != dbg.end(); i++)
 		cout << *i << endl;
 	    EvRoomError *e = new EvRoomError;
-	    e->s = r.rid + ": Parse error";
+	    e->s = "Parse error";
 	    e->rid = r.rid;
 	    recvq_push(e);
 	}

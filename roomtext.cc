@@ -11,7 +11,17 @@ namespace xchat {
      * Recode to client_charset
      */
     string XChat::recode_to_client(const string& s) {
-	return (client_charset.length())?recode(s, "UTF-8", client_charset):s;
+	if (!client_charset.length())
+	    return s;
+
+	try {
+	    return recode(s, "UTF-8", client_charset);
+	} catch (runtime_error er) {
+	    EvError *e = new EvError;
+	    e->s = er.what();
+	    recvq_push(e);
+	    return s;
+	}
     }
 
     /*
