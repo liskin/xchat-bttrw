@@ -330,10 +330,11 @@ namespace xchat {
 	 * Look if we should emit a kick/error message
 	 */
 	if (kicker.length()) {
+	    x_nick *n;
 	    EvRoomKick *e = new EvRoomKick;
 	    e->s = kicker + " kicked you because: " + recode_to_client(kickmsg);
 	    e->rid = r.rid;
-	    e->src = kicker;
+	    e->src = (struct x_nick){ kicker, (n = findnick(kicker, 0))?n->sex:2 };
 	    e->target = (struct x_nick){ nick, 2 };
 	    e->reason = recode_to_client(kickmsg);
 	    recvq_push(e);

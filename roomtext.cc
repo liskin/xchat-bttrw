@@ -293,6 +293,8 @@ namespace xchat {
     {
 	string link;
 	bool advert = isadvert(m, link);
+
+	x_nick *n;
 	
 	striphtml(m);
 	stripdate(m);
@@ -334,14 +336,14 @@ namespace xchat {
 		EvRoomWhisper *e = new EvRoomWhisper;
 		e->s = recode_to_client(m);
 		e->rid = r.rid;
-		e->src = src;
+		e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
 		e->target = target;
 		recvq_push(e);
 	    } else if (strtolower_nr(src) != strtolower_nr(nick)) {
 		EvRoomMsg *e = new EvRoomMsg;
 		e->s = recode_to_client(m);
 		e->rid = r.rid;
-		e->src = src;
+		e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
 		recvq_push(e);
 	    }
 	} else {
@@ -365,7 +367,7 @@ namespace xchat {
 		    EvRoomKick *e = new EvRoomKick;
 		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
-		    e->src = who;
+		    e->src = (struct x_nick){ who, (n = findnick(who, 0))?n->sex:2 };
 		    e->target = (struct x_nick){ src, sex };
 		    e->reason = recode_to_client(reason);
 		    recvq_push(e);

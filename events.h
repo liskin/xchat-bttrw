@@ -45,19 +45,19 @@ namespace xchat {
     class EvRoomMsg : public EvRoomOther {
 	    friend class XChat;
 	protected:
-	    string src;
+	    x_nick src;
 	public:
-	    virtual const string & getsrc() { return src; }
+	    virtual const x_nick & getsrc() { return src; }
 	    virtual ~EvRoomMsg() {}
     };
     
     class EvRoomWhisper : public EvRoomOther {
 	    friend class XChat;
 	protected:
-	    string src;
+	    x_nick src;
 	    string target;
 	public:
-	    virtual const string & getsrc() { return src; }
+	    virtual const x_nick & getsrc() { return src; }
 	    virtual const string & gettarget() { return target; }
 	    virtual ~EvRoomWhisper() {}
     };
@@ -85,11 +85,11 @@ namespace xchat {
     class EvRoomKick : public EvRoomOther {
 	    friend class XChat;
 	protected:
-	    string src;
+	    x_nick src;
 	    x_nick target;
 	    string reason;
 	public:
-	    virtual const string & getsrc() { return src; }
+	    virtual const x_nick & getsrc() { return src; }
 	    virtual const string & getreason() { return reason; }
 	    virtual const x_nick & gettarget() { return target; }
 	    virtual ~EvRoomKick() {}

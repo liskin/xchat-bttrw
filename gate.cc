@@ -52,18 +52,6 @@ const char * const sexhost[] = {
     "users.xchat.cz"
 };
 
-/*
- * Get a host for user based on his/her sex
- */
-const char * getsexhost(string src)
-{
-    x_nick *n = x->findnick(src, 0);
-    if (n)
-	return sexhost[n->sex];
-
-    return sexhost[2];
-}
-
 #ifndef WIN32
 void sigchld(int) {
     int status, serrno;
@@ -254,7 +242,7 @@ main_accept:
 			    x->join(chan);
 
 			    fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
-				    getsexhost(nick), chan.c_str());
+				    sexhost[2], chan.c_str());
 			    fprintf(*c, ":%s 332 %s #%s :%s\n", me, nick.c_str(), chan.c_str(),
 				    (x->rooms[chan].name + " - " + x->rooms[chan].desc).c_str());
 
@@ -298,7 +286,7 @@ main_accept:
 			    try {
 				x->leave(chan);
 				fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
-					hash(nick).c_str(), getsexhost(nick),
+					hash(nick).c_str(), sexhost[2],
 					chan.c_str());
 			    } catch (runtime_error e) {
 				fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
@@ -513,14 +501,14 @@ main_accept:
 		} else if (dynamic_cast<EvRoomMsg*>(e.get())) {
 		    auto_ptr<EvRoomMsg> f((EvRoomMsg*)e.release());
 
-		    fprintf(*c, ":%s!%s@%s PRIVMSG #%s :%s\n", f->getsrc().c_str(),
-			    hash(f->getsrc()).c_str(), getsexhost(f->getsrc()),
+		    fprintf(*c, ":%s!%s@%s PRIVMSG #%s :%s\n", f->getsrc().nick.c_str(),
+			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
 			    f->getrid().c_str(), f->str().c_str());
 		} else if (dynamic_cast<EvRoomWhisper*>(e.get())) {
 		    auto_ptr<EvRoomWhisper> f((EvRoomWhisper*)e.release());
 
-		    fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", f->getsrc().c_str(),
-			    hash(f->getsrc()).c_str(), getsexhost(f->getsrc()),
+		    fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", f->getsrc().nick.c_str(),
+			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
 			    f->gettarget().c_str(), f->str().c_str());
 		} else if (dynamic_cast<EvRoomJoin*>(e.get())) {
 		    auto_ptr<EvRoomJoin> f((EvRoomJoin*)e.release());
@@ -537,8 +525,8 @@ main_accept:
 		} else if (dynamic_cast<EvRoomKick*>(e.get())) {
 		    auto_ptr<EvRoomKick> f((EvRoomKick*)e.release());
 
-		    fprintf(*c, ":%s!%s@%s KICK #%s %s :%s\n", f->getsrc().c_str(),
-			    hash(f->getsrc()).c_str(), getsexhost(f->getsrc()),
+		    fprintf(*c, ":%s!%s@%s KICK #%s %s :%s\n", f->getsrc().nick.c_str(),
+			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
 			    f->getrid().c_str(), f->gettarget().nick.c_str(),
 			    f->getreason().c_str());
 		} else if (dynamic_cast<EvRoomSysMsg*>(e.get())) {
