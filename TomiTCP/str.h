@@ -36,8 +36,9 @@ namespace std {
 
     int len(string s, int ini = 0, int tab = 8);
     int ntokens(string s);
-    string justify(string in, int width, int maxspaces = 3, int tab = 8);
-    string reformat(string ins, int width, string firstline = "", int tab = 8);
+    string justify(string in, int width, int maxspaces = 4, int tab = 8);
+    string reformat(string ins, int width, string firstline = "", int tab = 8,
+	    bool firstlinealone = 0, int maxspaces = 4);
 }
 
 #endif /* STR_H_INCLUDED */

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 #include "str.h"
 
 namespace std {
@@ -10,6 +11,9 @@ namespace std {
      */
     int len(string s, int ini = 0, int tab = 8)
     {
+	if (!tab)
+	    throw invalid_argument("tab cannot be 0, would cause division by zero");
+
 	int ret = ini;
 
 	for (string::iterator i = s.begin(); i != s.end(); i++) {
@@ -41,7 +45,7 @@ namespace std {
     /*
      * Justify line, maxspaces is the maximal number of spaces between toknes
      */
-    string justify(string in, int width, int maxspaces = 3, int tab = 8)
+    string justify(string in, int width, int maxspaces = 4, int tab = 8)
     {
 	int inw = len(in,0,tab);
 	int need = width - inw;
@@ -117,9 +121,12 @@ namespace std {
     }
 
     /*
-     * Reformat and justify paragraph with optional first line indentation
+     * Reformat and justify paragraph with optional first line indentation,
+     * firstlinealone specifies if not add indent to firstlineindent on first
+     * line
      */
-    string reformat(string ins, int width, string firstline = "", int tab = 8)
+    string reformat(string ins, int width, string firstline = "", int tab = 8,
+	    bool firstlinealone = 0, int maxspaces = 4)
     {
 	// get indentation
 	int indentw = ins.find_first_not_of(" \f\n\r\t\v");
@@ -130,8 +137,15 @@ namespace std {
 	stringstream out, in(ins);
 
 	// prepare first line
-	string line = indent + firstline;
-	int linew = len(firstline,indentw,tab);
+	string line;
+	int linew;
+	if (firstlinealone) {
+	    line = firstline;
+	    linew = len(firstline,0,tab);
+	} else {
+	    line = indent + firstline;
+	    linew = len(firstline,indentw,tab);
+	}
 	bool nline = 1;
 
 	// walk through tokens
@@ -147,7 +161,7 @@ namespace std {
 		nline = 0;
 	    } else if (neww > width) {
 		// line would be too long
-		out << justify(line,width,tab) << endl;
+		out << justify(line,width,maxspaces,tab) << endl;
 		line = indent + s;
 		linew = len(line,0,tab);
 	    } else {
