@@ -34,11 +34,13 @@ struct module {
     module_timer timer;
 };
 
-extern map<string,module> modules;
+typedef map<string,module> modules_t;
+extern modules_t modules;
 
 extern int port;
-extern string server,nick,password,oname,opassword,config,myhost;
-extern vector<string> masters,masternicks;
+extern string server,nick,password,oname,opassword,config,myhost,username,realname;
+typedef vector<string> masters_t;
+extern masters_t masters;
 extern unsigned int max_modes;
 extern int safe_mode,some_time;
 extern bool oper;
@@ -48,7 +50,8 @@ extern struct chanmodes {
     string c;  // Only has a parameter when set.
 } isupport;
 
-typedef void (*pend_func_t)(FILE*,string&,string&,string&,vector<string>&,map<string,string>&);
+typedef map<string,string> param_t;
+typedef void (*pend_func_t)(FILE*,string&,string&,string&,vector<string>&,param_t&);
 typedef map<string,pair<pend_func_t,map<string,string> > > pend_t;
 extern pend_t pend;
 

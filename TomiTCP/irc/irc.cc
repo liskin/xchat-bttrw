@@ -17,9 +17,10 @@ FILE *my_f;
 
 string server = ""; int port = 6667;
 string nick = "B4gr";
+string username = "lama";
+string realname = "I did not read anything";
 string password = "";
-vector<string> masters;
-vector<string> masternicks;
+masters_t masters;
 string oname = "";
 string opassword = "";
 string modpath = "/home/pytt_l/c++/TomiTCP/irc";
@@ -38,7 +39,7 @@ pend_t pend;
 users_t users;
 channels_t channels;
 
-map<string,module> modules;
+modules_t modules;
 
 // forward declarations
 void processsome(FILE *f);
@@ -86,10 +87,12 @@ void loadconfig(const char *fname, ostream &out)
 		    nick = b;
 		else if (!strcasecmp(a.c_str(),"password"))
 		    password = b;
+		else if (!strcasecmp(a.c_str(),"username"))
+		    username = b;
+		else if (!strcasecmp(a.c_str(),"realname"))
+		    realname = b;
 		else if (!strcasecmp(a.c_str(),"master"))
 		    masters.push_back(b);
-		else if (!strcasecmp(a.c_str(),"masternick"))
-		    masternicks.push_back(b);
 		else if (!strcasecmp(a.c_str(),"oname"))
 		    oname = b;
 		else if (!strcasecmp(a.c_str(),"opassword"))
@@ -110,7 +113,7 @@ void loadconfig(const char *fname, ostream &out)
 		    loadmodule(b);
 		else {
 		    bool ok = 0;
-		    for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
+		    for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 			if (i->second.config && !i->second.config(a,b)) {
 			    ok = 1;
 			    break;
@@ -132,10 +135,10 @@ void loadconfig(const char *fname, ostream &out)
 	throw runtime_error("Port not defined");
     if (!nick.length())
 	throw runtime_error("Nick not defined");
+    if (!username.length())
+	throw runtime_error("Username not defined");
     if (!masters.size())
 	throw runtime_error("No masters defined");
-    if (!masternicks.size())
-	throw runtime_error("No master nicks defined");
     if (!max_modes)
 	throw runtime_error("Max_modes not defined");
     if (!some_time)
@@ -146,7 +149,7 @@ void loadconfig(const char *fname, ostream &out)
 
 void unloadmodule(string name)
 {
-    map<string,module>::iterator i = modules.find(name);
+    modules_t::iterator i = modules.find(name);
     if (i != modules.end()) {
 	dlclose(i->second.lib);
 	modules.erase(i);
@@ -180,7 +183,7 @@ void login(FILE *f)
     if (password.length())
 	S(f,"PASS %s\n",password.c_str());
     S(f,"NICK %s\n",nick.c_str());
-    S(f,"USER %s 8 * :%s\n",nick.c_str(),nick.c_str());
+    S(f,"USER %s 8 * :%s\n",username.c_str(),realname.c_str());
 }
 
 void loper(FILE *f)
@@ -395,7 +398,7 @@ void docmd(FILE *f, string &snick, string &cmd)
 	return;
     }
 
-    for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
+    for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 	if (i->second.cmd)
 	    i->second.cmd(f,snick,cl);
     }
@@ -417,7 +420,7 @@ void processbuf(FILE *f, char *buf)
 	pend_t::iterator it = pend.find(cmd[0]);
 	if (it != pend.end()) {
 	    pend_func_t func = it->second.first;
-	    map<string,string> param = it->second.second;
+	    param_t param = it->second.second;
 	    pend.erase(it);
 	    func(f,prefix,snick,shost,cmd,param);
 	}
@@ -441,7 +444,7 @@ void processbuf(FILE *f, char *buf)
 	    } else if (n == 1) {
 		S(f,"WHOIS %s\n",nick.c_str());
 		loper(f);
-		for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
+		for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 		    if (i->second.connected)
 			i->second.connected(f);
 		}
@@ -467,7 +470,7 @@ void processbuf(FILE *f, char *buf)
     if ((!strcasecmp(cmd[0].c_str(),"PRIVMSG")) && (!strcasecmp(cmd[1].c_str(),nick.c_str()))
 	    && strcasecmp(snick.c_str(),nick.c_str())) {
 	bool nn = 0;
-	for (vector<string>::iterator it = masters.begin(); it!=masters.end(); it++)
+	for (masters_t::iterator it = masters.begin(); it!=masters.end(); it++)
 	    if (!fnmatch(it->c_str(),prefix.c_str(),FNM_CASEFOLD)) {
 		nn = 1;
 		break;
@@ -493,7 +496,7 @@ void processbuf(FILE *f, char *buf)
 		}
 	    }
 
-	    for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
+	    for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 		if (i->second.mode)
 		    i->second.mode(f,snick,shost,cmd[1],modes);
 	    }
@@ -551,7 +554,7 @@ void processbuf(FILE *f, char *buf)
 	}
     }
 
-    for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
+    for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 	if (i->second.msg)
 	    i->second.msg(f,snick,shost,cmd);
     }
@@ -578,7 +581,7 @@ void body(net::TomiTCP &f)
 	    processbuf(f,buf);
 	}
 
-	for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
+	for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
 	    if (i->second.timer)
 		i->second.timer(f);
 	}
