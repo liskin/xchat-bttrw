@@ -37,10 +37,10 @@ int main(int argc, char *argv[])
 	t.close();
 
 	getline(cin,s);*/
-	net::TomiTCP a;
+	/*net::TomiTCP a;
 	a.connect("nomi.cz","ircd");
 	string s;
-	getline(cin,s);
+	getline(cin,s);*/
 	//cout << a.ident() << endl;
 	
 	//cout << recode("Tomáš Janoušek","utf-8","iso-8859-2") << endl;

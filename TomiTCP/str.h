@@ -76,6 +76,20 @@ namespace std {
 	return string(a);
     }
 
+    inline string doubletostr(double d, int precision = 6)
+    {
+	char a[precision + 7];
+	sprintf(a,"%.*g",precision,d);
+	return string(a);
+    }
+
+    inline string ldoubletostr(long double d, int precision = 10)
+    {
+	char a[precision + 7];
+	sprintf(a,"%.*Lg",precision,d);
+	return string(a);
+    }
+
 #define INDENT_DETECT "\033"
     int len(string s, int ini = 0, int tab = 8);
     int ntokens(string s);
