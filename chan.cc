@@ -84,6 +84,8 @@ namespace xchat {
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
 
+	vector<string> dbg;
+
 	lastmsg = -1;
 	string l;
 	bool expect_apos = false;
@@ -91,6 +93,7 @@ namespace xchat {
 	while (s.getline(l)) {
 	    wstrip(l);
 	    if (!l.length()) continue;
+	    dbg.push_back(l);
 	    //cout << l << endl;
 
 	    if (lastmsg == -1) {
@@ -139,6 +142,8 @@ namespace xchat {
 	}
 
 	if (lastmsg == -1) {
+	    for (vector<string>::iterator i = dbg.begin(); i != dbg.end(); i++)
+		cout << *i << endl;
 	    throw runtime_error("Parse error");
 	}
 
