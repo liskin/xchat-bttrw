@@ -59,6 +59,33 @@ namespace xchat {
 	return 0;
     }
 
+    /* 
+     * Zjisti pocet znaku v UTF-8 retezci
+     */
+    unsigned int u8strlen(const char *c)
+    {
+	unsigned int len = 0;
+
+	for (; *c; c++)
+	    if (!(*c & 0x80 && ~*c & 0x40))
+		len++;
+
+	return len;
+    }
+
+    /*
+     * Zjisti pocet 8-bit znaku, ktere odpovidaji poctu 'limit' UTF-8 znaku
+     */
+    unsigned int u8strlimit(const char *c, unsigned int limit)
+    {
+	const char *tc = c;
+	for (; *tc && (limit || (*tc & 0x80 && ~*tc & 0x40)); tc++)
+	    if (!(*tc & 0x80 && ~*tc & 0x40))
+		limit--;
+
+	return tc - c;
+    }
+
     /*
      * Go through sendq and send messages, take flood protection into account.
      * Then, send anti-idle messages if necessary.
@@ -96,7 +123,7 @@ namespace xchat {
 	    /*
 	     * Look if we have to split the message
 	     */
-	    if (e.msg.length() + prepend.length() > max_msg_length) {
+	    if (u8strlen(e.msg.c_str()) + u8strlen(prepend.c_str()) > max_msg_length) {
 		if (e.msg.length() && e.msg[0] == '/') {
 		    EvRoomError *ev = new EvRoomError;
 		    ev->s = "Message might have been shortened";
@@ -104,12 +131,14 @@ namespace xchat {
 		    ev->fatal = false;
 		    recvq_push(ev);
 		} else {
-		    if (prepend.length() >= max_msg_length) {
+		    if (u8strlen(prepend.c_str()) >= max_msg_length) {
 			sendq.pop();
 			throw runtime_error("Fuck... this should have never happened!");
 		    }
-		    f.msg.erase(max_msg_length - prepend.length());
-		    e.msg.erase(0, max_msg_length - prepend.length());
+		    int split = u8strlimit(e.msg.c_str(),
+			    max_msg_length - u8strlen(prepend.c_str()));
+		    f.msg.erase(split);
+		    e.msg.erase(0, split);
 		    pop = false;
 		}
 	    }
