@@ -137,7 +137,7 @@ main_accept:
 			    nick.c_str(), me, revers(c->lname).c_str(), port);
 		    fprintf(*c, ":%s 003 %s :This server was created god knows when\n",
 			    me, nick.c_str());
-		    fprintf(*c, ":%s 004 %s :%s xchat-bttrw-" VERSION " 0 0\n",
+		    fprintf(*c, ":%s 004 %s :%s xchat-bttrw-" VERSION " 0 i\n",
 			    me, nick.c_str(), me);
 		    fprintf(*c, ":%s 005 %s :MODES=1 MAXTARGETS=1 NICKLEN=256\n", me, nick.c_str());
 		    fprintf(*c, ":%s 005 %s :CHANTYPES=# PREFIX=ov(@+) CHANMODES=,,,"
