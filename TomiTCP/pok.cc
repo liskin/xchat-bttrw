@@ -37,13 +37,16 @@ int main(int argc, char *argv[])
 	t.close();
 
 	getline(cin,s);*/
+	net::TomiTCP a("nomi.cz",80);
+	cout << net::tomi_ntop(a.lname) << endl;
+	cout << net::tomi_ntop(a.rname) << endl;
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
     }
     //cout << net::TomiHTTP::URLencode("ahoj tome") << endl;
 
 
-    cout << reformat(
+    /*cout << reformat(
 "   So we know who won rnd, who was send etc.  We use a very simple scoring,\
  nooooooo points for three places, nothing difficult.  For a win, you get 1 point.\
  Simple.  But you can win, win and still win and nobody would say that you're\
@@ -69,5 +72,5 @@ int main(int argc, char *argv[])
  effect.  A non-interactive  shell  invoked with  the  name  sh does not\
  attempt to read any other startup files.  When invoked as sh, bash enters\
  posix mode after the startup files are read."
- ,40,"  -  ",8,1,4," - - ");
+ ,40,"  -  ",8,1,4," - - ");*/
 }

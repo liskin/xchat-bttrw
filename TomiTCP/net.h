@@ -35,7 +35,7 @@ namespace net {
 
     class TomiTCP {
 	public:
-	    TomiTCP() : sock(-1), stream(0) { }
+	    TomiTCP();
 	    TomiTCP(uint16_t port); // listening socket
 	    TomiTCP(const string& hostname, uint16_t port); // connection
 	    void listen(uint16_t port);
@@ -53,7 +53,7 @@ namespace net {
 
 	    operator FILE* ();
 
-	    sockaddr_uni name;
+	    sockaddr_uni lname,rname;
 	    int sock;
 	    FILE *stream;
     };

@@ -9,8 +9,15 @@
 #include "net.h"
 
 namespace net {
+    TomiTCP::TomiTCP() : sock(-1), stream(0) {
+	memset(&lname,0,sizeof(lname));
+	memset(&rname,0,sizeof(rname));
+    }
+
     TomiTCP::TomiTCP(uint16_t port) : sock(-1), stream(0)
     {
+	memset(&lname,0,sizeof(lname));
+	memset(&rname,0,sizeof(rname));
 	listen(port);
     }
 
@@ -20,15 +27,15 @@ namespace net {
 	    close();
 	}
 
-	memset(&name,0,sizeof(name));
-	name.sin6.sin6_family = AF_INET6;
-	name.sin6.sin6_port = htons(port);
-	name.sin6.sin6_addr = in6addr_any;
+	memset(&lname,0,sizeof(lname));
+	lname.sin6.sin6_family = AF_INET6;
+	lname.sin6.sin6_port = htons(port);
+	lname.sin6.sin6_addr = in6addr_any;
 
 	sock = ::socket(PF_INET6, SOCK_STREAM, 0);
 	if (sock < 0 && (errno == EINVAL || errno == EAFNOSUPPORT)) {
-                name.sin.sin_family = AF_INET;
-                name.sin.sin_addr.s_addr = INADDR_ANY;
+                lname.sin.sin_family = AF_INET;
+                lname.sin.sin_addr.s_addr = INADDR_ANY;
                 
                 sock = ::socket(PF_INET, SOCK_STREAM, 0);
         }
@@ -42,7 +49,7 @@ namespace net {
 	if (::setsockopt(sock,SOL_SOCKET,SO_KEEPALIVE,(char*)&set_opt,sizeof(set_opt)))
 	    cerr << "Could not set SO_KEEPALIVE" << endl;
 
-	if (::bind(sock,&name.sa,SIZEOF_SOCKADDR(name))) {
+	if (::bind(sock,&lname.sa,SIZEOF_SOCKADDR(lname))) {
 	    int er = errno;
 	    ::close(sock);
 	    throw runtime_error(string(strerror(er)));
@@ -57,6 +64,8 @@ namespace net {
 
     TomiTCP::TomiTCP(const string& hostname, uint16_t port) : sock(-1), stream(0)
     {
+	memset(&lname,0,sizeof(lname));
+	memset(&rname,0,sizeof(rname));
 	connect(hostname,port);
     }
 
@@ -66,7 +75,7 @@ namespace net {
 	    close();
 	}
 
-	memset(&name,0,sizeof(name));
+	memset(&rname,0,sizeof(rname));
 
 	struct addrinfo *ai,*aip,hints;
 	int ret;
@@ -88,13 +97,13 @@ namespace net {
 		throw runtime_error(err);
 	    }
 
-	    memcpy(&name,aip->ai_addr,aip->ai_addrlen);
-	    ((name.sa.sa_family == AF_INET)?(name.sin.sin_port):(name.sin6.sin6_port)) = htons(port);
+	    memcpy(&rname,aip->ai_addr,aip->ai_addrlen);
+	    ((rname.sa.sa_family == AF_INET)?(rname.sin.sin_port):(rname.sin6.sin6_port)) = htons(port);
 	    sock = ::socket(aip->ai_family, SOCK_STREAM, 0);
 	    if (socket < 0) {
 		err = strerror(errno);
 	    } else {
-		ret = ::connect(sock,(const sockaddr*)&name,SIZEOF_SOCKADDR(name));
+		ret = ::connect(sock,(const sockaddr*)&rname,SIZEOF_SOCKADDR(rname));
 		if (ret) {
 		    close();
 		    err = strerror(errno);
@@ -103,6 +112,11 @@ namespace net {
 		}
 	    }
 	    aip = aip->ai_next;
+	}
+
+	socklen_t len = SIZEOF_SOCKADDR(lname);
+	if (getsockname(sock,(sockaddr*)&lname,&len)) {
+	    throw runtime_error(string(strerror(errno)));
 	}
 
 	freeaddrinfo(ai);
@@ -166,11 +180,12 @@ namespace net {
     {
 	TomiTCP *ret = new TomiTCP;
 
-	memset(&ret->name,0,sizeof(ret->name));
-	ret->name.sa.sa_family = name.sa.sa_family;
+	memcpy(&ret->lname,&lname,sizeof(lname));
+	memset(&ret->rname,0,sizeof(ret->rname));
+	ret->rname.sa.sa_family = lname.sa.sa_family;
 
-	socklen_t len = SIZEOF_SOCKADDR(ret->name);
-	ret->sock = TEMP_FAILURE_RETRY(::accept(sock,&ret->name.sa,&len));
+	socklen_t len = SIZEOF_SOCKADDR(ret->rname);
+	ret->sock = TEMP_FAILURE_RETRY(::accept(sock,&ret->rname.sa,&len));
 	if (ret->sock < 0)
 	    throw runtime_error(string(strerror(errno)));
 
