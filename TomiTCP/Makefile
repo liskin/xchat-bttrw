@@ -12,6 +12,10 @@ else
  CFLAGS += -DNDEBUG
 endif
 
+ifeq ($(TARGET),i386-mingw32msvc)
+ LDLIBS += -liconv -lwsock32
+endif
+
 COMPONENTS=net http cookies str
 OBJECTS=$(patsubst %,%.o,$(COMPONENTS))
 
