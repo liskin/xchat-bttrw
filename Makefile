@@ -21,8 +21,6 @@ endif
 ifeq ($(TARGET),i386-mingw32msvc)
  LDLIBS += -liconv -lws2_32
  LDFLAGS += -Wl,--wrap -Wl,strerror
- CFLAGS += -O2
- CXXLAGS += -O2
 endif
 
 .PHONY: all clean dep dummy
