@@ -9,6 +9,11 @@
 
 namespace xchat {
     /*
+     * Variable definitions
+     */
+    int idle_interval = 0;
+
+    /*
      * Prepare URL with given full path.
      */
     string XChat::makeurl(const string& path)
@@ -289,7 +294,7 @@ namespace xchat {
 	}
 
 	// f00king idler
-	if (sendq.empty())
+	if (idle_interval && sendq.empty())
 	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
 		if (time(0) - i->second.last_sent >= idle_interval) {
 		    sendq_push(i->first, "/s " + nick + " " +

@@ -33,4 +33,4 @@ clean:
 	$(RM) xchat-bttrw *.o
 	$(MAKE) -C TomiTCP clean
 TomiTCP/libTomiTCP.a: dummy
-	$(MAKE) -C TomiTCP
+	$(MAKE) -C TomiTCP DEBUG=$(DEBUG)

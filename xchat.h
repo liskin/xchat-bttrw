@@ -45,8 +45,10 @@ namespace xchat {
 
     /*
      * Flood protection, refresh rate and idle protection
+     * 720 is optimal for flood protection
      */
-    const int send_interval = 5, recv_interval = 3, idle_interval = 720;
+    const int send_interval = 5, recv_interval = 3;
+    extern int idle_interval;
 
     class XChat {
 	public:

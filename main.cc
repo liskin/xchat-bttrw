@@ -113,6 +113,16 @@ int main(int argc, char *argv[])
 		     * And here follow commands, which can be invoked after
 		     * successful registration.
 		     */
+		} else if (cmd[0] == "SET" && cmd.size() >= 2) {
+		    strtoupper(cmd[1]);
+		    if (cmd[1] == "IDLE_INTERVAL" && cmd.size() == 3) {
+			idle_interval = atol(cmd[2].c_str());
+			fprintf(*c, ":%s NOTICE %s :idle_interval set to %i\n",
+				me, nick.c_str(), idle_interval);
+		    } else {
+			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
+				" count\n", me, nick.c_str());
+		    }
 		} else if (cmd[0] == "PING") {
 		    if (cmd.size() >= 2) {
 			fprintf(*c, ":%s PONG :%s\n", me, cmd[1].c_str());
