@@ -581,8 +581,11 @@ main_accept:
 		    string rpl;
 		    for (vector<string>::iterator i = cmd.begin() + 1;
 			    i != cmd.end(); i++) {
-			if (x->ison(*i))
-			    rpl += *i + " ";
+			string n;
+			stringstream sn(*i);
+			while (sn >> n)
+			    if (x->ison(n))
+				rpl += n + " ";
 		    }
 		    fprintf(*c, ":%s 303 %s :%s\n", me, nick.c_str(), rpl.c_str());
 		} else {

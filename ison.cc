@@ -14,18 +14,17 @@ namespace xchat {
     bool XChat::ison(const string& nick)
     {
 	TomiHTTP s;
-	char buffer[1024];
-
-	int ret = s.GET(makeurl("scripts/online_img.php?nick=" + 
+	int ret = s.GET(makeurl("scripts/online_txt.php?nick=" + 
 		    TomiHTTP::URLencode(nick)),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while getting online status");
-	int sz = fread(buffer, 1, 1024, s);
-	s.close();
 
-	if (sz == 255)
+	string l;
+	s.getline(l);
+
+	if (l == "1")
 	    return true;
-	if (sz == 248)
+	if (l == "0")
 	    return false;
 
 	throw runtime_error("Unexpected online status reply, please contact developer team!");
