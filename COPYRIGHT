@@ -1,12 +1,15 @@
     xchat-bttrw (back to the real world)
     Copyright (C) 2004  Tomas Janousek <tomi@nomi.cz>
 
+    Win32 package maintainer - Ondrej Novy <onovy@nomi.cz>
+
     Thanks to people who helped a lot with development and testing:
 	Ondrej Novy, aka onovy
 	Jan Votava, aka cyner
 	Martin Filip, aka NextSux
 	Jakub Lansky, aka Lenny_
 	David Toman, aka idavid
+	Lukas Novy, aka krtek.net
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <ctime>
@@ -156,7 +157,8 @@ main_accept:
 			 * client happy.
 			 */
 
-			fprintf(*c, ":%s 001 %s :Welcome Back To The Real World, but still connected to xchat.cz\n", me, nick.c_str());
+			fprintf(*c, ":%s 001 %s :Welcome Back To The Real World,"
+				" but still connected to xchat.cz\n", me, nick.c_str());
 			fprintf(*c, ":%s 002 %s :Your host is %s[%s/%i]"
 				", running version xchat-bttrw " VERSION "\n", me,
 				nick.c_str(), me, revers(c->lname).c_str(), port);
@@ -164,9 +166,23 @@ main_accept:
 				me, nick.c_str());
 			fprintf(*c, ":%s 004 %s :%s xchat-bttrw-" VERSION " 0 io\n",
 				me, nick.c_str(), me);
-			fprintf(*c, ":%s 005 %s :MODES=1 MAXTARGETS=1 NICKLEN=256\n", me, nick.c_str());
+			fprintf(*c, ":%s 005 %s :MODES=1 MAXTARGETS=1 NICKLEN=256\n",
+				me, nick.c_str());
 			fprintf(*c, ":%s 005 %s :CHANTYPES=# PREFIX=(o)@ CHANMODES=,,,"
 				" NETWORK=xchat.cz CASEMAPPING=ascii\n", me, nick.c_str());
+
+			fprintf(*c, ":%s 375 %s :- %s Message of the Day -\n", me,
+				nick.c_str(), me);
+
+			ifstream copyright("COPYRIGHT");
+			if (copyright) {
+			    string motd;
+			    while (getline(copyright, motd))
+				fprintf(*c, ":%s 372 %s :%s\n", me, nick.c_str(),
+					motd.c_str());
+			}
+
+			fprintf(*c, ":%s 376 %s :End of /MOTD command.\n", me, nick.c_str());
 		    }
 
 		    continue;
