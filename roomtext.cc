@@ -384,7 +384,8 @@ namespace xchat {
 		    e->rid = r.rid;
 		    e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
 		    e->target = target;
-		    recvq_push(e);
+		    if (!whisper_in_queue(e->s, e->src.nick))
+			recvq_push(e);
 		}
 	    } else if (strtolower_nr(src) != strtolower_nr(nick)) {
 		EvRoomMsg *e = new EvRoomMsg;
