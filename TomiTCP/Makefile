@@ -16,7 +16,7 @@ endif
 
 all: libTomiTCP.a pok
 clean:
-	$(RM) *.{o,so,a}
+	$(RM) *.{o,so,a} pok
 libTomiTCP.a: net.o http.o cookies.o
 	$(AR) rsv $@ $?
 net.o: net.cc net.h
