@@ -6,7 +6,7 @@ nick	B4gr
 password	nomi-team
 master	Liskni_s?!pytt_l@bigcomp.home.nomi.cz
 masternick Liskni_s?
-oname	Liskni_si
-opassword	xxx
+#oname	Liskni_si
+#opassword	xxx
 max_modes	4
-#module	pokus
+module	rejoin

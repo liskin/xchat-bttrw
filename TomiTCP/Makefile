@@ -29,3 +29,4 @@ net.o: net.cc net.h
 irc.o: irc.cc net.h irc.h
 m_pokus.so: m_pokus.cc net.h irc.h
 m_nomi.so: m_nomi.cc net.h irc.h
+m_rejoin.so: m_rejoin.cc net.h irc.h
