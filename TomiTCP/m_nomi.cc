@@ -51,7 +51,7 @@ void m_nomi_mode(FILE *f, string snick, string shost, string chan,
 
 void m_nomi_msg(FILE *f, string snick, string shost, vector<string> cmd)
 {
-    if (!strcasecmp(cmd[0].c_str(),"KICK")) {
+    if (!strcasecmp(cmd[0].c_str(),"KICK") && !strcasecmp(cmd[2].c_str(),nick.c_str())) {
 	    S(f,"KILL %s :Do kouta blbecku! Nekickej rul3ra!\n",snick.c_str());
 	    S(f,"OJOIN @%s\n",cmd[1].c_str());
     }
