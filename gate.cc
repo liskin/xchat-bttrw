@@ -4,12 +4,12 @@
 #include <ctime>
 #include <memory>
 #include <map>
-#include <openssl/md5.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <typeinfo>
+#include "md5.h"
 #include "xchat.h"
 #include "irc.h"
 #include "TomiTCP/net.h"
@@ -28,9 +28,9 @@ string hash(string s)
     strtolower(s);
     unsigned char mdbuf[16]; char tmp[10];
     MD5_CTX md5;
-    MD5_Init(&md5);
-    MD5_Update(&md5, s.c_str(), s.length());
-    MD5_Final(mdbuf, &md5);
+    MD5Init(&md5);
+    MD5Update(&md5, (const unsigned char*)s.c_str(), s.length());
+    MD5Final(mdbuf, &md5);
     sprintf(tmp, "%.8x", *((unsigned int*)mdbuf));
     return tmp;
 }

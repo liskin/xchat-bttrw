@@ -4,7 +4,7 @@ DEBUG=yes
 
 CFLAGS=-Wall -D_GNU_SOURCE
 CXXFLAGS=$(CFLAGS)
-LDLIBS=-lrecode -lcrypto
+LDLIBS=-lrecode
 LDFLAGS=
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
@@ -30,7 +30,7 @@ libxchat-bttrw.a: xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o \
                   charset.o
 	$(AR) rsv $@ $?
 
-gate: gate.o libxchat-bttrw.a TomiTCP/libTomiTCP.a
+gate: gate.o md5.o libxchat-bttrw.a TomiTCP/libTomiTCP.a
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 clean:
