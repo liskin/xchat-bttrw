@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	t.close();
 
 	getline(cin,s);*/
-	net::TomiTCP a("62.77.119.154",6667);
+	net::TomiTCP a("62.77.119.154",80);
 	cout << a.ident() << endl;
     } catch (runtime_error e) {
 	cerr << e.what() << endl;

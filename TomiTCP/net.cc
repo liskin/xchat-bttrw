@@ -182,7 +182,8 @@ namespace net {
 	} else {
 	    std::getline(ss,tmp,':');
 	    std::getline(ss,tmp,':');
-	    ss >> tmp;
+	    std::getline(ss,tmp,' ');
+	    std::getline(ss,tmp);
 	    return tmp;
 	}
     }
