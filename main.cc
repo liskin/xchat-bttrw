@@ -15,6 +15,8 @@ using namespace std;
 using namespace xchat;
 using namespace net;
 
+#define VERSION "SVN"
+
 string hash(string s)
 {
     strtolower(s);
@@ -103,12 +105,23 @@ int main(int argc, char *argv[])
 			break;
 		    }
 
-		    fprintf(*c, ":%s 001 %s :Vitej Smazko!\n", me, nick.c_str());
 		    try { x.reset(new XChat(nick, pass)); }
 		    catch (runtime_error e) {
 			fprintf(*c, ":%s ERROR :%s\n", me, e.what());
 			break;
 		    }
+
+		    fprintf(*c, ":%s 001 %s :Vitej Smazko na xchat.cz!\n", me, nick.c_str());
+		    fprintf(*c, ":%s 002 %s :Your host is %s[%s/%i]"
+			    ", running version xchat-bttrw " VERSION "\n", me,
+			    nick.c_str(), me, revers(c->lname).c_str(), port);
+		    fprintf(*c, ":%s 003 %s :This server was created god knows when\n",
+			    me, nick.c_str());
+		    fprintf(*c, ":%s 004 %s :%s xchat-bttrw-" VERSION " 0 0\n",
+			    me, nick.c_str(), me);
+		    fprintf(*c, ":%s 005 %s :MODES=1 MAXTARGETS=4 NICKLEN=256\n", me, nick.c_str());
+		    fprintf(*c, ":%s 005 %s :CHANTYPES=# PREFIX=() CHANMODES=,,,"
+			    " NETWORK=xchat.cz CASEMAPPING=ascii\n", me, nick.c_str());
 		} else if (!x.get()) { // -- registered command boundary --
 		    fprintf(*c, ":%s ERROR :Not registered\n", me);
 		    break;
