@@ -112,6 +112,14 @@ namespace xchat {
 			    max_msg_length - u8strlen(prepend.c_str()));
 		    f.msg.erase(split);
 		    e.msg.erase(0, split);
+
+		    /*
+		     * Fix messages splitted before '/' char
+		     */
+		    if (e.msg.length() && e.msg[0] == '/') {
+			e.msg.insert(0, " ");
+		    }
+
 		    pop = false;
 		}
 	    }
