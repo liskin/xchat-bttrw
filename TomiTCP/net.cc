@@ -209,8 +209,9 @@ namespace net {
 
 	stream = fdopen(sock,"r+");
 	if (!stream) {
+	    int er = errno;
 	    close();
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error(string(strerror(er)));
 	}
 
 	setvbuf(stream,NULL,_IONBF,0); // no buffering
@@ -263,8 +264,9 @@ namespace net {
 
 	ret->stream = fdopen(ret->sock,"r+");
 	if (!ret->stream) {
+	    int er = er;
 	    delete ret;
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error(string(strerror(er)));
 	}
 	setvbuf(ret->stream,NULL,_IONBF,0); // no buffering
 	
