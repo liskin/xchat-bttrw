@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 			break;
 		    }
 
-		    fprintf(*c, "%s!@ JOIN #%s\n", nick.c_str(), cmd[1].c_str());
+		    fprintf(*c, ":%s!@ JOIN #%s\n", nick.c_str(), cmd[1].c_str());
 		    string tmp; int i; vector<string>::iterator j;
 		    for (i = 1, j = nicklist.begin(); j != nicklist.end(); j++, i++) {
 			tmp += *j + " ";
@@ -122,7 +122,11 @@ int main(int argc, char *argv[])
 			    break;
 			}
 		    } else {
-			fprintf(*c, ":%s NOTICE %s :Query not implemented\n", me, nick.c_str());
+			try { x->putmsg(room, "/s " + cmd[1] + " " + cmd[2]); }
+			catch (runtime_error e) {
+			    fprintf(*c, ":%s ERROR :%s\n", me, e.what());
+			    break;
+			}
 		    }
 		} else if (cmd[0] == "MODE" && cmd.size() == 2) {
 		    fprintf(*c, ":%s 324 %s %s +\n", me, nick.c_str(), cmd[1].c_str());
@@ -145,7 +149,13 @@ int main(int argc, char *argv[])
 			room_l = x->getmsg(room, room_l, m);
 			for (vector<string>::iterator i = m.begin(); i != m.end(); i++) {
 			    string m = striphtml(*i);
-			    fprintf(*c, ":%s PRIVMSG #%s :%s\n", me, room.c_str(), m.c_str());
+			    XChat::stripdate(m);
+			    string src = me, target = "#" + room;
+			    XChat::getnick(m, src, target);
+
+			    if (src != nick)
+				fprintf(*c, ":%s!@ PRIVMSG %s :%s\n", src.c_str(),
+					target.c_str(), m.c_str());
 			}
 		    }
 		}
