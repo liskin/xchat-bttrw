@@ -51,7 +51,7 @@ const char *smiles[] = {
     [44] "*:) rotuje*",
     [45] ":-*",
     [46] "*bezi*",
-    [47] ":DD",
+    [47] "*hihihi*",
     [48] "*rose*",
     [49] "*dabel :D*",
     [50] ":]",
