@@ -11,6 +11,8 @@ const char *idle_msgs[] = {
     "Na zacatku bylo slovo. To slovo bylo mrdat.",
     "Segmentation fault (core dumped).",
     "Floating point exception.",
+    "Banik pyco!",
+    "Racek racku posral packu.",
     "Hej, tohle je posledni idle zprava, tzn. (rand() + 1) % idle_msgs == 0, mazec!"
 };
 

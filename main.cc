@@ -74,6 +74,8 @@ inline void sendq_push(const string& a, const string& b) {
 
 int main(int argc, char *argv[])
 {
+    srand(time(0) ^ getpid());
+
     int port = 6669;
     if (argc == 2 && atol(argv[1]))
 	port = atol(argv[1]);
