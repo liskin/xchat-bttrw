@@ -266,8 +266,7 @@ namespace net {
 	    }
 	    int retval = TEMP_FAILURE_RETRY(::send(sock,buf,sz,0));
 	    if (retval < 0) {
-		int er = errno;
-		throw runtime_error(string(strerror(er)));
+		throw runtime_error(string(strerror(errno)));
 	    }
 	    buf += retval;
 	    sz -= retval;
@@ -280,9 +279,8 @@ namespace net {
         {
             int retval = TEMP_FAILURE_RETRY(::recv(sock,buf,sz,0));
             if (retval <= 0) {
-		int er = errno;
 		if (retval < 0)
-		    throw runtime_error(string(strerror(er)));
+		    throw runtime_error(string(strerror(errno)));
             }
 	    return retval;
         }
