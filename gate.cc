@@ -135,7 +135,7 @@ const char * const me = "xchat.cz";
 
 time_t last_ping = 0, last_ping_sent = 0, connect_time = 0;
 
-bool voiced_girls = false;
+bool voiced_girls = false, show_advert = true;
 
 #ifndef WIN32
 void sigchld(int) {
@@ -359,6 +359,10 @@ main_accept:
 		if (cmd[0] == "SET" && cmd.size() >= 2) {
 		    strtoupper(cmd[1]);
 		    if (cmd[1] == "IDLE_INTERVAL" && cmd.size() == 3) {
+			/*
+			 * Note: You're violating the XChat rules by using
+			 * this.
+			 */
 			idle_interval = atol(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :idle_interval set to %i\n",
 				me, nick.c_str(), idle_interval);
@@ -374,6 +378,14 @@ main_accept:
 			voiced_girls = atol(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :voiced_girls set to %i\n",
 				me, nick.c_str(), voiced_girls);
+		    } else if (cmd[1] == "SHOW_ADVERT" && cmd.size() == 3) {
+			/*
+			 * Note that you're probably not behaving fair while
+			 * having this turned off.
+			 */
+			show_advert = atol(cmd[2].c_str());
+			fprintf(*c, ":%s NOTICE %s :show_advert set to %i\n",
+				me, nick.c_str(), show_advert);
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
 				" count\n", me, nick.c_str());
@@ -839,9 +851,10 @@ main_accept:
 		} else if (dynamic_cast<EvRoomAdvert*>(e.get())) {
 		    auto_ptr<EvRoomAdvert> f((EvRoomAdvert*)e.release());
 
-		    fprintf(*c, ":%s NOTICE #%s :Advert: %s [ %s ]\n", me,
-			    f->getrid().c_str(), f->str().c_str(),
-			    f->getlink().c_str());
+		    if (show_advert)
+			fprintf(*c, ":%s NOTICE #%s :Advert: %s [ %s ]\n", me,
+				f->getrid().c_str(), f->str().c_str(),
+				f->getlink().c_str());
 		} else if (dynamic_cast<EvRoomOther*>(e.get())) {
 		    auto_ptr<EvRoomOther> f((EvRoomOther*)e.release());
 
