@@ -13,10 +13,6 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-#if defined(BSD) && !defined(TEMP_FAILURE_RETRY)
-#define TEMP_FAILURE_RETRY(a) a
-#endif
-
 #define SIZEOF_SOCKADDR(so) ((so).sa.sa_family == AF_INET6 ? \
     sizeof((so).sin6) : sizeof((so).sin))
 
