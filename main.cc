@@ -5,6 +5,10 @@
 #include <memory>
 #include <map>
 #include <openssl/md5.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "xchat.h"
 #include "irc.h"
 #include "TomiTCP/net.h"
@@ -37,9 +41,14 @@ TomiTCP s;
 auto_ptr<TomiTCP> c;
 auto_ptr<XChat> x;
 
+void sigchld(int) {
+    wait(0);
+}
+
 int main(int argc, char *argv[])
 {
     srand(time(0) ^ getpid());
+    signal(SIGCHLD, sigchld);
     init_recode();
 
     int port = 6669;
@@ -48,7 +57,16 @@ int main(int argc, char *argv[])
 
     try {
 	s.listen(port);
+main_accept:
 	c.reset(s.accept());
+
+	pid_t pid = fork();
+	if (pid < 0)
+	    return -1;
+	if (pid > 0) {
+	    c.reset(0);
+	    goto main_accept;
+	}
 
 	string nick, pass;
 
@@ -59,7 +77,9 @@ int main(int argc, char *argv[])
 		 */
 		string l, prefix;
 		vector<string> cmd;
-		c->getline(l); chomp(l); if (!l.length()) break;
+		if (!c->getline(l))
+		    break;
+	       	chomp(l);
 
 		parsein(l, prefix, cmd);
 		if (!cmd.size()) continue;
