@@ -117,7 +117,7 @@ namespace xchat {
 	return 0;
     }
 
-    bool XChat::isidlekick(string &m, rooms_t &rooms, string &src, string &reason)
+    bool XChat::iskick(string &m, rooms_t &rooms, string &src, string &reason, string &who)
     {
 	unsigned int a,b;
 	if ((a = m.find("Uzivatel")) != string::npos &&
@@ -129,6 +129,12 @@ namespace xchat {
 	    } else {
 		src = string(m, a + sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 1);
 		wstrip(src);
+	    }
+
+	    if ((a = m.find("spravcem")) != string::npos &&
+		    (b = m.find("z mistnosti")) != string::npos) {
+		who = string(m, a + sizeof("spravcem ") - 1, b - a - sizeof("spravcem ") + 1);
+		wstrip(who);
 	    }
 
 	    if ((a = m.find_last_of("(")) != string::npos &&

@@ -62,7 +62,7 @@ const char * getsexhost(const string& src)
 }
 
 time_t last_sent = 0, last_recv = 0;
-int send_interval = 9, recv_interval = 3, idle_interval = 840;
+int send_interval = 5, recv_interval = 3, idle_interval = 840;
 queue<pair<string,string> > sendq;
 inline void sendq_push(const string& a, const string& b) {
     sendq.push(pair<string,string>(a,b));
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
 			for (vector<string>::iterator i = m.begin(); i != m.end(); i++) {
 			    string m = striphtml(*i);
 			    XChat::stripdate(m);
-			    string src = me, target = "#" + j->first, reason;
+			    string src = me, target = "#" + j->first, reason, who;
 			    XChat::getnick(m, src, target);
 			    XChat::striphtmlent(m);
 
@@ -260,10 +260,15 @@ int main(int argc, char *argv[])
 					hash(src).c_str(), getsexhost(src),
 					j->first.c_str());
 				j->second.nicklist.erase(src);
-			    } else if (src == me && XChat::isidlekick(m, rooms, src, reason)) {
-				fprintf(*c, ":%s!%s@%s PART #%s :%s\n", src.c_str(),
-					hash(src).c_str(), getsexhost(src),
-					j->first.c_str(), reason.c_str());
+			    } else if (src == me && XChat::iskick(m, rooms, src, reason, who)) {
+				if (who.empty())
+				    fprintf(*c, ":%s!%s@%s PART #%s :%s\n", src.c_str(),
+					    hash(src).c_str(), getsexhost(src),
+					    j->first.c_str(), reason.c_str());
+				else
+				    fprintf(*c, ":%s!%s@%s KICK #%s %s :%s\n", who.c_str(),
+					    hash(who).c_str(), getsexhost(who),
+					    j->first.c_str(), src.c_str(), reason.c_str());
 				j->second.nicklist.erase(src);
 			    } else if (src != nick)
 				fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", src.c_str(),
