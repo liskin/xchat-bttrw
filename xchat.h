@@ -6,6 +6,7 @@
 #include <map>
 #include <ctime>
 #include <queue>
+#include <deque>
 #include <memory>
 #include "TomiTCP/net.h"
 #include "TomiTCP/str.h"
@@ -67,7 +68,7 @@ namespace xchat {
 
 	    time_t last_sent, last_recv;
 	    queue<pair<string,string> > sendq; // chan => msg
-	    queue<recv_item> recvq;
+	    deque<recv_item> recvq;
 
 	    void sendq_push(const string& a, const string& b);
 	    void do_sendq();
@@ -90,13 +91,14 @@ namespace xchat {
 
 	    static void striphtml(string &s);
 	    static void stripdate(string &m);
-	    static void getnick(string &m, string &src, string &target);
+	    static void getnick(string &m, string &src, string &target, bool &interroom);
 	    static void unsmilize(string &s);
 	    bool isjoin(room& r, string &m, string &src, int &sex);
 	    bool isleave(room& r, string &m, string &src, int &sex);
 	    bool iskick(room& r, string &m, string &src, string &reason, string &who, int &sex);
 	    bool isadvert(string &m, string &link);
 	    bool sysnoroom(string &m);
+	    bool whisper_in_queue(string &m, string &src);
 
 	    void msg(const string &room, const string &msg);
 	    void whisper(const string &room, const string &target, const string &msg);
@@ -116,11 +118,11 @@ namespace xchat {
     }
 
     inline void XChat::recvq_push(Event *e) {
-	recvq.push(recv_item(e));
+	recvq.push_front(recv_item(e));
     }
 
     inline Event * XChat::recvq_pop() {
-	auto_ptr<Event> e = recvq.front().e; recvq.pop();
+	auto_ptr<Event> e = recvq.front().e; recvq.pop_front();
 	return e.release();
     }
     

@@ -490,7 +490,6 @@ main_accept:
 	     */
 	    while (x.get() && !x->recvq.empty()) {
 		auto_ptr<Event> e(x->recvq_pop());
-		//cout << typeid(*(e.get())).name() << endl;
 
 		if (dynamic_cast<EvRoomError*>(e.get())) {
 		    auto_ptr<EvRoomError> f((EvRoomError*)e.release());
@@ -507,6 +506,12 @@ main_accept:
 			    f->getrid().c_str(), f->str().c_str());
 		} else if (dynamic_cast<EvRoomWhisper*>(e.get())) {
 		    auto_ptr<EvRoomWhisper> f((EvRoomWhisper*)e.release());
+
+		    fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", f->getsrc().nick.c_str(),
+			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
+			    f->gettarget().c_str(), f->str().c_str());
+		} else if (dynamic_cast<EvWhisper*>(e.get())) {
+		    auto_ptr<EvWhisper> f((EvWhisper*)e.release());
 
 		    fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", f->getsrc().nick.c_str(),
 			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],

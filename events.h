@@ -163,6 +163,17 @@ namespace xchat {
 	public:
 	    virtual ~EvSysMsg() {}
     };
+
+    class EvWhisper : public Event {
+	    friend class XChat;
+	protected:
+	    x_nick src;
+	    string target;
+	public:
+	    virtual const x_nick & getsrc() { return src; }
+	    virtual const string & gettarget() { return target; }
+	    virtual ~EvWhisper() {}
+    };
 }
 
 #include "xchat.h"

@@ -88,8 +88,9 @@ namespace xchat {
     /*
      * Get nick (source) and, if given, target nick
      */
-    void XChat::getnick(string &m, string &src, string &target)
+    void XChat::getnick(string &m, string &src, string &target, bool &interroom)
     {
+	interroom = 0;
 	string t = string(m, 0, m.find(": "));
 	if (t.length() == m.length())
 	    return;
@@ -108,6 +109,7 @@ namespace xchat {
 	unsigned int a;
 	if (src[0] == '[' && ((a = src.find(']')) != string::npos)) {
 	    src.erase(0, a + 1);
+	    interroom = 1;
 	}
     }
 
@@ -286,6 +288,20 @@ namespace xchat {
 	return 0;
     }
 
+    bool XChat::whisper_in_queue(string &m, string &src)
+    {
+	for (deque<recv_item>::iterator i = recvq.begin();
+		i != recvq.end(); i++) {
+	    EvWhisper *e;
+	    if ((e = dynamic_cast<EvWhisper*>(i->e.get()))) {
+		if (e->getsrc().nick == src && e->str() == m)
+		    return true;
+	    }
+	}
+
+	return false;
+    }
+
     /*
      * Parse a line from xchat and push appropiate events to the recvq.
      */
@@ -310,7 +326,8 @@ namespace xchat {
 	}
 
 	string src, target;
-	getnick(m, src, target);
+	bool interroom;
+	getnick(m, src, target, interroom);
 
 	if (src.length()) {
 	    unsmilize(m);
@@ -333,12 +350,21 @@ namespace xchat {
 		    recvq_push(e);
 		}
 	    } else if (target.length() && strtolower_nr(src) != strtolower_nr(nick)) {
-		EvRoomWhisper *e = new EvRoomWhisper;
-		e->s = recode_to_client(m);
-		e->rid = r.rid;
-		e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
-		e->target = target;
-		recvq_push(e);
+		if (interroom) {
+		    EvWhisper *e = new EvWhisper;
+		    e->s = recode_to_client(m);
+		    e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
+		    e->target = target;
+		    if (!whisper_in_queue(e->s, e->src.nick))
+			recvq_push(e);
+		} else {
+		    EvRoomWhisper *e = new EvRoomWhisper;
+		    e->s = recode_to_client(m);
+		    e->rid = r.rid;
+		    e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
+		    e->target = target;
+		    recvq_push(e);
+		}
 	    } else if (strtolower_nr(src) != strtolower_nr(nick)) {
 		EvRoomMsg *e = new EvRoomMsg;
 		e->s = recode_to_client(m);
