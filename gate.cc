@@ -66,7 +66,12 @@ const char * getsexhost(string src)
 
 #ifndef WIN32
 void sigchld(int) {
-    wait(0);
+    int status, serrno;
+    serrno = errno;
+    while (1)
+	if (waitpid (WAIT_ANY, &status, WNOHANG) <= 0)
+	    break;
+    errno = serrno;
 }
 #endif
 
