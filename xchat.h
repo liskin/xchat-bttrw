@@ -6,20 +6,11 @@
 #include <map>
 #include <ctime>
 #include <queue>
-#include <recode.h>
 #include "TomiTCP/net.h"
+#include "charset.h"
 
 namespace xchat {
     using namespace std;
-
-    struct recode_t {
-	RECODE_OUTER outer;
-	RECODE_REQUEST request;
-    };
-    extern recode_t recode;
-
-    void init_recode();
-    void exit_recode();
 
     struct x_nick {
 	string nick;
@@ -82,7 +73,6 @@ namespace xchat {
 	    static void striphtml(string &s);
 	    static void stripdate(string &m);
 	    static void getnick(string &m, string &src, string &target);
-	    static void striphtmlent(string &m);
 	    static void unsmilize(string &s);
 	    bool isjoin(const string& r, string &m, string &src);
 	    bool ispart(const string& r, string &m, string &src, string &host);

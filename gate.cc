@@ -347,7 +347,7 @@ main_accept:
 		XChat::striphtml(m);
 		XChat::stripdate(m);
 		XChat::getnick(m, src, target);
-		XChat::striphtmlent(m);
+		striphtmlent(m);
 		XChat::unsmilize(m);
 
 		/*

@@ -16,7 +16,7 @@ endif
 
 .PHONY: all clean dep dummy
 
-all: xchat-bttrw
+all: gate
 
 MAKEDEP=gcc -MM $(wildcard *.c *.cc) > .depend
 dep:
@@ -26,7 +26,7 @@ dep:
 
 -include .depend
 
-xchat-bttrw: main.o xchat.o login.o chan.o irc.o idle.o smiles.o TomiTCP/libTomiTCP.a
+gate: gate.o xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o charset.o TomiTCP/libTomiTCP.a
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 clean:
