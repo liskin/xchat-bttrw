@@ -139,7 +139,12 @@ main_accept:
 			break;
 		    }
 		    
-		    if (user && nick.length() && pass.length()) {
+		    if (user && nick.length()) {
+			if (!pass.length()) {
+			    fprintf(*c, ":%s NOTICE AUTH :Need password!\n", me);
+			    continue;
+			}
+
 			try { x.reset(new XChat(nick, pass)); }
 			catch (runtime_error e) {
 			    fprintf(*c, ":%s ERROR :%s\n", me, e.what());
