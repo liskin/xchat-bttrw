@@ -106,11 +106,11 @@ namespace xchat {
 		int smile = atol(string(s.begin() + a + 1, s.begin() + b).c_str());
 		if (smile < smiles_count && smiles[smile]) {
 		    s.erase(s.begin() + a, s.begin() + b + 1);
-		    s.insert(a, smiles[smile]);
+		    s.insert(a, string("\002") + smiles[smile] + "\002");
 
-		    int add = 0;
-		    if (s[a + strlen(smiles[smile])] != ' ') {
-			s.insert(a + strlen(smiles[smile]), " ");
+		    int add = 2;
+		    if (s[a + strlen(smiles[smile]) + 2] != ' ') {
+			s.insert(a + strlen(smiles[smile]) + 2, " ");
 			add++;
 		    }
 		    if (a > 0 && s[a - 1] != ' ') {
