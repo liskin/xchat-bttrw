@@ -109,8 +109,7 @@ int main(int argc, char *argv[])
 			fprintf(*c, ":%s ERROR :%s\n", me, e.what());
 			break;
 		    }
-		} else if (!x.get()) {
-		    // registered command boundary
+		} else if (!x.get()) { // -- registered command boundary --
 		    fprintf(*c, ":%s ERROR :Not registered\n", me);
 		    break;
 		} else if (cmd[0] == "PING") {
@@ -158,10 +157,15 @@ int main(int argc, char *argv[])
 			cmd[1].erase(cmd[1].begin());
 
 		    if (rooms.find(cmd[1]) != rooms.end()) {
-			x->part(cmd[1]);
-			rooms.erase(cmd[1]);
-			fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
-				hash(nick).c_str(), sexhost[mysex], cmd[1].c_str());
+			try {
+			    x->part(cmd[1]);
+			    rooms.erase(cmd[1]);
+			    fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
+				    hash(nick).c_str(), sexhost[mysex], cmd[1].c_str());
+			} catch (runtime_error e) {
+			    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+				    nick.c_str(), e.what());
+			}
 		    } else {
 			fprintf(*c, ":%s 403 %s %s :No such channel\n", me,
 				nick.c_str(), cmd[1].c_str());
@@ -170,32 +174,23 @@ int main(int argc, char *argv[])
 		    if (cmd[1][0] == '#') {
 			cmd[1].erase(cmd[1].begin());
 
-			try { sendq_push(cmd[1], cmd[2]); }
-			catch (runtime_error e) {
-			    fprintf(*c, ":%s 403 %s #%s :%s\n", me, nick.c_str(),
-				    cmd[1].c_str(), e.what());
-			}
+			sendq_push(cmd[1], cmd[2]);
 		    } else {
 			if (rooms.size()) {
-			    try {
-				bool global = 1;
-				rooms_t::iterator r;
-				for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++)
-				    if (i->second.nicklist.find(strtolower_nr(cmd[1]))
-					    != i->second.nicklist.end()) {
-					global = 0;
-					r = i;
-					break;
-				    }
+			    bool global = 1;
+			    rooms_t::iterator r;
+			    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++)
+				if (i->second.nicklist.find(strtolower_nr(cmd[1]))
+					!= i->second.nicklist.end()) {
+				    global = 0;
+				    r = i;
+				    break;
+				}
 
-				if (global)
-				    sendq_push(rooms.begin()->first, "/m " + cmd[1] + " " + cmd[2]);
-				else
-				    sendq_push(r->first, "/s " + cmd[1] + " " + cmd[2]);
-			    } catch (runtime_error e) {
-				fprintf(*c, ":%s 401 %s %s :%s\n", me, nick.c_str(),
-					cmd[1].c_str(), e.what());
-			    }
+			    if (global)
+				sendq_push(rooms.begin()->first, "/m " + cmd[1] + " " + cmd[2]);
+			    else
+				sendq_push(r->first, "/s " + cmd[1] + " " + cmd[2]);
 			} else {
 			    fprintf(*c, ":%s NOTICE %s :Can't send PRIVMSG's "
 				    "without channel joined\n", me, nick.c_str());
@@ -235,7 +230,12 @@ int main(int argc, char *argv[])
 
 	    if (x.get() && !sendq.empty() && time(0) - last_sent >= send_interval) {
 		pair<string,string> msg = sendq.front(); sendq.pop();
-		x->putmsg(msg.first, msg.second);
+		try {
+		    x->putmsg(msg.first, msg.second);
+		} catch (runtime_error e) {
+		    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+			    nick.c_str(), e.what());
+		}
 		last_sent = time(0);
 		rooms[msg.first].last_sent = last_sent;
 	    }
