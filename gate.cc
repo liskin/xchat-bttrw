@@ -81,7 +81,11 @@ int main(int argc, char *argv[])
 	port = atol(argv[1]);
 
     try {
-	s.listen(port);
+	s.listen(port
+#ifdef WIN32
+		, "0.0.0.0"
+#endif
+		);
 main_accept:
 	c.reset(s.accept());
 
@@ -98,7 +102,7 @@ main_accept:
 	string nick, pass;
 
 	while (1) {
-	    if (input_timeout(c->sock, 1000) > 0) {
+	    if (input_timeout(c->netsock, 1000) > 0) {
 		/*
 		 * Got message from IRC client
 		 */

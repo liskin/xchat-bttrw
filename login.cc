@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstdlib>
 #include <sstream>
 #include "xchat.h"

@@ -1,5 +1,7 @@
 #include <map>
 #include <stdexcept>
+#include <iconv.h>
+#include <errno.h>
 #include "charset.h"
 #include "TomiTCP/str.h"
 
