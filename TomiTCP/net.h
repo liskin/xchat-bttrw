@@ -2,7 +2,6 @@
 #define NET_H_INCLUDED
 
 #pragma interface
-#include <iostream>
 #include <cstdio>
 #include <stdint.h>
 #include <string>
@@ -25,22 +24,23 @@ namespace net {
 
     int input_timeout(int filedes, unsigned int ms);
     int output_timeout(int filedes, unsigned int ms);
-    std::string tomi_ntop(const sockaddr_uni& name);
-    void tomi_pton(std::string p, sockaddr_uni& name);
-    std::string revers(const sockaddr_uni& name);
+    string tomi_ntop(const sockaddr_uni& name);
+    void tomi_pton(string p, sockaddr_uni& name);
+    string revers(const sockaddr_uni& name);
 
-    class timeout : public std::runtime_error {
+    class timeout : public runtime_error {
 	public:
-	    timeout(const std::string& a) : std::runtime_error(a) { }
+	    timeout(const string& a) : runtime_error(a) { }
     };
 
     class TomiTCP {
 	public:
 	    TomiTCP() : sock(-1), stream(0) { }
 	    TomiTCP(uint16_t port); // listening socket
-	    TomiTCP(const std::string& hostname, uint16_t port); // connection
+	    TomiTCP(const string& hostname, uint16_t port); // connection
 	    void listen(uint16_t port);
-	    void connect(const std::string& hostname, uint16_t port);
+	    void connect(const string& hostname, uint16_t port);
+	    void attach(int filedes);
 	    void close();
 	    ~TomiTCP();
 	    bool ok();

@@ -1,13 +1,16 @@
-#include "http.h"
-#include "cookies.h"
+/*#include "http.h"
+#include "cookies.h"*/
+#include <iostream>
+#include "net.h"
+#include <unistd.h>
 using namespace std;
 
 int main(int argc, char *argv[])
 {
-    if (argc!=2) return -1;
+    //if (argc!=2) return -1;
 
-    /*try {
-	net::TomiCookies c;
+    try {
+	/*net::TomiCookies c;
 	try {
 	    c.load("cookies");
 	} catch (...) {
@@ -21,9 +24,20 @@ int main(int argc, char *argv[])
 	string l;
 	while (s.getline(l)) {
 	    cout << l;
-	}
+	}*/
+	string s;
+
+	cout << getpid() << endl;
+
+	net::TomiTCP t(1025);
+
+	getline(cin,s);
+
+	t.close();
+
+	getline(cin,s);
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
-    }*/
-    cout << net::TomiHTTP::URLencode("ahoj tome") << endl;
+    }
+    //cout << net::TomiHTTP::URLencode("ahoj tome") << endl;
 }

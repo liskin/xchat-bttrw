@@ -1,5 +1,4 @@
 #pragma implementation
-#include <iostream>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/socket.h>
@@ -33,34 +32,34 @@ namespace net {
                 sock = ::socket(PF_INET, SOCK_STREAM, 0);
         }
 	if (sock < 0) {
-	    throw std::runtime_error(std::string(strerror(errno)));
+	    throw runtime_error(string(strerror(errno)));
 	}
 
 	int set_opt = 1;
         if (::setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char*)&set_opt,sizeof(set_opt)))
-	    std::cerr << "Could not set SO_REUSEADDR" << std::endl;
+	    cerr << "Could not set SO_REUSEADDR" << endl;
 	if (::setsockopt(sock,SOL_SOCKET,SO_KEEPALIVE,(char*)&set_opt,sizeof(set_opt)))
-	    std::cerr << "Could not set SO_KEEPALIVE" << std::endl;
+	    cerr << "Could not set SO_KEEPALIVE" << endl;
 
 	if (::bind(sock,&name.sa,SIZEOF_SOCKADDR(name))) {
 	    int er = errno;
 	    ::close(sock);
-	    throw std::runtime_error(std::string(strerror(er)));
+	    throw runtime_error(string(strerror(er)));
 	}
 
 	if (::listen(sock,5)) {
 	    int er = errno;
 	    ::close(sock);
-	    throw std::runtime_error(std::string(strerror(er)));
+	    throw runtime_error(string(strerror(er)));
 	}
     }
 
-    TomiTCP::TomiTCP(const std::string& hostname, uint16_t port) : sock(-1), stream(0)
+    TomiTCP::TomiTCP(const string& hostname, uint16_t port) : sock(-1), stream(0)
     {
 	connect(hostname,port);
     }
 
-    void TomiTCP::connect(const std::string& hostname, uint16_t port)
+    void TomiTCP::connect(const string& hostname, uint16_t port)
     {
 	if (ok()) {
 	    close();
@@ -76,26 +75,26 @@ namespace net {
 
 	ret = getaddrinfo(hostname.c_str(),0,&hints,&ai);
 	if (ret) {
-	    throw std::runtime_error(std::string(gai_strerror(ret)));
+	    throw runtime_error(string(gai_strerror(ret)));
 	}
 	aip = ai;
 
 	while (!ok()) {
 	    if (!aip) {
 		freeaddrinfo(ai);
-		throw std::runtime_error("Was not able to connect");
+		throw runtime_error("Was not able to connect");
 	    }
 
 	    memcpy(&name,aip->ai_addr,aip->ai_addrlen);
 	    ((name.sa.sa_family == AF_INET)?(name.sin.sin_port):(name.sin6.sin6_port)) = htons(port);
 	    sock = ::socket(aip->ai_family, SOCK_STREAM, 0);
 	    if (socket < 0) {
-		std::cerr << "Ch: " << strerror(errno) << std::endl;
+		cerr << "Ch: " << strerror(errno) << endl;
 	    } else {
 		ret = ::connect(sock,(const sockaddr*)&name,SIZEOF_SOCKADDR(name));
 		if (ret) {
 		    close();
-		    std::cerr << "Ch: " << strerror(errno) << std::endl;
+		    cerr << "Ch: " << strerror(errno) << endl;
 		} else {
 		    break;
 		}
@@ -105,28 +104,45 @@ namespace net {
 
 	freeaddrinfo(ai);
 
-	try {
-	    stream = makestream();
-	} catch (...) {
+	stream = fdopen(sock,"r+");
+	if (!stream) {
 	    close();
-	    throw;
+	    throw runtime_error(string(strerror(errno)));
 	}
+	setvbuf(stream,NULL,_IONBF,0); // no buffering
+    }
+
+    void TomiTCP::attach(int filedes)
+    {
+	sock = dup(filedes);
+	if (sock < 0)
+	    throw runtime_error(string(strerror(errno)));
+
+	stream = fdopen(sock,"r+");
+	if (!stream) {
+	    close();
+	    throw runtime_error(string(strerror(errno)));
+	}
+
+	setvbuf(stream,NULL,_IONBF,0); // no buffering
     }
 
     TomiTCP::~TomiTCP()
     {
-	//cerr << "TomiTCP destructed" << endl;
 	close();
     }
 
     void TomiTCP::close()
     {
-	if (stream)
+	if (stream) {
 	    fclose(stream);
+	    stream = 0;
+	}
 
-	if (sock >= 0)
+	if (sock >= 0) {
 	    ::close(sock);
-	sock = -1;
+	    sock = -1;
+	}
     }
 
     bool TomiTCP::ok()
@@ -139,7 +155,7 @@ namespace net {
 	int set_opt = 1;
 	int retval = ::setsockopt(sock,IPPROTO_TCP,TCP_NODELAY,(char*)&set_opt,sizeof(set_opt));
 	if (retval)
-	    std::cerr << "Could not set TCP_NODELAY" << std::endl;
+	    cerr << "Could not set TCP_NODELAY" << endl;
 	return retval;
     }
 
@@ -153,14 +169,14 @@ namespace net {
 	socklen_t len = SIZEOF_SOCKADDR(ret->name);
 	ret->sock = TEMP_FAILURE_RETRY(::accept(sock,&ret->name.sa,&len));
 	if (ret->sock < 0)
-	    throw std::runtime_error(std::string(strerror(errno)));
+	    throw runtime_error(string(strerror(errno)));
 
-	try {
-	    ret->stream = ret->makestream();
-	} catch (...) {
-	    ret->close();
-	    throw;
+	ret->stream = fdopen(ret->sock,"r+");
+	if (!ret->stream) {
+	    delete ret;
+	    throw runtime_error(string(strerror(errno)));
 	}
+	setvbuf(ret->stream,NULL,_IONBF,0); // no buffering
 	
 	return ret;
     }
@@ -169,16 +185,12 @@ namespace net {
     {
 	while (sz) {
 	    if (output_timeout(sock,ms) <= 0) {
-		::close(sock);
-		sock = -1;
 		throw timeout("Timeout (send)");
 	    }
 	    int retval = TEMP_FAILURE_RETRY(::send(sock,buf,sz,0));
 	    if (retval < 0) {
 		int er = errno;
-		::close(sock);
-		sock = -1;
-		throw std::runtime_error(std::string(strerror(er)));
+		throw runtime_error(string(strerror(er)));
 	    }
 	    buf += retval;
 	    sz -= retval;
@@ -192,27 +204,29 @@ namespace net {
             int retval = TEMP_FAILURE_RETRY(::recv(sock,buf,sz,0));
             if (retval <= 0) {
 		int er = errno;
-		::close(sock);
-		sock = -1;
 		if (retval < 0)
-		    throw std::runtime_error(std::string(strerror(er)));
+		    throw runtime_error(string(strerror(er)));
             }
 	    return retval;
         }
-	::close(sock);
-	sock = -1;
 	throw timeout("Timeout (recv)");
     }
 
+    /*
+     * Only for compatibility with older programs, will be removed on next
+     * cleanup.
+     */
     FILE* TomiTCP::makestream()
     {
 	int s = dup(sock);
 	if (s < 0)
-	    throw std::runtime_error(std::string(strerror(errno)));
+	    throw runtime_error(string(strerror(errno)));
+
 	FILE *f = fdopen(s,"r+");
 	if (!f)
-	    throw std::runtime_error(std::string(strerror(errno)));
+	    throw runtime_error(string(strerror(errno)));
 	setvbuf(f,NULL,_IONBF,0); // no buffering
+
 	return f;
     }
 
@@ -234,23 +248,23 @@ namespace net {
 	return 1;
     }
 
-    std::string tomi_ntop(const sockaddr_uni& name)
+    string tomi_ntop(const sockaddr_uni& name)
     {
 	char tmp[128],*p;
 
 	if (!inet_ntop(name.sa.sa_family,(name.sa.sa_family == AF_INET)?
 		    ((const void *)&name.sin.sin_addr):
 		    ((const void *)&name.sin6.sin6_addr),tmp,128))
-	    throw std::runtime_error(std::string(strerror(errno)));
+	    throw runtime_error(string(strerror(errno)));
 
 	if (name.sa.sa_family == AF_INET6 && IN6_IS_ADDR_V4MAPPED(&name.sin6.sin6_addr))
 	    if ((p = strstr(tmp,":ffff:")) || (p = strstr(tmp, ":FFFF:")))
-		return std::string(p+6);
+		return string(p+6);
 
-	return std::string(tmp);
+	return string(tmp);
     }
     
-    void tomi_pton(std::string p, sockaddr_uni& name)
+    void tomi_pton(string p, sockaddr_uni& name)
     {
 	int ret;
 
@@ -260,12 +274,12 @@ namespace net {
 		((void *)&name.sin.sin_addr):
 		((void *)&name.sin6.sin6_addr));
 	if (ret < 0)
-	    throw std::runtime_error(std::string(strerror(errno)));
+	    throw runtime_error(string(strerror(errno)));
 	if (ret == 0)
-	    throw std::runtime_error("Not a valid address");
+	    throw runtime_error("Not a valid address");
     }
     
-    std::string revers(const sockaddr_uni& name)
+    string revers(const sockaddr_uni& name)
     {
 	char hostname[NI_MAXHOST];
 	sockaddr_uni n;
@@ -280,7 +294,7 @@ namespace net {
 
 	if (getnameinfo((const sockaddr*)&n,SIZEOF_SOCKADDR(name),hostname,sizeof(hostname),0,0,NI_NAMEREQD))
 	    return tomi_ntop(name);
-	return std::string(hostname);
+	return string(hostname);
     }
 
     int input_timeout(int filedes, unsigned int ms)
