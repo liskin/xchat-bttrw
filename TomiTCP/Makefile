@@ -12,6 +12,9 @@ else
  CFLAGS += -DNDEBUG
 endif
 
+COMPONENTS=net http cookies str
+OBJECTS=$(patsubst %,%.o,$(COMPONENTS))
+
 .PHONY: all clean dep
 
 all: libTomiTCP.a pok .depend
@@ -26,7 +29,7 @@ dep:
 
 clean:
 	$(RM) *.{o,so,a} pok
-libTomiTCP.a: net.o http.o cookies.o str.o
+libTomiTCP.a: $(OBJECTS)
 	$(AR) rsv $@ $?
 
 pok: pok.o libTomiTCP.a
