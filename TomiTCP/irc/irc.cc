@@ -436,6 +436,18 @@ void docmd(FILE *f, string &snick, string &cmd)
     }
 
     if (cl[0] == ".listslaves") {
+	printf("[1m");
+	for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
+	    if (i->mask.length()) {
+		string host = tomi_ntop(i->s->rname);
+		int port = ntohs(PORT_SOCKADDR(i->s->rname));
+		printf("%s:%i (%s)\n",host.c_str(),port,i->mask.c_str());
+	    }
+	}
+	printf("END of slaves list[0m\n");
+    }
+
+    if (cl[0] == ".listslavesirc") {
 	for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
 	    if (i->mask.length()) {
 		string host = tomi_ntop(i->s->rname);
