@@ -455,6 +455,8 @@ void processbuf(FILE *f, char *buf)
 
 		    channels[cmd[3]][nick] = op;
 		}
+	    } else if (n == 352) {
+		users[cmd[6]] = cmd[3] + "@" + cmd[4];
 	    }
 	}
     }
@@ -502,7 +504,8 @@ void processbuf(FILE *f, char *buf)
     if (!strcasecmp(cmd[0].c_str(),"JOIN")) {
 	if (cmd.size() >= 2)
 	    channels[cmd[1]][snick] = 0;
-	// TODO: who...
+	if (snick == nick)
+	    S(f,"WHO %s\n",cmd[1].c_str());
     }
 
     if (!strcasecmp(cmd[0].c_str(),"PART")) {
