@@ -26,7 +26,7 @@ dep:
 
 -include .depend
 
-xchat-bttrw: main.o xchat.o login.o chan.o irc.o idle.o TomiTCP/libTomiTCP.a
+xchat-bttrw: main.o xchat.o login.o chan.o irc.o idle.o smiles.o TomiTCP/libTomiTCP.a
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 clean:
