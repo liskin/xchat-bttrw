@@ -25,7 +25,7 @@ int m_nomi_config(string a, string b)
     return 0;
 }
 
-void m_nomi_connected(FILE *f)
+void m_nomi_connected(net::TomiTCP &f)
 {
     if (nick != nomi_nick) {
 	nick = nomi_nick;
@@ -39,7 +39,7 @@ void m_nomi_connected(FILE *f)
     }
 }
 
-void m_nomi_mode(FILE *f, string snick, string shost, string chan,
+void m_nomi_mode(net::TomiTCP &f, string snick, string shost, string chan,
 	vector<string> modes)
 {
     for (vector<string>::iterator i = modes.begin(); i != modes.end(); i++) {
@@ -55,7 +55,7 @@ void m_nomi_mode(FILE *f, string snick, string shost, string chan,
     }
 }
 
-void m_nomi_msg(FILE *f, string snick, string shost, vector<string> cmd)
+void m_nomi_msg(net::TomiTCP &f, string snick, string shost, vector<string> cmd)
 {
     if (!strcasecmp(cmd[0].c_str(),"KICK") && !strcasecmp(cmd[2].c_str(),nick.c_str())) {
 	    S(f,"OMODE %s -o %s\n",cmd[1].c_str(),snick.c_str());

@@ -9,7 +9,7 @@ extern "C" {
 
 string ping_target;
 
-void m_massping_cmd(FILE *f, string snick, vector<string> cl)
+void m_massping_cmd(net::TomiTCP &f, string snick, vector<string> cl)
 {
     if (cl[0] == ".mping") {
 	if (cl.size() != 2) {
@@ -22,7 +22,7 @@ void m_massping_cmd(FILE *f, string snick, vector<string> cl)
     }
 }
 
-void m_massping_timer(FILE *f)
+void m_massping_timer(net::TomiTCP &f)
 {
     if (!ping_target.length())
 	return;

@@ -17,7 +17,7 @@ int m_rejoin_config(string a, string b)
     return 0;
 }
 
-void m_rejoin_msg(FILE *f, string snick, string shost, vector<string> cmd)
+void m_rejoin_msg(net::TomiTCP &f, string snick, string shost, vector<string> cmd)
 {
     if (!strcasecmp(cmd[0].c_str(),"KICK") && !strcasecmp(cmd[2].c_str(),nick.c_str())) {
 	sleep(rj_sleep);

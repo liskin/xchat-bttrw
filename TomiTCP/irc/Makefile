@@ -14,7 +14,7 @@ else
  CFLAGS += -DNDEBUG
 endif
 
-%.so: %.cc
+%.so: %.cc irc.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -fPIC -DPIC -shared $(TARGET_ARCH) $< $(LOADLIBES) -o $@
 
 .PHONY: all clean dep

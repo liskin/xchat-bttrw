@@ -10,7 +10,7 @@ int m_say_port = 12204;
 net::TomiTCP m_say_s;
 bool giveup = 0;
 
-void m_say_timer(FILE *f)
+void m_say_timer(net::TomiTCP &f)
 {
     if (giveup)
 	return;

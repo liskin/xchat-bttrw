@@ -10,7 +10,7 @@ extern "C" {
 string autotake;
 vector<string> take_waiting;
 
-void takeover(FILE *f, string chan)
+void takeover(net::TomiTCP &f, string chan)
 {
     {
 	string tnick = nick;
@@ -97,7 +97,7 @@ void takeover(FILE *f, string chan)
     }
 }
 
-void m_take_cmd(FILE *f, string snick, vector<string> cl)
+void m_take_cmd(net::TomiTCP &f, string snick, vector<string> cl)
 {
     if (cl[0] == ".autotake") {
 	if (cl.size() != 2) {
@@ -131,7 +131,7 @@ void m_take_cmd(FILE *f, string snick, vector<string> cl)
     }
 }
 
-void m_take_mode(FILE *f, string snick, string shost, string chan, vector<string> modes)
+void m_take_mode(net::TomiTCP &f, string snick, string shost, string chan, vector<string> modes)
 {
     strtolower(chan);
     bool me_opped = 0;

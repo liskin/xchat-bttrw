@@ -15,7 +15,8 @@ namespace std {
 
 // for restart    
 char **my_argv;
-FILE *my_f;
+
+net::TomiTCP sock, &f = sock /* i'm fuckin' lazy to rewrite almost all of the code */;
 
 string server = ""; int port = 6667;
 string nick = "B4gr";
@@ -26,6 +27,7 @@ masters_t masters;
 string oname = "";
 string opassword = "";
 string modpath = "/home/pytt_l/c++/TomiTCP/irc";
+string bindhostname = "";
 unsigned int max_modes = 4;
 int safe_mode = 0; // safe mode, needed for dancer ircd, specifies level of niceness to ircd
 int some_time = 300; // time for waiting for some input during operation
@@ -51,9 +53,9 @@ channels_t channels;
 modules_t modules;
 
 // forward declarations
-void processsome(FILE *f);
+void processsome(net::TomiTCP &f);
 
-void S(FILE *f, const char* fmt, ...)
+void S(net::TomiTCP &f, const char* fmt, ...)
 {
     va_list ap;
     va_start(ap,fmt);
@@ -144,6 +146,8 @@ void loadconfig(const char *fname, ostream &out)
 		    slave_port = atol(b.c_str());
 		else if (!strcasecmp(a.c_str(),"slave_pass"))
 		    slave_pass = b;
+		else if (!strcasecmp(a.c_str(),"bindhostname"))
+		    bindhostname = b;
 		else if (!strcasecmp(a.c_str(),"module"))
 		    loadmodule(b);
 		else if (!strcasecmp(a.c_str(),"slave"))
@@ -216,7 +220,7 @@ void loadmodule(string name)
     modules[name] = m;
 }
 
-void login(FILE *f)
+void login(net::TomiTCP &f)
 {
     if (password.length())
 	S(f,"PASS %s\n",password.c_str());
@@ -224,17 +228,14 @@ void login(FILE *f)
     S(f,"USER %s 8 * :%s\n",username.c_str(),realname.c_str());
 }
 
-void loper(FILE *f)
+void loper(net::TomiTCP &f)
 {
     if (opassword.length() && oname.length())
 	S(f,"OPER %s %s\n",oname.c_str(),opassword.c_str());
 }
 
-void parsein(const char *bufa, string& prefix, vector<string>& cmd)
+void parsein(const char *buf, string& prefix, vector<string>& cmd)
 {
-    char buf[strlen(bufa)];
-    strcpy(buf,bufa);
-    buf[string(buf).find_last_not_of("\r\n")+1] = 0;
     const char *p = buf, *e = buf + strlen(buf);
 
     if (buf[0] == ':') {
@@ -332,8 +333,8 @@ void parsemode(vector<string>& cmd, vector<string>& mode)
 
 void restart()
 {
-    S(my_f,"QUIT :restarting\n");
-    fclose(my_f);
+    S(sock, "QUIT :restarting\n");
+    sock.close();
     slave_s.close();
     for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
 	delete i->s;
@@ -345,7 +346,7 @@ void restart()
     exit(-1);
 }
 
-void docmd(FILE *f, string &snick, string &cmd)
+void docmd(net::TomiTCP &f, string &snick, string &cmd)
 {
     if (string(cmd,0,3) == ".q " && cmd.length() > 3) {
 	S(f,"%s\n",cmd.c_str() + 3);
@@ -489,7 +490,7 @@ void docmd(FILE *f, string &snick, string &cmd)
     }
 }
 
-void processbuf(FILE *f, const char *buf)
+void processbuf(net::TomiTCP &f, const char *buf)
 {
     int lastbad = 0;
 #define B ({bool ret;if ((time(0)-lastbad)>5){lastbad=time(0);ret=1;}else{ret=0;}ret;})
@@ -500,7 +501,7 @@ void processbuf(FILE *f, const char *buf)
     parsein(buf,prefix,cmd);
     strtolower(prefix);
     parseprefix(prefix,snick,shost);
-    cout << "<- " << buf;
+    cout << "<- " << buf << endl;
 
     {
 	pend_t::iterator it = pend.find(cmd[0]);
@@ -673,14 +674,16 @@ void users_clean()
     }
 }
 
-void processsome(FILE *f)
+void processsome(net::TomiTCP &f)
 {
-    char buf[4096];
+    string buf;
 
     // TODO: slave socket and so on...
-    while (net::input_timeout(fileno(f),some_time) > 0) {
-	fgets(buf,4096,f);
-	processbuf(f,buf);
+    while (net::input_timeout(f.sock,some_time) > 0) {
+	if (!f.getline(buf))
+	    break;
+	buf.erase(string(buf).find_last_not_of("\r\n")+1);
+	processbuf(f,buf.c_str());
     }
 }
 
@@ -717,6 +720,7 @@ void body(net::TomiTCP &f)
 	if (FD_ISSET(f.sock, &set)) {
 	    if (! f.getline(buf))
 		break;
+	    buf.erase(string(buf).find_last_not_of("\r\n")+1);
 	    processbuf(f,buf.c_str());
 	}
 
@@ -862,24 +866,30 @@ int main(int argc, char *argv[])
 	loadconfig(argv[1],cerr);
 	if (slave_port)
 	    slave_s.listen(slave_port);
+    } catch (std::runtime_error e) {
+	std::cerr << e.what() << std::endl;
+    }
 
-	while (1) {
-	    net::TomiTCP sock(server,port);
-	    FILE *f = sock;
-	    my_f = f;
+    while (1) {
+	sock.close();
+
+	try {
+	    sock.connect(server, tostr<int>(port), bindhostname);
 
 	    users.clear();
 	    channels.clear();
 
-	    login(f);
+	    login(sock);
 	    body(sock);
-	    sleep(10);
+	} catch (std::runtime_error e) {
+	    std::cerr << e.what() << std::endl;
 	}
-    } catch (std::runtime_error e) {
-	std::cerr << e.what() << std::endl;
-	for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
-	    delete i->s;
-	}
+
+	sleep(10);
+    }
+
+    for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
+	delete i->s;
     }
     return 0;
 }
