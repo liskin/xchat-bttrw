@@ -26,9 +26,11 @@ dep:
 
 -include .depend
 
+xchat-bttrw: main.o xchat.o login.o TomiTCP/libTomiTCP.a
+	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
 clean:
 	$(RM) xchat-bttrw *.o
 	$(MAKE) -C TomiTCP clean
-xchat-bttrw: main.o TomiTCP/libTomiTCP.a
 TomiTCP/libTomiTCP.a: dummy
 	$(MAKE) -C TomiTCP
