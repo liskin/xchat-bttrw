@@ -100,6 +100,7 @@ main_accept:
 #endif
 
 	string nick, pass;
+	bool user = false;
 
 	while (1) {
 	    if (input_timeout(c->netsock, 1000) > 0) {
@@ -122,51 +123,55 @@ main_accept:
 		/*
 		 * User registration
 		 */
-		if (!x.get() && cmd[0] == "NICK" && cmd.size() >= 2) {
-		    nick = cmd[1];
-		} else if (!x.get() && cmd[0] == "PASS" && cmd.size() >= 2) {
-		    pass = cmd[1];
-		} else if (!x.get() && cmd[0] == "USER" && cmd.size() > 1) {
-		    if (!nick.length() || !pass.length()) {
-			fprintf(*c, ":%s ERROR :Need password and nick!\n", me);
+		if (!x.get()) {
+		    if (cmd[0] == "NICK" && cmd.size() >= 2) {
+			nick = cmd[1];
+		    } else if (cmd[0] == "PASS" && cmd.size() >= 2) {
+			pass = cmd[1];
+		    } else if (cmd[0] == "USER" && cmd.size() > 1) {
+			user = true;
+		    } else {
+			/*
+			 * If the user is not registered and sends some other
+			 * command, quit him.
+			 */
+			fprintf(*c, ":%s ERROR :Not registered\n", me);
 			break;
 		    }
+		    
+		    if (user && nick.length() && pass.length()) {
+			try { x.reset(new XChat(nick, pass)); }
+			catch (runtime_error e) {
+			    fprintf(*c, ":%s ERROR :%s\n", me, e.what());
+			    break;
+			}
 
-		    try { x.reset(new XChat(nick, pass)); }
-		    catch (runtime_error e) {
-			fprintf(*c, ":%s ERROR :%s\n", me, e.what());
-			break;
+			/*
+			 * Successful login, so output some numerics to make
+			 * client happy.
+			 */
+
+			fprintf(*c, ":%s 001 %s :Welcome Back To The Real World, but still connected to xchat.cz\n", me, nick.c_str());
+			fprintf(*c, ":%s 002 %s :Your host is %s[%s/%i]"
+				", running version xchat-bttrw " VERSION "\n", me,
+				nick.c_str(), me, revers(c->lname).c_str(), port);
+			fprintf(*c, ":%s 003 %s :This server was created god knows when\n",
+				me, nick.c_str());
+			fprintf(*c, ":%s 004 %s :%s xchat-bttrw-" VERSION " 0 io\n",
+				me, nick.c_str(), me);
+			fprintf(*c, ":%s 005 %s :MODES=1 MAXTARGETS=1 NICKLEN=256\n", me, nick.c_str());
+			fprintf(*c, ":%s 005 %s :CHANTYPES=# PREFIX=o(@) CHANMODES=,,,"
+				" NETWORK=xchat.cz CASEMAPPING=ascii\n", me, nick.c_str());
 		    }
 
-		    /*
-		     * Successful login, so output some numerics to make
-		     * client happy.
-		     */
+		    continue;
+		}
 
-		    fprintf(*c, ":%s 001 %s :Welcome Back To The Real World, but still connected to xchat.cz\n", me, nick.c_str());
-		    fprintf(*c, ":%s 002 %s :Your host is %s[%s/%i]"
-			    ", running version xchat-bttrw " VERSION "\n", me,
-			    nick.c_str(), me, revers(c->lname).c_str(), port);
-		    fprintf(*c, ":%s 003 %s :This server was created god knows when\n",
-			    me, nick.c_str());
-		    fprintf(*c, ":%s 004 %s :%s xchat-bttrw-" VERSION " 0 io\n",
-			    me, nick.c_str(), me);
-		    fprintf(*c, ":%s 005 %s :MODES=1 MAXTARGETS=1 NICKLEN=256\n", me, nick.c_str());
-		    fprintf(*c, ":%s 005 %s :CHANTYPES=# PREFIX=o(@) CHANMODES=,,,"
-			    " NETWORK=xchat.cz CASEMAPPING=ascii\n", me, nick.c_str());
-		} else if (!x.get()) {
-		    /*
-		     * If the user is not registered and sends some other
-		     * command, quit him.
-		     */
-		    fprintf(*c, ":%s ERROR :Not registered\n", me);
-		    break;
-
-		    /*
-		     * And here follow commands, which can be invoked after
-		     * successful registration.
-		     */
-		} else if (cmd[0] == "SET" && cmd.size() >= 2) {
+		/*
+		 * And here follow commands, which can be invoked after
+		 * successful registration.
+		 */
+		if (cmd[0] == "SET" && cmd.size() >= 2) {
 		    strtoupper(cmd[1]);
 		    if (cmd[1] == "IDLE_INTERVAL" && cmd.size() == 3) {
 			idle_interval = atol(cmd[2].c_str());
