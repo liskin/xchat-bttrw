@@ -430,7 +430,7 @@ namespace net {
 	return string(hostname);
     }
 
-    int input_timeout(int filedes, unsigned int ms)
+    int input_timeout(int filedes, int ms)
     {
 	fd_set set;
         struct timeval timeout, *to = 0;
@@ -446,7 +446,7 @@ namespace net {
         return TEMP_FAILURE_RETRY(select(FD_SETSIZE,&set,NULL,NULL,to));
     }
 
-    int output_timeout(int filedes, unsigned int ms)
+    int output_timeout(int filedes, int ms)
     {
 	fd_set set;
         struct timeval timeout, *to = 0;

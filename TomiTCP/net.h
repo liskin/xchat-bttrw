@@ -32,8 +32,8 @@ namespace net {
 	struct sockaddr_in6 sin6;
     };
 
-    int input_timeout(int filedes, unsigned int ms);
-    int output_timeout(int filedes, unsigned int ms);
+    int input_timeout(int filedes, int ms);
+    int output_timeout(int filedes, int ms);
     string tomi_ntop(const sockaddr_uni& name);
     void tomi_pton(string p, sockaddr_uni& name);
     string revers(const sockaddr_uni& name);
