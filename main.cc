@@ -175,6 +175,22 @@ int main(int argc, char *argv[])
 		    fprintf(*c, ":%s 368 %s %s :End of Channel Ban List\n", me,
 			    nick.c_str(), cmd[1].c_str());
 		} else if (cmd[0] == "WHO" && cmd.size() == 2) {
+		    if (cmd[1][0] == '#') {
+			cmd[1].erase(cmd[1].begin());
+			for (nicklist_t::iterator i = rooms[cmd[1]].nicklist.begin();
+				i != rooms[cmd[1]].nicklist.end(); i++) {
+			    fprintf(*c, ":%s 352 %s #%s %s %s %s %s %s :%d %s\n", me,
+				    nick.c_str(), cmd[1].c_str(), hash(i->first).c_str(),
+				    sexhost[i->second], me, i->first.c_str(), "H", 0,
+				    "xchat.cz user");
+			}
+			cmd[1] = "#" + cmd[1];
+		    } else {
+			fprintf(*c, ":%s 352 %s %s %s %s %s %s %s :%d %s\n", me,
+				nick.c_str(), "*", hash(cmd[1]).c_str(),
+				getsexhost(cmd[1]), me, cmd[1].c_str(), "H", 0,
+				"xchat.cz user");
+		    }
 		    fprintf(*c, ":%s 315 %s %s :End of /WHO list.\n", me,
 			    nick.c_str(), cmd[1].c_str());
 		} else {
