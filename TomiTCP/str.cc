@@ -9,7 +9,7 @@ namespace std {
     /*
      * Calculate string length with given tab length
      */
-    int len(string s, int ini = 0, int tab = 8)
+    int len(string s, int ini, int tab)
     {
 	if (!tab)
 	    throw invalid_argument("tab cannot be 0, would cause division by zero");
@@ -45,7 +45,7 @@ namespace std {
     /*
      * Justify line, maxspaces is the maximal number of spaces between toknes
      */
-    string justify(string in, int width, int maxspaces = 4, int tab = 8)
+    string justify(string in, int width, int maxspaces, int tab)
     {
 	int inw = len(in,0,tab);
 	int need = width - inw;
@@ -125,8 +125,8 @@ namespace std {
      * firstlinealone specifies if not add indent to firstlineindent on first
      * line
      */
-    string reformat(string ins, int width, string firstline = "", int tab = 8,
-	    bool firstlinealone = 0, int maxspaces = 4)
+    string reformat(string ins, int width, string firstline, int tab,
+	    bool firstlinealone, int maxspaces)
     {
 	// get indentation
 	int indentw = ins.find_first_not_of(" \f\n\r\t\v");
