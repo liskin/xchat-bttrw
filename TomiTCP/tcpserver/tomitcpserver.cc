@@ -7,22 +7,6 @@
 #include "../net.h"
 using namespace std;
 
-int sendall(int s, const char* buf, const int size)
-{
-    int sz = size;
-    const char *p = buf;
-    while (sz) {
-	int ret = TEMP_FAILURE_RETRY(write(s,p,sz));
-	if (ret == -1) {
-	    return -1;
-	}
-	p += ret;
-	sz -= ret;
-    }
-
-    return size;
-}
-
 void chld(int)
 {
     ::wait(0);
