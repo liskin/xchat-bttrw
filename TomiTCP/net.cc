@@ -80,22 +80,24 @@ namespace net {
 	}
 	aip = ai;
 
+	string err = "No adress to connect to";
+
 	while (!ok()) {
 	    if (!aip) {
 		freeaddrinfo(ai);
-		throw runtime_error("Was not able to connect");
+		throw runtime_error(err);
 	    }
 
 	    memcpy(&name,aip->ai_addr,aip->ai_addrlen);
 	    ((name.sa.sa_family == AF_INET)?(name.sin.sin_port):(name.sin6.sin6_port)) = htons(port);
 	    sock = ::socket(aip->ai_family, SOCK_STREAM, 0);
 	    if (socket < 0) {
-		cerr << "Ch: " << strerror(errno) << endl;
+		err = strerror(errno);
 	    } else {
 		ret = ::connect(sock,(const sockaddr*)&name,SIZEOF_SOCKADDR(name));
 		if (ret) {
 		    close();
-		    cerr << "Ch: " << strerror(errno) << endl;
+		    err = strerror(errno);
 		} else {
 		    break;
 		}
