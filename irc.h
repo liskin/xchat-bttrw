@@ -6,6 +6,7 @@
 
 namespace std {
     void parsein(string buf, string& prefix, vector<string>& cmd);
+    void parsemode(const vector<string>& cmd, vector<pair<string,string> >& mode);
 }
 
 #endif /* _IRC_H_INCLUDED */

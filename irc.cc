@@ -49,4 +49,28 @@ namespace std {
 	    }
 	}
     }
+
+    /*
+     * Parse mode into array of mode with its parameter, if any
+     */
+    void parsemode(const vector<string>& cmd, vector<pair<string,string> >& mode)
+    {
+	char ch[2] = "?", t[2] = " ";
+	vector<string>::const_iterator j = cmd.begin() + 1;
+
+	for (string::const_iterator i = cmd[0].begin(); i != cmd[0].end(); i++) {
+	    if (*i == '+' || *i == '-')
+		ch[0] = *i;
+	    else {
+		t[0] = *i;
+
+		if (j != cmd.end() && string("o").find(*i) != string::npos) {
+		    mode.push_back(pair<string,string>(string(ch) + string(t), *j));
+		    j++;
+		} else {
+		    mode.push_back(pair<string,string>(string(ch) + string(t), ""));
+		}
+	    }
+	}
+    }
 }
