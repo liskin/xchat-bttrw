@@ -39,6 +39,7 @@ namespace xchat {
 	    static string makeurl(const string& url);
 	    string makeurl2(const string& url);
 
+	    static string striphtml(string a);
 	    static void stripdate(string &m);
 	    static void getnick(string &m, string &src, string &target);
 	    static void striphtmlent(string &m);

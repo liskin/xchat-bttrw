@@ -15,19 +15,6 @@ using namespace std;
 using namespace xchat;
 using namespace net;
 
-string striphtml(string a)
-{
-    string out;
-    stringstream s(a);
-
-    while (getline(s,a,'<')) {
-	out += a + " ";
-	getline(s,a,'>');
-    }
-
-    return out;
-}
-
 string hash(string s)
 {
     strtolower(s);
@@ -137,33 +124,34 @@ int main(int argc, char *argv[])
 		    if (cmd[1][0] == '#')
 			cmd[1].erase(cmd[1].begin());
 
-		    try { rooms[cmd[1]] = x->join(cmd[1]); }
-		    catch (runtime_error e) {
+		    try {
+			rooms[cmd[1]] = x->join(cmd[1]);
+
+			rooms[cmd[1]].nicklist[strtolower_nr(nick)] =
+			    (struct x_nick){nick, 1};
+
+			fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
+				getsexhost(nick), cmd[1].c_str());
+			string tmp; int i; nicklist_t::iterator j;
+			for (i = 1, j = rooms[cmd[1]].nicklist.begin();
+				j != rooms[cmd[1]].nicklist.end(); j++, i++) {
+			    tmp += j->second.nick + " ";
+			    if (i % 5 == 0) {
+				fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
+					cmd[1].c_str(), tmp.c_str());
+				tmp.clear();
+			    }
+			}
+			if (tmp.length()) {
+			    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
+				    cmd[1].c_str(), tmp.c_str());
+			}
+			fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
+				nick.c_str(), cmd[1].c_str());
+		    } catch (runtime_error e) {
 			fprintf(*c, ":%s 403 %s #%s :%s\n", me, nick.c_str(),
 				cmd[1].c_str(), e.what());
 		    }
-
-		    rooms[cmd[1]].nicklist[strtolower_nr(nick)] =
-			(struct x_nick){nick, 1};
-
-		    fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
-			    getsexhost(nick), cmd[1].c_str());
-		    string tmp; int i; nicklist_t::iterator j;
-		    for (i = 1, j = rooms[cmd[1]].nicklist.begin();
-			    j != rooms[cmd[1]].nicklist.end(); j++, i++) {
-			tmp += j->second.nick + " ";
-			if (i % 5 == 0) {
-			    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
-				    cmd[1].c_str(), tmp.c_str());
-			    tmp.clear();
-			}
-		    }
-		    if (tmp.length()) {
-			fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
-				cmd[1].c_str(), tmp.c_str());
-		    }
-		    fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
-			    nick.c_str(), cmd[1].c_str());
 		} else if (cmd[0] == "PART" && cmd.size() >= 2) {
 		    if (cmd[1][0] == '#')
 			cmd[1].erase(cmd[1].begin());
@@ -267,7 +255,7 @@ int main(int argc, char *argv[])
 			vector<string> m;
 			j->second.l = x->getmsg(j->first, j->second.l, m);
 			for (vector<string>::iterator i = m.begin(); i != m.end(); i++) {
-			    string m = striphtml(*i);
+			    string m = XChat::striphtml(*i);
 			    XChat::stripdate(m);
 			    string src = me, target = "#" + j->first, reason, who;
 			    XChat::getnick(m, src, target);

@@ -136,6 +136,8 @@ namespace xchat {
 			}
 		    }
 		}
+
+		// window.open("/~$3249019~2a899f0fea802195d52861d6b8e15c1c/modchat?op=fullscreenmessage&key=403&kicking_nick=&text=", '_top');
 	    }
 	}
 

@@ -18,6 +18,19 @@ namespace xchat {
 	    uid + "~" + sid + "/" + path;
     }
 
+    string XChat::striphtml(string a)
+    {
+	string out;
+	stringstream s(a);
+
+	while (getline(s,a,'<')) {
+	    out += a;
+	    getline(s,a,'>');
+	}
+
+	return out;
+    }
+
     void XChat::stripdate(string &m)
     {
 	string n = m, d;
