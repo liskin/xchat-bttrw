@@ -84,11 +84,11 @@ namespace xchat {
 	if ((a = m.find("Uzivatel")) != string::npos &&
 		(b = m.find("vstoupil")) != string::npos) {
 	    if (m.find("Uzivatelka") != string::npos) {
-		src = string(m, sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 2);
+		src = string(m, a + sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 1);
 		wstrip(src);
 		rooms[room].nicklist[src] = 0;
 	    } else {
-		src = string(m, sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 2);
+		src = string(m, a + sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 1);
 		wstrip(src);
 		rooms[room].nicklist[src] = 1;
 	    }
@@ -104,10 +104,10 @@ namespace xchat {
 	if ((a = m.find("Uzivatel")) != string::npos &&
 		(b = m.find("opustil")) != string::npos) {
 	    if (m.find("Uzivatelka") != string::npos) {
-		src = string(m, sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 2);
+		src = string(m, a + sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 1);
 		wstrip(src);
 	    } else {
-		src = string(m, sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 2);
+		src = string(m, a + sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 1);
 		wstrip(src);
 	    }
 	    return 1;
@@ -123,10 +123,10 @@ namespace xchat {
 		(((b = m.find("byl  vyhozen")) != string::npos) ||
 		(b = m.find("byla vyhozena")) != string::npos)) {
 	    if (m.find("Uzivatelka") != string::npos) {
-		src = string(m, sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 2);
+		src = string(m, a + sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 1);
 		wstrip(src);
 	    } else {
-		src = string(m, sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 2);
+		src = string(m, a + sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 1);
 		wstrip(src);
 	    }
 
