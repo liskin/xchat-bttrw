@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include "irc.h"
+#include "../str.h"
 using namespace std;
 
 namespace std {
@@ -28,6 +29,13 @@ unsigned int max_modes = 4;
 int safe_mode = 0; // safe mode, needed for dancer ircd, specifies level of niceness to ircd
 int some_time = 300; // time for waiting for some input during operation
 struct chanmodes isupport;
+
+int slave_port = 12205; // port on which it listens as 'slave'
+string slave_pass = "scosux"; // password for 'slave'
+
+net::TomiTCP slave_s;
+slavec_t slavec;
+slaves_t slaves;
 
 bool oper = 0;
 string myhost;
@@ -54,13 +62,6 @@ void S(FILE *f, const char* fmt, ...)
     vfprintf(f,fmt,ap);
 
     va_end(ap);
-}
-
-inline string& wstrip(string &str)
-{
-    str.erase(0,str.find_first_not_of(" \f\n\r\t\v"));
-    str.erase(str.find_last_not_of(" \f\n\r\t\v")+1);
-    return str;
 }
 
 void loadconfig(const char *fname, ostream &out)
@@ -109,6 +110,10 @@ void loadconfig(const char *fname, ostream &out)
 		    isupport.ab = b;
 		else if (!strcasecmp(a.c_str(),"isupport_c"))
 		    isupport.c = b;
+		else if (!strcasecmp(a.c_str(),"slave_port"))
+		    slave_port = atol(b.c_str());
+		else if (!strcasecmp(a.c_str(),"slave_pass"))
+		    slave_pass = b;
 		else if (!strcasecmp(a.c_str(),"module"))
 		    loadmodule(b);
 		else {
@@ -192,9 +197,10 @@ void loper(FILE *f)
 	S(f,"OPER %s %s\n",oname.c_str(),opassword.c_str());
 }
 
-void parsein(char *buf, string& prefix, vector<string>& cmd)
+void parsein(const char *bufa, string& prefix, vector<string>& cmd)
 {
-    char *p = buf, *e = buf + strlen(buf);
+    char buf[strlen(bufa)];
+    const char *p = buf, *e = buf + strlen(buf);
 
     buf[string(buf).find_last_not_of("\r\n")+1] = 0;
 
@@ -404,7 +410,7 @@ void docmd(FILE *f, string &snick, string &cmd)
     }
 }
 
-void processbuf(FILE *f, char *buf)
+void processbuf(FILE *f, const char *buf)
 {
     int lastbad = 0;
 #define B ({bool ret;if ((time(0)-lastbad)>5){lastbad=time(0);ret=1;}else{ret=0;}ret;})
@@ -414,7 +420,7 @@ void processbuf(FILE *f, char *buf)
 
     parsein(buf,prefix,cmd);
     parseprefix(prefix,snick,shost);
-    cout << "<- " << buf << endl;
+    cout << "<- " << buf;
 
     {
 	pend_t::iterator it = pend.find(cmd[0]);
@@ -576,6 +582,7 @@ void processsome(FILE *f)
 {
     char buf[4096];
 
+    // TODO: slave socket and so on...
     while (net::input_timeout(fileno(f),some_time) > 0) {
 	fgets(buf,4096,f);
 	processbuf(f,buf);
@@ -584,16 +591,78 @@ void processsome(FILE *f)
 
 void body(net::TomiTCP &f)
 {
-    char buf[4096];
+    string buf;
     int iter = 0;
 
     while (1) {
 	iter++;
 
-	if (net::input_timeout(f.sock, 1000) > 0) {
-	    if (! fgets(buf,4096,f))
+	fd_set set;
+	timeval timeout;
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+
+	FD_ZERO(&set);
+	FD_SET(f.sock, &set);
+	FD_SET(slave_s.sock, &set);
+	for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
+	    FD_SET(i->s->sock, &set);
+	}
+
+	int ret = TEMP_FAILURE_RETRY(select(FD_SETSIZE,&set,NULL,NULL,&timeout));
+	if (ret == -1)
+	    throw runtime_error("error in select: "+string(strerror(errno)));
+
+	// irc server talks
+	if (FD_ISSET(f.sock, &set)) {
+	    if (! f.getline(buf))
 		break;
-	    processbuf(f,buf);
+	    processbuf(f,buf.c_str());
+	}
+
+	// new 'slave' connection
+	if (FD_ISSET(slave_s.sock, &set)) {
+	    slave_c c;
+	    c.authd = 0;
+	    c.dead = 0;
+	    c.s = slave_s.accept();
+
+	    slavec.push_back(c);
+	}
+
+	// 'slave' connection talks
+	for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
+	    if (FD_ISSET(i->s->sock, &set)) {
+		if (! i->s->getline(buf)) { // closed
+		    i->dead = 1;
+		} else {
+		    chomp(buf);
+		    if (! i->authd) { // has not authenticated
+			if (buf == slave_pass) {
+			    i->authd = 1;
+			} else {
+			    fprintf(*(i->s),"Access denied\n");
+			    i->dead = 1;
+			}
+		    } else {
+			// send his msg to server
+			S(f,"%s\n",buf.c_str());
+		    }
+		}
+	    }
+	}
+
+	bool clean = 0;
+	while (!clean) {
+	    clean = 1;
+	    for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
+		if (i->dead) {
+		    delete i->s;
+		    clean = 0;
+		    slavec.erase(i);
+		    break;
+		}
+	    }
 	}
 
 	for (modules_t::iterator i = modules.begin(); i != modules.end(); i++) {
@@ -636,6 +705,7 @@ int main(int argc, char *argv[])
     }
     try {
 	loadconfig(argv[1],cerr);
+	slave_s.listen(slave_port);
 
 	while (1) {
 	    net::TomiTCP sock(server,port);
@@ -651,6 +721,9 @@ int main(int argc, char *argv[])
 	}
     } catch (std::runtime_error e) {
 	std::cerr << e.what() << std::endl;
+	for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
+	    delete i->s;
+	}
     }
     return 0;
 }

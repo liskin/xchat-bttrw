@@ -12,5 +12,5 @@ max_modes	4
 module	channel
 module	take
 module	say
-ch_channels	#nomi
+#ch_channels	#nomi
 #rj_sleep	0

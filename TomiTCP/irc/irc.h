@@ -38,11 +38,11 @@ typedef map<string,module> modules_t;
 extern modules_t modules;
 
 extern int port;
-extern string server,nick,password,oname,opassword,config,myhost,username,realname;
+extern string server,nick,password,oname,opassword,config,myhost,username,realname,slave_pass;
 typedef vector<string> masters_t;
 extern masters_t masters;
 extern unsigned int max_modes;
-extern int safe_mode,some_time;
+extern int safe_mode,some_time,slave_port;
 extern bool oper;
 
 extern struct chanmodes {
@@ -61,6 +61,20 @@ extern users_t users; // nick -> hostmask (a@b)
 typedef map<string,bool> channel_t; // nick -> ?op
 typedef map<string,channel_t> channels_t; // channel -> list of nicks and ?ops
 extern channels_t channels;
+
+// 'slave' connection
+struct slave_c {
+    bool authd, dead;
+    net::TomiTCP *s;
+};
+typedef vector<slave_c> slavec_t;
+
+// 'slave' (i'm master)
+struct slave {
+    string mask;
+    net::TomiTCP *s;
+};
+typedef vector<slave> slaves_t;
 
 extern void processsome(FILE *f);
 extern void S(FILE *f, const char* fmt, ...);
