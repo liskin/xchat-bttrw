@@ -530,11 +530,11 @@ void body(net::TomiTCP &f)
 		i->second.timer(f);
 	}
 
-	cout << "---\n";
+	/*cout << "---\n";
 	for (map<string,string>::iterator i = users.begin(); i != users.end(); i++) {
 	    cout << i->first << "!" << i->second << endl;
 	}
-	cout << "---\n";
+	cout << "---\n";*/
     }
 }
 
