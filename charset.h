@@ -1,3 +1,6 @@
+#ifndef _CHARSET_H_INCLUDED
+#define _CHARSET_H_INCLUDED
+
 #include <cstdio>
 #include <recode.h>
 #include <string>
@@ -15,3 +18,5 @@ namespace xchat {
     void exit_recode();
     void striphtmlent(string &m);
 }
+
+#endif /* _CHARSET_H_INCLUDED */
