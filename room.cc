@@ -7,6 +7,27 @@
 
 using namespace net;
 
+string parse_updateinfo(string s)
+{
+    s.erase(0, s.find(',') + 1);
+    s.erase(0, s.find(',') + 1);
+    s.erase(0, s.find(',') + 1);
+    s.erase(0, s.find(',') + 1);
+    s.erase(s.find(')'));
+
+    if (!s.length())
+	return s;
+
+    if (s[0] == '\'' || s[0] == '"') {
+	s.erase(s.begin());
+	s.erase(s.end() - 1);
+    }
+
+    strtolower(s);
+
+    return s;
+}
+
 namespace xchat {
     /*
      * Join room and get all needed info about it
@@ -17,6 +38,7 @@ namespace xchat {
 	string l;
 	room r;
 
+	r.l = -1;
 	r.rid = rid;
 	r.last_sent = time(0) - idle_interval + 10;
 
@@ -67,10 +89,19 @@ namespace xchat {
 
 		getline(ss,lastline,'"');
 		r.l = atol(lastline.c_str());
-		
-		rooms[rid] = r;
-		return;
+		continue;
 	    }
+
+	    pat = "update_info('";
+	    pos = l.find(pat);
+	    if (pos != string::npos) {
+		r.admin = parse_updateinfo(string(l,pos+pat.length()));
+	    }
+	}
+
+	if (r.l != -1) {
+	    rooms[rid] = r;
+	    return;
 	}
 
 	throw runtime_error("Parse error");
@@ -118,6 +149,7 @@ namespace xchat {
 	    wstrip(l);
 	    if (!l.length()) continue;
 	    dbg.push_back(l);
+	    //cout << l << endl;
 
 	    // look for next last_line number
 	    if (r.l == -1) {
@@ -162,6 +194,26 @@ namespace xchat {
 				}
 			    }
 			}
+		    }
+		}
+	    }
+
+	    /*
+	     * Check for current admin and eventually emit AdminChange event.
+	     */
+	    {
+		string pat = "update_info('";
+		unsigned int pos = l.find(pat);
+		if (pos != string::npos) {
+		    string admin = parse_updateinfo(string(l,pos+pat.length()));
+		    if (r.admin != admin) {
+			EvRoomAdminChange *e = new EvRoomAdminChange;
+			e->s = "Admin change: " + r.admin + " => " + admin;
+			e->rid = r.rid;
+			e->before = r.admin;
+			e->now = admin;
+			r.admin = admin;
+			recvq_push(e);
 		    }
 		}
 	    }

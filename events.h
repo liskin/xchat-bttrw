@@ -21,7 +21,7 @@ namespace xchat {
 	    string s;
 	public:
 	    virtual const string & str() { return s; }
-	    virtual ~Event();
+	    virtual ~Event() {}
     };
 
     class EvRoomOther : public Event {
@@ -30,13 +30,13 @@ namespace xchat {
 	    string rid;
 	public:
 	    virtual const string & getrid() { return rid; }
-	    virtual ~EvRoomOther();
+	    virtual ~EvRoomOther() {}
     };
     
     class EvRoomError : public EvRoomOther {
 	    friend class XChat;
 	public:
-	    virtual ~EvRoomError();
+	    virtual ~EvRoomError() {}
     };
     
     class EvRoomMsg : public EvRoomOther {
@@ -45,7 +45,7 @@ namespace xchat {
 	    string src;
 	public:
 	    virtual const string & getsrc() { return src; }
-	    virtual ~EvRoomMsg();
+	    virtual ~EvRoomMsg() {}
     };
     
     class EvRoomWhisper : public EvRoomOther {
@@ -56,7 +56,7 @@ namespace xchat {
 	public:
 	    virtual const string & getsrc() { return src; }
 	    virtual const string & gettarget() { return target; }
-	    virtual ~EvRoomWhisper();
+	    virtual ~EvRoomWhisper() {}
     };
     
     class EvRoomJoin : public EvRoomOther {
@@ -65,7 +65,7 @@ namespace xchat {
 	    x_nick src;
 	public:
 	    virtual const x_nick & getsrc() { return src; }
-	    virtual ~EvRoomJoin();
+	    virtual ~EvRoomJoin() {}
     };
     
     class EvRoomLeave : public EvRoomOther {
@@ -76,7 +76,7 @@ namespace xchat {
 	public:
 	    virtual const x_nick & getsrc() { return src; }
 	    virtual const string & getreason() { return reason; }
-	    virtual ~EvRoomLeave();
+	    virtual ~EvRoomLeave() {}
     };
     
     class EvRoomKick : public EvRoomOther {
@@ -89,7 +89,7 @@ namespace xchat {
 	    virtual const string & getsrc() { return src; }
 	    virtual const string & getreason() { return reason; }
 	    virtual const x_nick & gettarget() { return target; }
-	    virtual ~EvRoomKick();
+	    virtual ~EvRoomKick() {}
     };
     
     class EvRoomAdvert : public EvRoomOther {
@@ -98,19 +98,35 @@ namespace xchat {
 	    string link;
 	public:
 	    virtual const string & getlink() { return link; }
-	    virtual ~EvRoomAdvert();
+	    virtual ~EvRoomAdvert() {}
     };
     
     class EvRoomSysMsg : public EvRoomOther {
 	    friend class XChat;
 	public:
-	    virtual ~EvRoomSysMsg();
+	    virtual ~EvRoomSysMsg() {}
+    };
+    
+    class EvRoomSysText : public EvRoomOther {
+	    friend class XChat;
+	public:
+	    virtual ~EvRoomSysText() {}
     };
     
     class EvRoomIdlerMsg : public EvRoomOther {
 	    friend class XChat;
 	public:
-	    virtual ~EvRoomIdlerMsg();
+	    virtual ~EvRoomIdlerMsg() {}
+    };
+    
+    class EvRoomAdminChange : public EvRoomOther {
+	    friend class XChat;
+	private:
+	    string before, now;
+	public:
+	    virtual const string & getbefore() { return before; }
+	    virtual const string & getnow() { return now; }
+	    virtual ~EvRoomAdminChange() {}
     };
 }
 

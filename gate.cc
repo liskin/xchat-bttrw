@@ -193,7 +193,8 @@ main_accept:
 			    string tmp; int i; nicklist_t::iterator j;
 			    for (i = 1, j = x->rooms[chan].nicklist.begin();
 				    j != x->rooms[chan].nicklist.end(); j++, i++) {
-				tmp += j->second.nick + " ";
+				tmp += ((j->first == x->rooms[chan].admin)?"@":"") +
+				    j->second.nick + " ";
 				if (i % 5 == 0) {
 				    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
 					    chan.c_str(), tmp.c_str());
@@ -273,7 +274,9 @@ main_accept:
 				i != x->rooms[cmd[1]].nicklist.end(); i++) {
 			    fprintf(*c, ":%s 352 %s #%s %s %s %s %s %s :%d %s\n", me,
 				    nick.c_str(), cmd[1].c_str(), hash(i->second.nick).c_str(),
-				    sexhost[i->second.sex], me, i->second.nick.c_str(), "H", 0,
+				    sexhost[i->second.sex], me, i->second.nick.c_str(), 
+				    (i->first == x->rooms[cmd[1]].admin)?"H@":"H",
+				    0,
 				    "xchat.cz user");
 			}
 			cmd[1] = "#" + cmd[1];
@@ -397,12 +400,23 @@ main_accept:
 
 		    fprintf(*c, ":%s NOTICE #%s :System: %s [IDLER]\n", me,
 			    f->getrid().c_str(), f->str().c_str());
+		} else if (dynamic_cast<EvRoomSysText*>(e.get())) {
+		    auto_ptr<EvRoomSysText> f((EvRoomSysText*)e.release());
+
+		    fprintf(*c, ":%s NOTICE #%s :%s\n", me,
+			    f->getrid().c_str(), f->str().c_str());
+		} else if (dynamic_cast<EvRoomAdminChange*>(e.get())) {
+		    auto_ptr<EvRoomAdminChange> f((EvRoomAdminChange*)e.release());
+
+		    fprintf(*c, ":%s MODE #%s -o+o %s %s\n", me,
+			    f->getrid().c_str(), f->getbefore().c_str(),
+			    f->getnow().c_str());
 		} else if (dynamic_cast<EvRoomOther*>(e.get())) {
 		    auto_ptr<EvRoomOther> f((EvRoomOther*)e.release());
 
 		    fprintf(*c, ":%s NOTICE #%s :Other: %s - %s\n", me,
 			    f->getrid().c_str(), typeid(*(f.get())).name(),
-			    e->str().c_str());
+			    f->str().c_str());
 		} else {
 		    fprintf(*c, ":%s NOTICE %s :Other: %s - %s\n", me,
 			    nick.c_str(), typeid(*(e.get())).name(),

@@ -274,6 +274,11 @@ namespace xchat {
 		    e->reason = reason;
 		    recvq_push(e);
 		}
+	    } else {
+		EvRoomSysText *e = new EvRoomSysText;
+		e->s = m;
+		e->rid = r.rid;
+		recvq_push(e);
 	    }
 	}
     }
