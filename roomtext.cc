@@ -329,6 +329,11 @@ namespace xchat {
 	if (m.find(pat3) != string::npos) {
 	    return true;
 	}
+	
+	static string pat4 = "neexistuje";
+	if (m.find(pat4) != string::npos) {
+	    return true;
+	}
 
 	return false;
     }
