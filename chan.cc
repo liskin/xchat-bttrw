@@ -44,7 +44,7 @@ namespace xchat {
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
 
-	//lastmsg = -1;
+	lastmsg = -1;
 	string l;
 	bool expect_apos = false;
 	vector<string> tv;
