@@ -43,12 +43,17 @@ extern unsigned int max_modes;
 extern int safe_mode,some_time;
 extern bool oper;
 
+extern struct chanmodes {
+    string ab; // Always has a parameter. -- YOU MUST WRITE ov(h) HERE!!
+    string c;  // Only has a parameter when set.
+} isupport;
+
 typedef void (*pend_func_t)(FILE*,string&,string&,string&,vector<string>&,map<string,string>&);
 typedef map<string,pair<pend_func_t,map<string,string> > > pend_t;
 extern pend_t pend;
 
-extern map<string,string> users;
-extern map<string,vector<string> > channels;
+extern map<string,string> users; // nick -> hostmask (a@b)
+extern map<string,vector<string> > channels; // channel -> @+nick
 
 extern void processsome(FILE *f);
 extern void S(FILE *f, const char* fmt, ...);

@@ -27,6 +27,7 @@ string modpath = "/home/pytt_l/c++/TomiTCP/irc";
 unsigned int max_modes = 4;
 int safe_mode = 0; // safe mode, needed for dancer ircd, specifies level of niceness to ircd
 int some_time = 300; // time for waiting for some input during operation
+struct chanmodes isupport;
 
 bool oper = 0;
 string myhost;
@@ -102,6 +103,10 @@ void loadconfig(const char *fname, ostream &out)
 		    some_time = atol(b.c_str());
 		else if (!strcasecmp(a.c_str(),"modpath"))
 		    modpath = b;
+		else if (!strcasecmp(a.c_str(),"isupport_ab"))
+		    isupport.ab = b;
+		else if (!strcasecmp(a.c_str(),"isupport_c"))
+		    isupport.c = b;
 		else if (!strcasecmp(a.c_str(),"module"))
 		    loadmodule(b);
 		else {
@@ -259,16 +264,21 @@ void parsemode(vector<string>& cmd, vector<string>& mode)
     unsigned int j=1;
 
     for (string::iterator i=cmd[0].begin(); i!=cmd[0].end(); i++) {
-	if (j >= cmd.size())
-	    break;
 	if (*i == '+' || *i == '-')
 	    ch[0] = *i;
 	else {
 	    t[0] = *i;
-	    // TODO: we REALLY should check if we should add param to mode,
-	    // either by parsing 005 CHANMODES, or statically
-	    mode.push_back(string(ch)+string(t)+" "+cmd[j]);
-	    j++;
+	    string tmp = string(ch)+string(t);
+
+	    // has parameter?
+	    if (j < cmd.size() && ((isupport.ab.find(t[0]) != string::npos) ||
+		    (isupport.c.find(t[0]) != string::npos && ch[0] == '+'))) {
+		tmp += " " + cmd[j];
+		j++;
+	    }
+
+	    mode.push_back(tmp);
+	    cout << "DDD- " << tmp << endl;
 	}
     }
 }
@@ -513,6 +523,10 @@ void body(net::TomiTCP &f)
 int main(int argc, char *argv[])
 {
     my_argv = argv;
+
+    // init structs...
+    isupport.ab = "ohvbeIk";
+    isupport.c = "l";
 
     if (argc != 2) {
 	cout << "need config file as parameter" << endl;
