@@ -110,6 +110,7 @@ int main(int argc, char *argv[])
 			if (i % 5 == 0 || j + 1 == nicklist.end()) {
 			    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
 				    cmd[1].c_str(), tmp.c_str());
+			    tmp.clear();
 			}
 		    }
 		    fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
@@ -154,6 +155,7 @@ int main(int argc, char *argv[])
 			    XChat::stripdate(m);
 			    string src = me, target = "#" + room;
 			    XChat::getnick(m, src, target);
+			    XChat::striphtmlent(m);
 
 			    if (src != nick)
 				fprintf(*c, ":%s!%s PRIVMSG %s :%s\n", src.c_str(),

@@ -25,6 +25,7 @@ namespace xchat {
 
 	    static void stripdate(string &m);
 	    static void getnick(string &m, string &src, string &target);
+	    static void striphtmlent(string &m);
     };
 }
 

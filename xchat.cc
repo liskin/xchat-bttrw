@@ -1,8 +1,9 @@
+#include <cstdio>
 #include <cstdlib>
+#include <stdbool.h>
+#include <recodext.h>
 #include "xchat.h"
 #include "TomiTCP/str.h"
-
-#include <iostream>
 
 namespace xchat {
     string XChat::makeurl(const string& path)
@@ -44,5 +45,35 @@ namespace xchat {
 	src = string(t, 0, t.find("->"));
 	if (src.length() != t.length())
 	    target = string(t, src.length() + 2);
+    }
+
+    void XChat::striphtmlent(string &m)
+    {
+	RECODE_OUTER outer = recode_new_outer (false);
+	RECODE_REQUEST request = recode_new_request (outer);
+	RECODE_TASK task;
+	bool success;
+
+	recode_scan_request (request, "html..flat");
+
+	task = recode_new_task (request);
+	task->input.buffer = m.c_str();
+	task->input.cursor = m.c_str();
+	task->input.limit = m.c_str() + m.length();
+	task->output.buffer = 0;
+	task->output.cursor = 0;
+	task->output.limit = 0;
+	success = recode_perform_task (task);
+
+	if (task->output.buffer) {
+	    *task->output.cursor = 0;
+	    m = task->output.buffer;
+	    free(task->output.buffer);
+	    task->output.buffer = 0;
+	}
+
+	recode_delete_task (task);
+	recode_delete_request (request);
+	recode_delete_outer (outer);
     }
 }
