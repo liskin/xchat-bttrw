@@ -23,7 +23,7 @@ namespace xchat {
 
 		while ((a = s.find("\xe2\x97\x8f", pos)) != string::npos) {
 		    s.replace(a, 3, "*");
-		    pos++;
+		    pos = a + 1;
 		}
 	    }
 
@@ -33,6 +33,32 @@ namespace xchat {
 	    e->s = er.what();
 	    recvq_push(e);
 	    return s;
+	}
+    }
+
+    /*
+     * Strip JavaScript escapes
+     */
+    void XChat::stripjsescapes(string &s)
+    {
+	unsigned int a, pos = 0;
+
+	while ((a = s.find("\\", pos)) != string::npos) {
+	    if (s.begin() + a + 2 <= s.end()) {
+		s.erase(s.begin() + a);
+		pos = a + 1;
+	    } else
+		break;
+	}
+
+	/*
+	 * Second run - strip xchat double-escaped backslashes...
+	 * (!!! this should be removed as soon as they fix that !!!)
+	 */
+	pos = 0;
+	while ((a = s.find("\\\\", pos)) != string::npos) {
+	    s.replace(a, 2, "\\");
+	    pos = a + 1;
 	}
     }
 
@@ -342,6 +368,7 @@ namespace xchat {
 
 	x_nick *n;
 
+	stripjsescapes(m);
 	striphtml(m);
 	striphtmlent(m);
 	stripdate(m);

@@ -102,6 +102,7 @@ namespace xchat {
 	    string makeurl(const string& url);
 	    string makeurl2(const string& url);
 
+	    static void stripjsescapes(string &s);
 	    static void striphtml(string &s);
 	    static void stripdate(string &m);
 	    static void getnick(string &m, string &src, string &target);
