@@ -12,5 +12,6 @@ max_modes	4
 module	rejoin
 module	channel
 module	take
-ch_channels	#brno.czf
+module	say
+ch_channels	#nomi
 #rj_sleep	0

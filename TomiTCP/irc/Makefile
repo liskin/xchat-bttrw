@@ -29,3 +29,4 @@ m_nomi.so: m_nomi.cc irc.h ../net.h
 m_rejoin.so: m_rejoin.cc irc.h ../net.h
 m_channel.so: m_channel.cc irc.h ../net.h
 m_take.so: m_take.cc irc.h ../net.h
+m_say.so: m_say.cc irc.h ../net.h
