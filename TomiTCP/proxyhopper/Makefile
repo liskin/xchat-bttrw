@@ -4,8 +4,6 @@ DEBUG=no
 
 CFLAGS=-Wall -D_GNU_SOURCE
 CXXFLAGS=$(CFLAGS)
-LDLIBS=-lTomiTCP
-LDFLAGS=-L..
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
 ifeq ($(DEBUG),yes)
@@ -28,4 +26,4 @@ dep:
 
 clean:
 	$(RM) proxyhopper *.o
-proxyhopper: proxyhopper.o
+proxyhopper: proxyhopper.o ../libTomiTCP.a

@@ -8,6 +8,8 @@
 using namespace std;
 using namespace net;
 
+const int proxy_timeout = 60;
+
 int sendall(int s, const char* buf, const int size);
 void goon(int a, int b);
 
@@ -17,24 +19,73 @@ auto_ptr<TomiTCP> in;
 /*
  * Hop to next host
  */
-void pconnect(TomiTCP &c, const string &host)
+char *lasthost = 0;
+void pconnect(TomiTCP &c, char *host)
 {
+    if (!host || !*host)
+	return;
+
     cout << "Proxy connecting to " << host << endl;
-    fprintf(c, "CONNECT %s HTTP/1.0\n\n", host.c_str());
+    fprintf(c, "CONNECT %s HTTP/1.0\n\n", host);
+
+    if (input_timeout(c.sock, proxy_timeout * 1000) <= 0) {
+	/*
+	 * The proxy wasn't able to connect to the one we have in host var
+	 * within a specified time.
+	 */
+	cerr << "Removing " << host << endl;
+	*host = 0;
+	throw runtime_error("Connection timeout");
+    }
 
     string line;
     if (c.getline(line)) {
 	chomp(line);
 	char httpver[10], err[100] = ""; int code;
 	int ret = sscanf(line.c_str(), "HTTP/%9[^ ] %i %99[^\n]", httpver, &code, err);
-	if (ret < 2)
-	    throw runtime_error("parse error on HTTP response");
-	if (code < 200 || code > 299)
-	    throw runtime_error("HTTP not ok! (" + string(err) + ")");
+	if (ret < 2) {
+	    /*
+	     * The proxy replied with some unknown garbage.
+	     */
+	    if (lasthost) {
+		cerr << "Removing " << lasthost << endl;
+		*lasthost = 0;
+	    }
+	    throw runtime_error("Parse error on HTTP response");
+	}
+	if (code < 200 || code > 299) {
+	    /*
+	     * The proxy wasn't able to connect to host we wanted.
+	     */
+	    if (code >= 500) {
+		cerr << "Removing " << host << endl;
+		*host = 0;
+	    }
+	    /*
+	     * The proxy didn't want to connect.
+	     */
+	    else if (code >= 400 && lasthost) {
+		cerr << "Removing " << lasthost << endl;
+		*lasthost = 0;
+	    }
+
+	    throw runtime_error("HTTP not ok! (" + tostr<int>(code) + " " +
+		    string(err) + ")");
+	}
     } else {
-	throw runtime_error("zero sized HTTP reply");
+	/*
+	 * The proxy didn't want to talk.
+	 */
+	if (lasthost) {
+	    cerr << "Removing " << lasthost << endl;
+	    *lasthost = 0;
+	}
+	throw runtime_error("Zero sized HTTP reply");
     }
 
+    /*
+     * Skip HTTP headers.
+     */
     while (c.getline(line)) {
 	chomp(line);
 	if (line.empty())
@@ -45,8 +96,8 @@ void pconnect(TomiTCP &c, const string &host)
 int main(int argc, char *argv[])
 {
     if (argc < 3) {
-	cout << "Usage: proxyhopper <port> [proxy:port] [proxy:port...] <host>:<port>";
-	cout << endl;
+	cerr << "Usage: proxyhopper <port> [proxy:port] [proxy:port...] <host>:<port>";
+	cerr << endl;
 	return -1;
     }
 
@@ -54,43 +105,69 @@ int main(int argc, char *argv[])
 
     try {
 	srv.listen(atol(argv[arg++]));
+    } catch (runtime_error e) {
+	cerr << e.what() << endl;
+	return -1;
+    }
 
-	string firsthost, firstport;
-	{
-	    string h = argv[arg++];
+    while (1) {
+	int marg = arg;
+	try {
+	    in.reset(srv.accept());
+
+	    /*
+	     * Skip removed hosts
+	     */
+	    while (marg < argc && !argv[marg][0])
+		marg++;
+	    if (marg >= argc) {
+		cerr << "There are no hosts left!" << endl;
+		return -1;
+	    }
+
+	    /*
+	     * Parse the first host
+	     */
+	    lasthost = argv[marg];
+	    string firsthost, firstport, h(argv[marg++]);
 	    unsigned int colon = h.rfind(':');
-	    if (colon == string::npos)
-		throw runtime_error("Invalid host");
+	    if (colon == string::npos) {
+		cerr << "Invalid host (" << h << ")" << endl;
+		return -1;
+	    }
 	    firsthost.assign(h, 0, colon);
 	    firstport.assign(h, colon + 1, string::npos);
-	}
-
-	while (1) {
-	    in.reset(srv.accept());
 
 	    /*
 	     * Connect the first host
 	     */
-	    cout << "Connecting to " << firsthost << ":" << firstport << endl;
-	    out.connect(firsthost, firstport);
+	    cerr << "Connecting to " << firsthost << ":" << firstport << endl;
+	    try {
+		out.connect(firsthost, firstport);
+	    } catch (...) {
+		*lasthost = 0;
+		throw;
+	    }
 
 	    /*
 	     * Hop over proxys
 	     */
-	    for (int marg = arg; marg < argc; pconnect(out, argv[marg++]));
+	    while (marg < argc) {
+		pconnect(out, argv[marg++]);
+		lasthost = argv[marg - 1];
+	    }
 
 	    /*
 	     * Pass data between sockets
 	     */
 	    goon(in->sock, out.sock);
 
-	    cout << "Connection closed" << endl << endl;
+	} catch (runtime_error e) {
+	    cerr << e.what() << endl;
 	    out.close();
-	    in->close();
+	    in.reset(0);
 	}
-    } catch (runtime_error e) {
-	cerr << e.what() << endl;
-	return -1;
+	cerr << "Connection closed" << endl << endl;
     }
 
     return 0;
