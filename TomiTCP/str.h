@@ -128,6 +128,8 @@ namespace std {
 	    string indent = INDENT_DETECT);
 
     string recode(const string& src, const string& from, const string& to);
+    unsigned int u8strlimit(const char *c, unsigned int limit);
+    unsigned int u8strlen(const char *c);
 }
 
 #endif /* STR_H_INCLUDED */

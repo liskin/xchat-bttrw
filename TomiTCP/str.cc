@@ -236,4 +236,32 @@ namespace std {
 	delete []result;
 	return ret;
     }
+
+    /* 
+     * Count number of real chars in UTF-8 string
+     */
+    unsigned int u8strlen(const char *c)
+    {
+	unsigned int len = 0;
+
+	for (; *c; c++)
+	    if (!(*c & 0x80 && ~*c & 0x40))
+		len++;
+
+	return len;
+    }
+
+    /*
+     * Count number of 8-bit chars needed to represent 'limit' UTF-8 chars
+     * from string c.
+     */
+    unsigned int u8strlimit(const char *c, unsigned int limit)
+    {
+	const char *tc = c;
+	for (; *tc && (limit || (*tc & 0x80 && ~*tc & 0x40)); tc++)
+	    if (!(*tc & 0x80 && ~*tc & 0x40))
+		limit--;
+
+	return tc - c;
+    }
 }
