@@ -66,16 +66,16 @@ namespace xchat {
     void XChat::do_sendq()
     {
 	if (!sendq.empty() && time(0) - last_sent >= send_interval) {
-	    pair<string,string> msg = sendq.front(); sendq.pop();
-	    if (rooms.find(msg.first) != rooms.end())
-		putmsg(rooms[msg.first], msg.second);
+	    send_item e = sendq.front(); sendq.pop();
+	    if (rooms.find(e.room) != rooms.end())
+		putmsg(rooms[e.room], e.target, e.msg);
 	}
 
 	// f00king idler
 	if (idle_interval && sendq.empty())
 	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
 		if (time(0) - i->second.last_sent >= idle_interval) {
-		    sendq_push(i->first, "/s " + nick + " " + genidle());
+		    sendq.push(send_item(i->first, nick, genidle()));
 		}
 	    }
     }

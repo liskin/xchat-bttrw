@@ -59,6 +59,18 @@ namespace xchat {
 	    mutable auto_ptr<Event> e;
     };
 
+    class send_item {
+	public:
+	    string room, target, msg;
+	    send_item(const string& r, const string& t, const string& m) :
+		room(r), target(t) {
+		    if (client_charset.length())
+			msg = recode(m, client_charset, "UTF-8");
+		    else
+			msg = m;
+		}
+    };
+
     class XChat {
 	public:
 	    vector<net::sockaddr_uni> servers;
@@ -67,10 +79,9 @@ namespace xchat {
 	    rooms_t rooms;
 
 	    time_t last_sent, last_recv;
-	    queue<pair<string,string> > sendq; // chan => msg
+	    queue<send_item> sendq;
 	    deque<recv_item> recvq;
 
-	    void sendq_push(const string& a, const string& b);
 	    void do_sendq();
 	    void fill_recvq();
 	    void recvq_push(Event *e);
@@ -84,7 +95,7 @@ namespace xchat {
 	    void join(const string& rid);
 	    void leave(string rid);
 	    void getmsg(room& r);
-	    void putmsg(room& r, const string& msg);
+	    void putmsg(room& r, const string& target, const string& msg);
 
 	    string makeurl(const string& url);
 	    string makeurl2(const string& url);
@@ -112,11 +123,6 @@ namespace xchat {
 	    void list(listout_t &listout);
     };
 
-    inline void XChat::sendq_push(const string& a, const string& b) {
-	sendq.push(pair<string,string>(a,
-		    (client_charset.length())?recode(b, client_charset, "UTF-8"):b));
-    }
-
     inline void XChat::recvq_push(Event *e) {
 	recvq.push_back(recv_item(e));
     }
@@ -127,11 +133,11 @@ namespace xchat {
     }
     
     inline void XChat::msg(const string &room, const string &msg) {
-	sendq_push(room, msg);
+	sendq.push(send_item(room, "~", msg));
     }
 
     inline void XChat::whisper(const string &room, const string &target, const string &msg) {
-	sendq_push(room, "/s " + target + " " + msg);
+	sendq.push(send_item(room, target, msg));
     }
     
     inline void XChat::whisper(const string &target, const string &msg) {
@@ -140,16 +146,17 @@ namespace xchat {
 	    room *r;
 	    x_nick *n = findnick(target, &r);
 	    if (n)
-		sendq_push(r->rid, "/s " + target + " " + msg);
+		sendq.push(send_item(r->rid, target, msg));
 	    else
-		sendq_push(rooms.begin()->first, "/m " + target + " " + msg);
+		sendq.push(send_item(rooms.begin()->first,
+			    "~", "/m " + target + " " + msg));
 	} else {
 	    throw runtime_error("Can't send PRIVMSG's without channel joined");
 	}
     }
 
     inline void XChat::kick(const string &room, const string &user, const string &reason) {
-	sendq_push(room, "/kick " + user + " " + reason);
+	sendq.push(send_item(room, "~", "/kick " + user + " " + reason));
     }
 }
 

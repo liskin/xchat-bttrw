@@ -110,7 +110,7 @@ namespace xchat {
 	}
 	s.close();
 
-	ret = s.GET(makeurl2("modchat?op=roominfo&skin=2&cid=0&rid="+rid),0);
+	ret = s.GET(makeurl2("modchat?op=roominfo&skin=2&rid="+rid),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
 
@@ -393,11 +393,12 @@ parse_error:
     /*
      * Send a message.
      */
-    void XChat::putmsg(room &r, const string& msg)
+    void XChat::putmsg(room &r, const string& target, const string& msg)
     {
 	TomiHTTP s;
-	int ret = s.POST(makeurl2("modchat"),"op=textpage&skin=2&rid="+r.rid+"&aid=0"+
-		"&target=~&textarea="+TomiHTTP::URLencode(msg),0);
+	int ret = s.POST(makeurl2("modchat"),"op=textpage&skin=2&rid=" + r.rid +
+		"&aid=0" + "&target=" + TomiHTTP::URLencode(target) +
+		"&textarea=" + TomiHTTP::URLencode(msg), 0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while posting msg");
 
