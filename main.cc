@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <ctime>
 #include <memory>
+#include <map>
 #include <openssl/md5.h>
 #include "xchat.h"
 #include "irc.h"
@@ -40,26 +41,22 @@ TomiTCP s;
 auto_ptr<TomiTCP> c;
 auto_ptr<XChat> x;
 
+struct room {
+    int l;
+};
+typedef map<string,room> rooms_t;
+rooms_t rooms;
+
 const char *me = "xchat.cz";
 const char *userhost = "users.xchat.cz";
 
 int main(int argc, char *argv[])
 {
-    /*if (argc != 4) {
-	cerr << argv[0] << " <user> <pass> <channel>" << endl;
-	return -1;
-    }
-
-    string room = argv[3];*/
-
     try {
 	s.listen(6669);
 	c.reset(s.accept());
 
 	string nick, pass;
-
-	string room; // remove ;)
-	int room_l = 0;
 
 	while (1) {
 	    if (input_timeout(c->sock, 3000) > 0) {
@@ -103,12 +100,11 @@ int main(int argc, char *argv[])
 		} else if (cmd[0] == "JOIN" && cmd.size() >= 2) {
 		    if (cmd[1][0] == '#')
 			cmd[1].erase(cmd[1].begin());
-		    room = cmd[1];
 
 		    vector<string> nicklist;
 		    nicklist.push_back(nick);
 
-		    try { room_l = x->join(cmd[1], nicklist); }
+		    try { rooms[cmd[1]].l = x->join(cmd[1], nicklist); }
 		    catch (runtime_error e) {
 			fprintf(*c, ":%s ERROR :%s\n", me, e.what());
 			break;
@@ -137,10 +133,14 @@ int main(int argc, char *argv[])
 			    break;
 			}
 		    } else {
-			try { x->putmsg(room, "/s " + cmd[1] + " " + cmd[2]); }
-			catch (runtime_error e) {
-			    fprintf(*c, ":%s ERROR :%s\n", me, e.what());
-			    break;
+			if (rooms.size()) {
+			    try { x->putmsg(rooms.begin()->first, "/s " + cmd[1] + " " + cmd[2]); }
+			    catch (runtime_error e) {
+				fprintf(*c, ":%s ERROR :%s\n", me, e.what());
+				break;
+			    }
+			} else {
+			    fprintf(*c, ":%s NOTICE :Can't send PRIVMSG's without channel joined\n", me);
 			}
 		    }
 		} else if (cmd[0] == "MODE" && cmd.size() == 2) {
@@ -159,13 +159,13 @@ int main(int argc, char *argv[])
 
 	    if (x.get()) {
 		try {
-		    if (room.length()) {
+		    for (rooms_t::iterator j = rooms.begin(); j != rooms.end(); j++) {
 			vector<string> m;
-			room_l = x->getmsg(room, room_l, m);
+			j->second.l = x->getmsg(j->first, j->second.l, m);
 			for (vector<string>::iterator i = m.begin(); i != m.end(); i++) {
 			    string m = striphtml(*i);
 			    XChat::stripdate(m);
-			    string src = me, target = "#" + room;
+			    string src = me, target = "#" + j->first;
 			    XChat::getnick(m, src, target);
 			    XChat::striphtmlent(m);
 
