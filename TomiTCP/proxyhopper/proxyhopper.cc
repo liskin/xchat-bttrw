@@ -16,11 +16,12 @@ void goon(int a, int b);
 TomiTCP out, srv;
 auto_ptr<TomiTCP> in;
 
-/*
- * Hop to next host
- */
 char *lasthost = 0;
-void pconnect(TomiTCP &c, char *host, bool last)
+
+/*
+ * Hop to next host using HTTP CONNECT
+ */
+void httpconnect(TomiTCP &c, char *host, bool last)
 {
     if (!host || !*host)
 	return;
@@ -28,12 +29,12 @@ void pconnect(TomiTCP &c, char *host, bool last)
     char *mylasthost = lasthost;
     lasthost = host;
 
-    cout << "Proxy connecting to " << host << endl;
+    cout << "HTTP Connect Proxy connecting to " << host << endl;
     fprintf(c, "CONNECT %s HTTP/1.0\n\n", host);
 
     if (input_timeout(c.sock, proxy_timeout * 1000) <= 0) {
 	/*
-	 * The proxy wasn't able to connect to the one we have in host var
+	 * The proxy wasn't able to connect to the host we wanted
 	 * within a specified time.
 	 */
 	if (!last) {
@@ -100,11 +101,81 @@ void pconnect(TomiTCP &c, char *host, bool last)
     }
 }
 
+/*
+ * Hop to next host using SOCKS v4
+ */
+void socks(TomiTCP &c, char *host, bool last)
+{
+    if (!host || !*host)
+	return;
+
+    char *mylasthost = lasthost;
+    lasthost = host;
+
+    vector<sockaddr_uni> addrs;
+
+    /*
+     * Parse it
+     */
+    string addr, port, h(host);
+    unsigned int colon = h.rfind(':');
+    if (colon == string::npos)
+	throw runtime_error("Invalid host (" + h + ")");
+    addr.assign(h, 0, colon);
+    port.assign(h, colon + 1, string::npos);
+
+    resolve(addr, port, addrs);
+    while (addrs.size() && addrs[0].sa.sa_family != AF_INET)
+	addrs.erase(addrs.begin());
+    if (!addrs.size())
+	throw runtime_error("Could not resolve address");
+
+    char sbuf[9] = "\x04\x01      ";
+    memcpy(sbuf + 2, &PORT_SOCKADDR(addrs[0]), 2);
+    memcpy(sbuf + 4, &addrs[0].sin.sin_addr.s_addr, 4);
+
+    cout << "SOCKS v4 Proxy connecting to " << host << endl;
+    fwrite(sbuf, 9, 1, c);
+
+    if (input_timeout(c.sock, proxy_timeout * 1000) <= 0) {
+	/*
+	 * The proxy wasn't able to connect to the host we wanted
+	 * within a specified time.
+	 */
+	if (!last) {
+	    cerr << "Removing " << host << endl;
+	    *host = 0;
+	}
+	throw runtime_error("Connection timeout");
+    }
+
+    char buf[8];
+    if (fread(buf, 8, 1, c) != 1) {
+	/*
+	 * The proxy didn't want to talk.
+	 */
+	if (mylasthost) {
+	    cerr << "Removing " << mylasthost << endl;
+	    *mylasthost = 0;
+	}
+	throw runtime_error("Bad or no reply");
+    }
+
+    if (buf[0] != 0 || buf[1] != 90) {
+	/*
+	 * The request was not successful
+	 */
+	throw runtime_error("Bad or unsuccessful reply");
+    }
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 3) {
-	cerr << "Usage: proxyhopper <port> [proxy:port] [proxy:port...] <host>:<port>";
-	cerr << endl;
+	cerr << "Usage: proxyhopper <port> [proxy:port] [-sh] [proxy:port...] [-sh] <host>:<port>"
+	    << endl << " -s - SOCKS v4, -h - HTTP CONNECT" << endl
+	    << " (yes, you specify the proxy type AFTER the address and it" << endl
+	    << "  takes effect on all following proxys)" << endl;
 	return -1;
     }
 
@@ -125,7 +196,7 @@ int main(int argc, char *argv[])
 	    /*
 	     * Skip removed hosts
 	     */
-	    while (marg < argc && !argv[marg][0])
+	    while (marg < argc && (!argv[marg][0] || argv[marg][0] == '-'))
 		marg++;
 	    if (marg >= argc) {
 		cerr << "There are no hosts left!" << endl;
@@ -157,10 +228,37 @@ int main(int argc, char *argv[])
 	    }
 
 	    /*
+	     * Proxy mode
+	     *  1 - HTTP CONNECT
+	     *  2 - SOCKS v4
+	     */
+	    int mode = 1;
+
+	    /*
 	     * Hop over proxys
 	     */
-	    while (marg < argc)
-		pconnect(out, argv[marg++], (marg + 1) == argc);
+	    while (marg < argc) {
+		if (argv[marg][0] == '-') {
+		    switch (argv[marg++][1]) {
+			case 'h':
+			    mode = 1;
+			    break;
+			case 's':
+			    mode = 2;
+			    break;
+			default:
+			    cerr << "Unknown parameter" << endl;
+			    return -1;
+		    }
+		} else {
+		    switch (mode) {
+			case 1:
+			    httpconnect(out, argv[marg++], (marg + 1) == argc); break;
+			case 2:
+			    socks(out, argv[marg++], (marg + 1) == argc); break;
+		    }
+		}
+	    }
 
 	    cerr << "Ready, Go on!" << endl;
 
