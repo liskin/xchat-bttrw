@@ -9,7 +9,7 @@ using namespace net;
 
 namespace xchat {
     /*
-     * Join channel and get all needed info about it
+     * Join room and get all needed info about it
      */
     void XChat::join(const string& rid)
     {
@@ -77,9 +77,9 @@ namespace xchat {
     }
 
     /*
-     * Part channel.
+     * Leave room.
      */
-    void XChat::part(const string& rid)
+    void XChat::leave(const string& rid)
     {
 	TomiHTTP s;
 
@@ -175,9 +175,8 @@ namespace xchat {
 	/*
 	 * Push messages to recvq in reverse.
 	 */
-	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++) {
-	    recvq.push(pair<string,string>(r.rid,*i));
-	}
+	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++)
+	    recvq_parse_push(*i, r);
 
 	/*
 	 * And don't forget to report parse error if we didn't get valid
@@ -186,10 +185,11 @@ namespace xchat {
 	if (r.l == -1) {
 	    for (vector<string>::iterator i = dbg.begin(); i != dbg.end(); i++)
 		cout << *i << endl;
-	    throw runtime_error("Parse error");
+	    EvRoomError *e = new EvRoomError;
+	    e->s = "Parse error";
+	    e->rid = r.rid;
+	    recvq_push(e);
 	}
-
-	last_recv = time(0);
     }
 
     /*

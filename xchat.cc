@@ -14,6 +14,15 @@ namespace xchat {
     int idle_interval = 0;
 
     /*
+     * Init rng and recode.
+     */
+    void xchat_init()
+    {
+	srand(time(0) ^ getpid());
+	init_recode();
+    }
+
+    /*
      * Prepare URL with given full path.
      */
     string XChat::makeurl(const string& path)
@@ -49,20 +58,6 @@ namespace xchat {
     }
 
     /*
-     * Get a host for user based on his/her sex
-     */
-    const char * XChat::getsexhost(string src)
-    {
-	strtolower(src);
-
-	for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++)
-	    if (i->second.nicklist.find(src) != i->second.nicklist.end())
-		return sexhost[i->second.nicklist[src].sex];
-
-	return sexhost[2];
-    }
-
-    /*
      * Go through sendq and send messages, take flood protection into account.
      * Then, send anti-idle messages if necessary.
      */
@@ -80,5 +75,22 @@ namespace xchat {
 		    sendq_push(i->first, "/s " + nick + " " + genidle());
 		}
 	    }
+    }
+
+    /*
+     * Get new messages if it should be done yet.
+     */
+    void XChat::fill_recvq()
+    {
+	if (time(0) - last_recv >= recv_interval) {
+	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
+		try { getmsg(i->second); }
+		catch (runtime_error e) {
+		    throw runtime_error(i->first + ": " + e.what());
+		}
+	    }
+
+	    last_recv = time(0);
+	}
     }
 }

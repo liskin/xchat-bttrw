@@ -26,7 +26,8 @@ dep:
 
 -include .depend
 
-libxchat-bttrw.a: xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o charset.o
+libxchat-bttrw.a: xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o \
+                  charset.o
 	$(AR) rsv $@ $?
 
 gate: gate.o libxchat-bttrw.a TomiTCP/libTomiTCP.a

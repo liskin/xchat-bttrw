@@ -44,7 +44,7 @@ namespace xchat {
     XChat::~XChat()
     {
 	for (rooms_t::iterator j = rooms.begin(); j != rooms.end(); j++) {
-	    try { part(j->first); } catch (...) { }
+	    try { leave(j->first); } catch (...) { }
 	}
 
 	TomiHTTP s;

@@ -10,6 +10,7 @@ namespace xchat {
 	recode.outer = recode_new_outer (false);
        	recode.request = recode_new_request (recode.outer);
 	recode_scan_request (recode.request, "html..flat");
+	atexit(exit_recode);
     }
 
     /*

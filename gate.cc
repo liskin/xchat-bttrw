@@ -9,9 +9,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <typeinfo>
 #include "xchat.h"
 #include "irc.h"
-#include "idle.h"
 #include "TomiTCP/net.h"
 #include "TomiTCP/str.h"
 using namespace std;
@@ -42,15 +42,33 @@ TomiTCP s;
 auto_ptr<TomiTCP> c;
 auto_ptr<XChat> x;
 
+const char * const me = "xchat.cz";
+const char * const sexhost[] = {
+    "girls.xchat.cz",
+    "boys.xchat.cz",
+    "users.xchat.cz"
+};
+
+/*
+ * Get a host for user based on his/her sex
+ */
+const char * getsexhost(string src)
+{
+    x_nick *n = x->findnick(src, 0);
+    if (n)
+	return sexhost[n->sex];
+
+    return sexhost[2];
+}
+
 void sigchld(int) {
     wait(0);
 }
 
 int main(int argc, char *argv[])
 {
-    srand(time(0) ^ getpid());
+    xchat_init();
     signal(SIGCHLD, sigchld);
-    init_recode();
 
     int port = 6669;
     if (argc == 2 && atol(argv[1]))
@@ -169,7 +187,7 @@ main_accept:
 			    x->join(chan);
 
 			    fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
-				    x->getsexhost(nick), chan.c_str());
+				    getsexhost(nick), chan.c_str());
 
 			    // output userlist (NAMES)
 			    string tmp; int i; nicklist_t::iterator j;
@@ -206,9 +224,9 @@ main_accept:
 
 			if (x->rooms.find(chan) != x->rooms.end()) {
 			    try {
-				x->part(chan);
+				x->leave(chan);
 				fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
-					hash(nick).c_str(), x->getsexhost(nick),
+					hash(nick).c_str(), getsexhost(nick),
 					chan.c_str());
 			    } catch (runtime_error e) {
 				fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
@@ -226,23 +244,15 @@ main_accept:
 			/*
 			 * Channel message
 			 */
-			x->sendq_push(cmd[1], cmd[2]);
+			x->msg(cmd[1], cmd[2]);
 		    } else {
 			/*
 			 * Private message
 			 */
-			if (x->rooms.size()) {
-			    // decide if we have to send global msg
-			    room *r;
-			    x_nick *n = x->findnick(cmd[1], &r);
-			    if (n)
-				x->sendq_push(r->rid, "/s " + cmd[1] + " " + cmd[2]);
-			    else
-				x->sendq_push(x->rooms.begin()->first, "/m " + cmd[1] +
-					" " + cmd[2]);
-			} else {
-			    fprintf(*c, ":%s NOTICE %s :Can't send PRIVMSG's "
-				    "without channel joined\n", me, nick.c_str());
+			try { x->whisper(cmd[1], cmd[2]); }
+			catch (runtime_error e) {
+			    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+				    nick.c_str(), e.what());
 			}
 		    }
 		} else if (cmd[0] == "MODE" && cmd.size() == 2) {
@@ -285,13 +295,14 @@ main_accept:
 		     * Mangle `WHOIS nick' into `/info nick'
 		     * or
 		     * Mangle `WHOIS nick nick' into `/info2 nick'
+		     * Also, output a simple WHOIS reply.
 		     */
 		    if (x->rooms.size()) {
-			x->sendq_push(x->rooms.begin()->first,
+			x->msg(x->rooms.begin()->first,
 				string("/info") + ((cmd.size() != 2)?"2 ":" ")
 				    + cmd[1]);
 		    } else {
-			fprintf(*c, ":%s NOTICE %s :Can't send PRIVMSG's "
+			fprintf(*c, ":%s NOTICE %s :Can't do WHOIS "
 				"without channel joined\n", me, nick.c_str());
 		    }
 
@@ -322,79 +333,86 @@ main_accept:
 		/*
 		 * Receive some data sometimes
 		 */
-		if (x->should_recv())
-		    for (rooms_t::iterator j = x->rooms.begin(); j != x->rooms.end(); j++) {
-			try { x->getmsg(j->second); }
-			catch (runtime_error e) {
-			    string rid = j->first;
-			    try { x->part(j->first); } catch (...) { }
-			    fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
-				    hash(nick).c_str(), x->getsexhost(nick), rid.c_str());
-			    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
-				    nick.c_str(), e.what());
-			}
-		    }
+		try { x->fill_recvq(); }
+		catch (runtime_error e) {
+		    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+			    nick.c_str(), e.what());
+		}
 	    }
 
 	    /*
 	     * Go through recv queue and process messages
 	     */
 	    while (x.get() && !x->recvq.empty()) {
-		pair<string,string> i = x->recvq.front(); x->recvq.pop();
-		string &m = i.second, src = me, target = "#" + i.first,
-		       reason, who, host;
+		auto_ptr<Event> e(x->recvq_pop());
 
-		XChat::striphtml(m);
-		XChat::stripdate(m);
-		XChat::getnick(m, src, target);
-		striphtmlent(m);
-		XChat::unsmilize(m);
+		if (dynamic_cast<EvRoomError*>(e.get())) {
+		    auto_ptr<EvRoomError> f((EvRoomError*)e.release());
 
-		/*
-		 * Now we should have it somewhat parsed, so try if it a
-		 * system message, and display it properly.
-		 */
+		    try { x->leave(f->getrid()); } catch (...) { }
+		    fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
+			    hash(nick).c_str(), getsexhost(nick), f->getrid().c_str());
+		    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+			    nick.c_str(), f->str().c_str());
+		} else if (dynamic_cast<EvRoomMsg*>(e.get())) {
+		    auto_ptr<EvRoomMsg> f((EvRoomMsg*)e.release());
 
-		if (src == me && x->isjoin(i.first, m, src)) {
-		    fprintf(*c, ":%s!%s@%s JOIN %s\n", src.c_str(),
-			    hash(src).c_str(), x->getsexhost(src),
-			    target.c_str());
-		} else if (src == me && x->ispart(i.first, m, src, host)) {
-		    fprintf(*c, ":%s!%s@%s PART %s :No reason\n", src.c_str(),
-			    hash(src).c_str(), host.c_str(),
-			    target.c_str());
-		} else if (src == me && x->iskick(i.first, m, src, reason, who, host)) {
-		    if (who.empty())
-			fprintf(*c, ":%s!%s@%s PART %s :%s\n", src.c_str(),
-				hash(src).c_str(), host.c_str(),
-				target.c_str(), reason.c_str());
-		    else
-			fprintf(*c, ":%s!%s@%s KICK %s %s :%s\n", who.c_str(),
-				hash(who).c_str(), host.c_str(),
-				target.c_str(), src.c_str(), reason.c_str());
-		} else if (strtolower_nr(src) == "system" && 
-			strtolower_nr(target) == strtolower_nr(nick) &&
-			checkidle(wstrip_nr(m))) {
-		    fprintf(*c, ":%s NOTICE %s :System: %s [IDLER]\n", me,
-			    nick.c_str(), m.c_str());
-		} else if (strtolower_nr(src) == "system" && 
-			strtolower_nr(target) == strtolower_nr(nick)) {
-		    fprintf(*c, ":%s NOTICE %s :System: %s\n", me,
-			    nick.c_str(), m.c_str());
-		} else if (strtolower_nr(src) == "tip") {
-		    // spam protection ;)
-		} else if (strtolower_nr(src) != strtolower_nr(nick)) {
-		    fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", src.c_str(),
-			    hash(src).c_str(), x->getsexhost(src),
-			    target.c_str(), m.c_str());
+		    fprintf(*c, ":%s!%s@%s PRIVMSG #%s :%s\n", f->getsrc().c_str(),
+			    hash(f->getsrc()).c_str(), getsexhost(f->getsrc()),
+			    f->getrid().c_str(), f->str().c_str());
+		} else if (dynamic_cast<EvRoomWhisper*>(e.get())) {
+		    auto_ptr<EvRoomWhisper> f((EvRoomWhisper*)e.release());
+
+		    fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", f->getsrc().c_str(),
+			    hash(f->getsrc()).c_str(), getsexhost(f->getsrc()),
+			    f->gettarget().c_str(), f->str().c_str());
+		} else if (dynamic_cast<EvRoomJoin*>(e.get())) {
+		    auto_ptr<EvRoomJoin> f((EvRoomJoin*)e.release());
+
+		    fprintf(*c, ":%s!%s@%s JOIN #%s\n", f->getsrc().nick.c_str(),
+			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
+			    f->getrid().c_str());
+		} else if (dynamic_cast<EvRoomLeave*>(e.get())) {
+		    auto_ptr<EvRoomLeave> f((EvRoomLeave*)e.release());
+
+		    fprintf(*c, ":%s!%s@%s PART #%s :%s\n", f->getsrc().nick.c_str(),
+			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
+			    f->getrid().c_str(), f->getreason().c_str());
+		} else if (dynamic_cast<EvRoomKick*>(e.get())) {
+		    auto_ptr<EvRoomKick> f((EvRoomKick*)e.release());
+
+		    fprintf(*c, ":%s!%s@%s KICK %s %s :%s\n", f->getsrc().c_str(),
+			    hash(f->getsrc()).c_str(), getsexhost(f->getsrc()),
+			    f->getrid().c_str(), f->gettarget().nick.c_str(),
+			    f->getreason().c_str());
+		} else if (dynamic_cast<EvRoomAdvert*>(e.get())) {
+		    //auto_ptr<EvRoomAdvert> f((EvRoomAdvert*)e.release());
+		} else if (dynamic_cast<EvRoomSysMsg*>(e.get())) {
+		    auto_ptr<EvRoomSysMsg> f((EvRoomSysMsg*)e.release());
+
+		    fprintf(*c, ":%s NOTICE #%s :System: %s\n", me,
+			    f->getrid().c_str(), f->str().c_str());
+		} else if (dynamic_cast<EvRoomIdlerMsg*>(e.get())) {
+		    auto_ptr<EvRoomIdlerMsg> f((EvRoomIdlerMsg*)e.release());
+
+		    fprintf(*c, ":%s NOTICE #%s :System: %s [IDLER]\n", me,
+			    f->getrid().c_str(), f->str().c_str());
+		} else if (dynamic_cast<EvRoomOther*>(e.get())) {
+		    auto_ptr<EvRoomOther> f((EvRoomOther*)e.release());
+
+		    fprintf(*c, ":%s NOTICE #%s :Other: %s - %s\n", me,
+			    f->getrid().c_str(), typeid(*(f.get())).name(),
+			    e->str().c_str());
+		} else {
+		    fprintf(*c, ":%s NOTICE %s :Other: %s - %s\n", me,
+			    nick.c_str(), typeid(*(e.get())).name(),
+			    e->str().c_str());
 		}
 	    }
 	}
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
     }
-
-    exit_recode();
 
     return 0;
 }

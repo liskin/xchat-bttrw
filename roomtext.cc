@@ -3,6 +3,7 @@
 #include <iostream>
 #include "xchat.h"
 #include "smiles.h"
+#include "idle.h"
 #include "TomiTCP/str.h"
 
 namespace xchat {
@@ -45,6 +46,8 @@ namespace xchat {
     {
 	string t = string(m, 0, m.find(": "));
 	if (t.length() == m.length())
+	    return;
+	if (t.find(' ', t.find_first_not_of(" ")) != string::npos)
 	    return;
 	m.erase(0, t.length() + 2);
 	if (m.length() && m[0] == ' ')
@@ -105,7 +108,7 @@ namespace xchat {
     /*
      * Check for user joining a room
      */
-    bool XChat::isjoin(const string& r, string &m, string &src)
+    bool XChat::isjoin(room& r, string &m, string &src, int &sex)
     {
 	unsigned int a,b;
 	if ((a = m.find("Uzivatel")) != string::npos &&
@@ -113,11 +116,13 @@ namespace xchat {
 	    if (m.find("Uzivatelka") != string::npos) {
 		src = string(m, a + sizeof("Uzivatelka ") - 1, b - a - sizeof("Uzivatelka ") + 1);
 		wstrip(src);
-		rooms[r].nicklist[strtolower_nr(src)] = (struct x_nick){src, 0};
+		r.nicklist[strtolower_nr(src)] = (struct x_nick){src, 0};
+		sex = 0;
 	    } else {
 		src = string(m, a + sizeof("Uzivatel ") - 1, b - a - sizeof("Uzivatel ") + 1);
 		wstrip(src);
-		rooms[r].nicklist[strtolower_nr(src)] = (struct x_nick){src, 1};
+		r.nicklist[strtolower_nr(src)] = (struct x_nick){src, 1};
+		sex = 1;
 	    }
 	    return 1;
 	}
@@ -128,7 +133,7 @@ namespace xchat {
     /*
      * Check for user leaving a room
      */
-    bool XChat::ispart(const string& r, string &m, string &src, string &host)
+    bool XChat::isleave(room& r, string &m, string &src, int &sex)
     {
 	unsigned int a,b;
 	if ((a = m.find("Uzivatel")) != string::npos &&
@@ -141,8 +146,8 @@ namespace xchat {
 		wstrip(src);
 	    }
 
-	    host = getsexhost(src);
-	    rooms[r].nicklist.erase(strtolower_nr(src));
+	    sex = r.nicklist[strtolower_nr(src)].sex;
+	    r.nicklist.erase(strtolower_nr(src));
 	    return 1;
 	}
 
@@ -152,7 +157,7 @@ namespace xchat {
     /*
      * Check for user being kicked from room
      */
-    bool XChat::iskick(const string& r, string &m, string &src, string &reason, string &who, string &host)
+    bool XChat::iskick(room& r, string &m, string &src, string &reason, string &who, int &sex)
     {
 	unsigned int a,b;
 	if ((a = m.find("Uzivatel")) != string::npos &&
@@ -184,12 +189,92 @@ namespace xchat {
 		reason = string(m, a + 1, b - a - 1);
 	    }
 
-	    host = getsexhost(src);
-	    rooms[r].nicklist.erase(strtolower_nr(src));
+	    sex = r.nicklist[strtolower_nr(src)].sex;
+	    r.nicklist.erase(strtolower_nr(src));
 	    return 1;
 	}
 
 	return 0;
     }
 
+    /*
+     * Parse a line from xchat and push appropiate events to the recvq.
+     */
+    void XChat::recvq_parse_push(string m, room& r)
+    {
+	// advert check...
+	
+	striphtml(m);
+	stripdate(m);
+
+	string src, target;
+	getnick(m, src, target);
+	striphtmlent(m);
+
+	if (src.length()) {
+	    unsmilize(m);
+
+	    if (strtolower_nr(src) == "system" &&
+		    strtolower_nr(target) == strtolower_nr(nick) &&
+		    checkidle(wstrip_nr(m))) {
+		EvRoomIdlerMsg *e = new EvRoomIdlerMsg;
+		e->s = m;
+		e->rid = r.rid;
+		recvq_push(e);
+	    } else if (strtolower_nr(src) == "system" &&
+		    strtolower_nr(target) == strtolower_nr(nick)) {
+		EvRoomSysMsg *e = new EvRoomSysMsg;
+		e->s = m;
+		e->rid = r.rid;
+		recvq_push(e);
+	    } else if (target.length() && strtolower_nr(src) != strtolower_nr(nick)) {
+		EvRoomWhisper *e = new EvRoomWhisper;
+		e->s = m;
+		e->rid = r.rid;
+		e->src = src;
+		e->target = target;
+		recvq_push(e);
+	    } else if (strtolower_nr(src) != strtolower_nr(nick)) {
+		EvRoomMsg *e = new EvRoomMsg;
+		e->s = m;
+		e->rid = r.rid;
+		e->src = src;
+		recvq_push(e);
+	    }
+	} else {
+	    int sex;
+	    string reason, who;
+
+	    if (isjoin(r, m, src, sex)) {
+		EvRoomJoin *e = new EvRoomJoin;
+		e->s = m;
+		e->rid = r.rid;
+		e->src = (struct x_nick){ src, sex };
+		recvq_push(e);
+	    } else if (isleave(r, m, src, sex)) {
+		EvRoomLeave *e = new EvRoomLeave;
+		e->s = m;
+		e->rid = r.rid;
+		e->src = (struct x_nick){ src, sex };
+		recvq_push(e);
+	    } else if (iskick(r, m, src, reason, who, sex)) {
+		if (who.length()) {
+		    EvRoomKick *e = new EvRoomKick;
+		    e->s = m;
+		    e->rid = r.rid;
+		    e->src = who;
+		    e->target = (struct x_nick){ src, sex };
+		    e->reason = reason;
+		    recvq_push(e);
+		} else {
+		    EvRoomLeave *e = new EvRoomLeave;
+		    e->s = m;
+		    e->rid = r.rid;
+		    e->src = (struct x_nick){ src, sex };
+		    e->reason = reason;
+		    recvq_push(e);
+		}
+	    }
+	}
+    }
 }
