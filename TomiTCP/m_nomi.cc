@@ -11,11 +11,6 @@ string nomi_nick;
 
 extern "C" {
 
-void m_nomi_init()
-{
-    cout << "m_nomi init - hello" << endl;
-}
-
 int m_nomi_config(string a, string b)
 {
     if (!strcasecmp(a.c_str(),"nomi_channels"))
@@ -88,6 +83,15 @@ void m_nomi_msg(FILE *f, string snick, string shost, vector<string> cmd)
     if (cmd[0] == "403" && !strcasecmp(cmd[1].c_str(),nick.c_str())) {
 	S(f,"JOIN %s\n",cmd[2].c_str());
     }
+}
+
+void m_nomi_init(struct module &m)
+{
+    cout << "m_nomi init - hello" << endl;
+    m.config = m_nomi_config;
+    m.connected = m_nomi_connected;
+    m.mode = m_nomi_mode;
+    m.msg = m_nomi_msg;
 }
 
 }

@@ -4,7 +4,7 @@ using namespace std;
 
 extern "C" {
 
-void m_pokus_init()
+void m_pokus_init(struct module &m)
 {
     cout << "m_pokus init" << endl;
 }

@@ -5,13 +5,16 @@
 #include <fnmatch.h>
 #include <dlfcn.h>
 #include <unistd.h>
+#include <signal.h>
 #include "net.h"
 #include "irc.h"
 using namespace std;
 
 namespace std {
 
+// for restart    
 char **my_argv;
+FILE *my_f;
 
 string server = ""; int port = 6667;
 string nick = "B4gr";
@@ -105,7 +108,7 @@ void loadconfig(const char *fname, ostream &out)
 		else {
 		    bool ok = 0;
 		    for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
-			if (! i->second.config(a,b)) {
+			if (i->second.config && !i->second.config(a,b)) {
 			    ok = 1;
 			    break;
 			}
@@ -152,6 +155,8 @@ void loadmodule(string name)
     unloadmodule(name);
 
     module m;
+    memset(&m,0,sizeof(m));
+
     m.lib = dlopen((modpath+"/m_"+name+".so").c_str(),RTLD_NOW | RTLD_GLOBAL);
     if (!m.lib) {
 	throw runtime_error("Loadmodule error: "+string(dlerror()));
@@ -159,30 +164,10 @@ void loadmodule(string name)
 
     m.init = (module_init) dlsym(m.lib,("m_"+name+"_init").c_str());
     if (!m.init) {
-	throw runtime_error("Loadmodule error (fn init): "+string(dlerror()));
+	throw runtime_error("Loadmodule error (init): "+string(dlerror()));
     }
 
-    m.config = (module_config) dlsym(m.lib,("m_"+name+"_config").c_str());
-    if (!m.config) {
-	throw runtime_error("Loadmodule error (fn config): "+string(dlerror()));
-    }
-
-    m.connected = (module_connected) dlsym(m.lib,("m_"+name+"_connected").c_str());
-    if (!m.connected) {
-	throw runtime_error("Loadmodule error (fn connected): "+string(dlerror()));
-    }
-
-    m.mode = (module_mode) dlsym(m.lib,("m_"+name+"_mode").c_str());
-    if (!m.mode) {
-	throw runtime_error("Loadmodule error (fn mode): "+string(dlerror()));
-    }
-
-    m.msg = (module_msg) dlsym(m.lib,("m_"+name+"_msg").c_str());
-    if (!m.msg) {
-	throw runtime_error("Loadmodule error (fn msg): "+string(dlerror()));
-    }
-
-    m.init();
+    m.init(m);
 
     modules[name] = m;
 }
@@ -364,6 +349,14 @@ void takeover(FILE *f, string &prefix, string &snick, string &shost, vector<stri
     }
 }
 
+void restart(int)
+{
+    S(my_f,"QUIT :restarting\n");
+    fclose(my_f);
+    sleep(1);
+    execv(my_argv[0],my_argv);
+}
+
 void docmd(FILE *f, string &snick, string &cmd)
 {
     if (string(cmd,0,3) == ".q " && cmd.length() > 3) {
@@ -479,10 +472,7 @@ void docmd(FILE *f, string &snick, string &cmd)
 	    S(f,"PRIVMSG %s :Need no parameters\n",snick.c_str());
 	} else {
 	    S(f,"PRIVMSG %s :Restarting...\n",snick.c_str());
-	    S(f,"QUIT\n");
-	    fclose(f);
-	    sleep(1);
-	    execv(my_argv[0],my_argv);
+	    restart(0);
 	    throw runtime_error("Could not restart :(");
 	}
 	return;
@@ -529,7 +519,8 @@ void processbuf(FILE *f, char *buf)
 	    if (n == 1) {
 		loper(f);
 		for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
-		    i->second.connected(f);
+		    if (i->second.connected)
+			i->second.connected(f);
 		}
 	    }
 	}
@@ -573,7 +564,8 @@ void processbuf(FILE *f, char *buf)
 	    }
 
 	    for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
-	        i->second.mode(f,snick,shost,cmd[1],modes);
+		if (i->second.mode)
+		    i->second.mode(f,snick,shost,cmd[1],modes);
 	    }
 	}
     }
@@ -582,7 +574,8 @@ void processbuf(FILE *f, char *buf)
     }
 
     for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
-	i->second.msg(f,snick,shost,cmd);
+	if (i->second.msg)
+	    i->second.msg(f,snick,shost,cmd);
     }
 }
 
@@ -610,6 +603,7 @@ void body(FILE *f)
 int main(int argc, char *argv[])
 {
     my_argv = argv;
+    signal(SIGHUP,restart);
 
     if (argc != 2) {
 	cout << "need config file as parameter" << endl;
@@ -621,6 +615,7 @@ int main(int argc, char *argv[])
 	while (1) {
 	    net::TomiTCP sock(server,port);
 	    FILE *f = sock.makestream();
+	    my_f = f;
 
 	    login(f);
 	    body(f);

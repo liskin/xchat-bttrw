@@ -9,7 +9,9 @@
 
 namespace std {
 
-typedef void (*module_init)();
+struct module;
+
+typedef void (*module_init)(struct module &);
 typedef int (*module_config)(string,string);
 			    // a      b
 typedef void (*module_connected)(FILE*);
