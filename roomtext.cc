@@ -309,8 +309,13 @@ namespace xchat {
 	for (deque<recv_item>::iterator i = recvq.begin();
 		i != recvq.end(); i++) {
 	    EvWhisper *e;
+	    EvRoomWhisper *f;
 	    if ((e = dynamic_cast<EvWhisper*>(i->e.get()))) {
 		if (e->getsrc().nick == src && e->str() == m)
+		    return true;
+	    }
+	    if ((f = dynamic_cast<EvRoomWhisper*>(i->e.get()))) {
+		if (f->getsrc().nick == src && f->str() == m)
 		    return true;
 	    }
 	}
