@@ -285,7 +285,7 @@ void parsemode(vector<string>& cmd, vector<string>& mode)
 	    // has parameter?
 	    if (j < cmd.size() && ((isupport.ab.find(t[0]) != string::npos) ||
 		    (isupport.c.find(t[0]) != string::npos && ch[0] == '+'))) {
-		tmp += " " + cmd[j];
+		tmp += " " + strtolower(cmd[j]);
 		j++;
 	    }
 
@@ -440,6 +440,7 @@ void processbuf(FILE *f, const char *buf)
     vector<string> cmd;
 
     parsein(buf,prefix,cmd);
+    strtolower(prefix);
     parseprefix(prefix,snick,shost);
     cout << "<- " << buf;
 
@@ -467,7 +468,7 @@ void processbuf(FILE *f, const char *buf)
 		oper = 1;
 	    } else if (n == 311) {
 		myhost = cmd[3]+"@"+cmd[4];
-		cout << myhost << endl;
+		strtolower(myhost);
 	    } else if (n == 1) {
 		S(f,"WHOIS %s\n",nick.c_str());
 		loper(f);
@@ -482,9 +483,14 @@ void processbuf(FILE *f, const char *buf)
 		    bool op = (nick.length() && nick[0] == '@');
 		    nick.erase(0,nick.find_first_not_of("@+"));
 
+		    strtolower(cmd[3]);
+		    strtolower(nick);
 		    channels[cmd[3]][nick] = op;
 		}
 	    } else if (n == 352) {
+		strtolower(cmd[3]);
+		strtolower(cmd[4]);
+		strtolower(cmd[6]);
 		users[cmd[6]] = cmd[3] + "@" + cmd[4];
 	    }
 	}
@@ -515,6 +521,7 @@ void processbuf(FILE *f, const char *buf)
 	    vector<string> tcmd(cmd.begin() + 2,cmd.end());
 	    vector<string> modes;
 	    parsemode(tcmd,modes);
+	    strtolower(cmd[1]);
 
 	    // set ?op on the nick in channel
 	    for (vector<string>::iterator i = modes.begin(); i != modes.end(); i++) {
@@ -531,15 +538,17 @@ void processbuf(FILE *f, const char *buf)
     }
 
     if (!strcasecmp(cmd[0].c_str(),"JOIN")) {
+	strtolower(cmd[1]);
 	if (cmd.size() >= 2)
 	    channels[cmd[1]][snick] = 0;
-	if (snick == nick)
+	if (!strcasecmp(snick.c_str(),nick.c_str()))
 	    S(f,"WHO %s\n",cmd[1].c_str());
     }
 
     if (!strcasecmp(cmd[0].c_str(),"PART")) {
 	if (cmd.size() >= 2) {
-	    if (snick == nick)
+	    strtolower(cmd[1]);
+	    if (!strcasecmp(snick.c_str(),nick.c_str()))
 		channels.erase(cmd[1]);
 	    else
 		channels[cmd[1]].erase(snick);
@@ -548,7 +557,9 @@ void processbuf(FILE *f, const char *buf)
 
     if (!strcasecmp(cmd[0].c_str(),"KICK")) {
 	if (cmd.size() >= 3) {
-	    if (cmd[2] == nick)
+	    strtolower(cmd[1]);
+	    strtolower(cmd[2]);
+	    if (!strcasecmp(cmd[2].c_str(),nick.c_str()))
 		channels.erase(cmd[1]);
 	    else
 		channels[cmd[1]].erase(cmd[2]);
@@ -557,6 +568,7 @@ void processbuf(FILE *f, const char *buf)
 
     if (!strcasecmp(cmd[0].c_str(),"NICK")) {
 	if (cmd.size() >= 2) {
+	    strtolower(cmd[1]);
 	    users.erase(snick);
 	    users[cmd[1]] = shost;
 
@@ -687,7 +699,7 @@ void body(net::TomiTCP &f)
 		} else {
 		    chomp(buf);
 		    if (! i->maskd) { // has not told his hostmask
-			i->mask = buf;
+			i->mask = strtolower(buf);
 			i->maskd = 1;
 		    } else {
 			cout << "slave said: " << buf << endl;
@@ -735,16 +747,19 @@ void body(net::TomiTCP &f)
 	    iter = 0;
 	}
 
-	/*cout << "---\n";
+	cout << "---\n";
 	for (map<string,string>::iterator i = users.begin(); i != users.end(); i++) {
 	    cout << i->first << "!" << i->second << endl;
 	}
-	cout << "---\n";*/
-	/*cout << "---\n";
+	cout << "---\n";
+	cout << "---\n";
 	for (channel_t::iterator i = channels["#nomi"].begin(); i != channels["#nomi"].end(); i++) {
 	    cout << i->first << " - op? " << (int)i->second << endl;
 	}
-	cout << "---\n";*/
+	cout << "---\n";
+	/*for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
+	    fprintf(*(i->s),"PRIVMSG Liskni_si :baf\n");
+	}*/
     }
 }
 

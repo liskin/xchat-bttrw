@@ -77,6 +77,9 @@ struct slave {
 };
 typedef vector<slave> slaves_t;
 
+extern slavec_t slavec;
+extern slaves_t slaves;
+
 extern void processsome(FILE *f);
 extern void S(FILE *f, const char* fmt, ...);
 extern void loadmodule(string name);

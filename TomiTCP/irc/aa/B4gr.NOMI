@@ -12,6 +12,7 @@ max_modes	4
 module	channel
 module	take
 module	say
+module	opslaves
 slave_port 12205
-#ch_channels	#nomi
+ch_channels	#nomi
 #rj_sleep	0
