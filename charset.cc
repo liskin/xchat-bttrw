@@ -4,12 +4,12 @@ namespace xchat {
     /*
      * Init recode library.
      */
-    recode_t recode;
+    recode_t recode_struct;
     void init_recode()
     {
-	recode.outer = recode_new_outer (false);
-       	recode.request = recode_new_request (recode.outer);
-	recode_scan_request (recode.request, "html..u8");
+	recode_struct.outer = recode_new_outer (false);
+       	recode_struct.request = recode_new_request (recode_struct.outer);
+	recode_scan_request (recode_struct.request, "html..u8");
 	atexit(exit_recode);
     }
 
@@ -18,8 +18,8 @@ namespace xchat {
      */
     void exit_recode()
     {
-	recode_delete_request (recode.request);
-	recode_delete_outer (recode.outer);
+	recode_delete_request (recode_struct.request);
+	recode_delete_outer (recode_struct.outer);
     }
 
     /*
@@ -43,7 +43,7 @@ namespace xchat {
 		if (token == "&nbsp;")
 		    ret = " ";
 		if (!ret)
-		    ret = recode_string(recode.request, token.c_str());
+		    ret = recode_string(recode_struct.request, token.c_str());
 		if (ret) {
 		    m.erase(m.begin() + a, m.begin() + b + 1);
 		    m.insert(a, ret);

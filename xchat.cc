@@ -12,6 +12,7 @@ namespace xchat {
      * Variable definitions
      */
     int idle_interval = 0;
+    string client_charset;
 
     /*
      * Init rng and recode.

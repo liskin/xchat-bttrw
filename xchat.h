@@ -8,6 +8,7 @@
 #include <queue>
 #include <memory>
 #include "TomiTCP/net.h"
+#include "TomiTCP/str.h"
 #include "charset.h"
 
 namespace xchat {
@@ -41,6 +42,11 @@ namespace xchat {
     const int send_interval = 5, recv_interval = 3;
     extern int idle_interval;
 
+    /*
+     * Recoding
+     */
+    extern string client_charset;
+
     class recv_item {
 	public:
 	    recv_item(const recv_item &a) : e(a.e) { }
@@ -65,6 +71,7 @@ namespace xchat {
 	    void recvq_push(Event *e);
 	    void recvq_parse_push(string m, room& r);
 	    Event * recvq_pop();
+	    string recode_to_client(const string& s);
 
 	    XChat(const string& user, const string& pass);
 	    ~XChat();
@@ -93,7 +100,8 @@ namespace xchat {
     };
 
     inline void XChat::sendq_push(const string& a, const string& b) {
-	sendq.push(pair<string,string>(a,b));
+	sendq.push(pair<string,string>(a,
+		    (client_charset.length())?recode(b, client_charset, "UTF-8"):b));
     }
 
     inline void XChat::recvq_push(Event *e) {

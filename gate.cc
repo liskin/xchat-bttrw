@@ -160,6 +160,10 @@ main_accept:
 			idle_interval = atol(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :idle_interval set to %i\n",
 				me, nick.c_str(), idle_interval);
+		    } else if (cmd[1] == "CHARSET" && cmd.size() == 3) {
+			client_charset = cmd[2];
+			fprintf(*c, ":%s NOTICE %s :client_charset set to %s\n",
+				me, nick.c_str(), client_charset.c_str());
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
 				" count\n", me, nick.c_str());

@@ -8,6 +8,12 @@
 
 namespace xchat {
     /*
+     * Recode to client_charset
+     */
+    inline string XChat::recode_to_client(const string& s) {
+	return (client_charset.length())?recode(s, "UTF-8", client_charset):s;
+    }
+    /*
      * Strip HTML tags
      */
     void XChat::striphtml(string &s)
@@ -218,25 +224,25 @@ namespace xchat {
 		    strtolower_nr(target) == strtolower_nr(nick) &&
 		    checkidle(wstrip_nr(m))) {
 		EvRoomIdlerMsg *e = new EvRoomIdlerMsg;
-		e->s = m;
+		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		recvq_push(e);
 	    } else if (strtolower_nr(src) == "system" &&
 		    strtolower_nr(target) == strtolower_nr(nick)) {
 		EvRoomSysMsg *e = new EvRoomSysMsg;
-		e->s = m;
+		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		recvq_push(e);
 	    } else if (target.length() && strtolower_nr(src) != strtolower_nr(nick)) {
 		EvRoomWhisper *e = new EvRoomWhisper;
-		e->s = m;
+		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		e->src = src;
 		e->target = target;
 		recvq_push(e);
 	    } else if (strtolower_nr(src) != strtolower_nr(nick)) {
 		EvRoomMsg *e = new EvRoomMsg;
-		e->s = m;
+		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		e->src = src;
 		recvq_push(e);
@@ -247,36 +253,36 @@ namespace xchat {
 
 	    if (isjoin(r, m, src, sex)) {
 		EvRoomJoin *e = new EvRoomJoin;
-		e->s = m;
+		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		e->src = (struct x_nick){ src, sex };
 		recvq_push(e);
 	    } else if (isleave(r, m, src, sex)) {
 		EvRoomLeave *e = new EvRoomLeave;
-		e->s = m;
+		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		e->src = (struct x_nick){ src, sex };
 		recvq_push(e);
 	    } else if (iskick(r, m, src, reason, who, sex)) {
 		if (who.length()) {
 		    EvRoomKick *e = new EvRoomKick;
-		    e->s = m;
+		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
 		    e->src = who;
 		    e->target = (struct x_nick){ src, sex };
-		    e->reason = reason;
+		    e->reason = recode_to_client(reason);
 		    recvq_push(e);
 		} else {
 		    EvRoomLeave *e = new EvRoomLeave;
-		    e->s = m;
+		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
 		    e->src = (struct x_nick){ src, sex };
-		    e->reason = reason;
+		    e->reason = recode_to_client(reason);
 		    recvq_push(e);
 		}
 	    } else {
 		EvRoomSysText *e = new EvRoomSysText;
-		e->s = m;
+		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		recvq_push(e);
 	    }

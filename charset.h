@@ -12,7 +12,7 @@ namespace xchat {
 	RECODE_OUTER outer;
 	RECODE_REQUEST request;
     };
-    extern recode_t recode;
+    extern recode_t recode_struct;
 
     void init_recode();
     void exit_recode();
