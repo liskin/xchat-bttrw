@@ -458,6 +458,30 @@ main_accept:
 			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
 				nick.c_str(), e.what());
 		    }
+		} else if (cmd[0] == "USERHOST" && cmd.size() >= 2) {
+		    /*
+		     * Output a USERHOST reply
+		     */
+		    string rpl;
+		    for (vector<string>::iterator i = cmd.begin() + 1;
+			    i != cmd.end(); i++) {
+			x_nick *n = x->findnick(*i, 0);
+			if (n)
+			    rpl += n->nick + "=+" +
+				hash(n->nick) + "@" + sexhost[n->sex] + " ";
+		    }
+		    fprintf(*c, ":%s 302 %s :%s\n", me, nick.c_str(), rpl.c_str());
+		} else if (cmd[0] == "ISON" && cmd.size() >= 2) {
+		    /*
+		     * Output an ISON reply
+		     */
+		    string rpl;
+		    for (vector<string>::iterator i = cmd.begin() + 1;
+			    i != cmd.end(); i++) {
+			if (x->ison(*i))
+			    rpl += *i + " ";
+		    }
+		    fprintf(*c, ":%s 303 %s :%s\n", me, nick.c_str(), rpl.c_str());
 		} else {
 		    cout << l << endl;
 		    fprintf(*c, ":%s 421 %s %s :Unknown command\n", me, nick.c_str(),

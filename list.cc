@@ -8,6 +8,9 @@
 using namespace net;
 
 namespace xchat {
+    /*
+     * Get a list of available rooms
+     */
     void XChat::list(listout_t &listout)
     {
 	TomiHTTP s;

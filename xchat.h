@@ -121,6 +121,7 @@ namespace xchat {
 	    bool ispermadmin(const string &rid, string nick);
 
 	    void list(listout_t &listout);
+	    bool ison(const string& nick);
     };
 
     inline void XChat::recvq_push(Event *e) {
