@@ -6,7 +6,6 @@
 #include <dlfcn.h>
 #include <unistd.h>
 #include <signal.h>
-#include "net.h"
 #include "irc.h"
 using namespace std;
 

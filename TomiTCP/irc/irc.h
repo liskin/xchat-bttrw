@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <cstdio>
-#include "net.h"
+#include "../net.h"
 
 namespace std {
 

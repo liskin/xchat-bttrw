@@ -2,7 +2,7 @@
 
 DEBUG=no
 
-CFLAGS=-Wall -D_GNU_SOURCE -I..
+CFLAGS=-Wall -D_GNU_SOURCE
 CXXFLAGS=$(CFLAGS)
 LDLIBS=-ldl -lTomiTCP
 LDFLAGS=-rdynamic -L..
@@ -17,16 +17,18 @@ endif
 %.so: %.cc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -fPIC -DPIC -shared $(TARGET_ARCH) $< $(LOADLIBES) -o $@
 
-.PHONY: all clean
+.PHONY: all clean dep
 
 all: irc $(patsubst %.cc,%.so,$(wildcard m_*.cc))
+
+MAKEDEP=gcc -MM $(wildcard *.c *.cc) > .depend
+dep:
+	$(MAKEDEP)
+.depend:
+	$(MAKEDEP)
+	
+-include .depend
+
 clean:
 	$(RM) irc *.{o,so}
 irc: irc.o
-irc.o: irc.cc irc.h ../net.h
-m_pokus.so: m_pokus.cc irc.h ../net.h
-m_nomi.so: m_nomi.cc irc.h ../net.h
-m_rejoin.so: m_rejoin.cc irc.h ../net.h
-m_channel.so: m_channel.cc irc.h ../net.h
-m_take.so: m_take.cc irc.h ../net.h
-m_say.so: m_say.cc irc.h ../net.h
