@@ -47,7 +47,7 @@ void setproctitle(const char *fmt, ...) {}
 # include <unistd.h>
 # include <stdarg.h>
 # include <stdio.h>
-# include <malloc.h>
+# include <stdlib.h>
 static char *argv_start = NULL;
 static size_t argv_env_len = 0;
 

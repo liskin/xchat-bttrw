@@ -22,7 +22,12 @@ else
 endif
 
 ifeq ($(TARGET),i386-mingw32msvc)
- LDLIBS += -liconv -lws2_32
+ LDLIBS += -lws2_32
+ ICONV=external
+endif
+
+ifeq ($(ICONV),external)
+ LDLIBS += -liconv
 endif
 
 .PHONY: all clean dep dummy
