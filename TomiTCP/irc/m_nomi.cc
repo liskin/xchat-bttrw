@@ -59,7 +59,7 @@ void m_nomi_mode(FILE *f, string snick, string shost, string chan,
 void m_nomi_msg(FILE *f, string snick, string shost, vector<string> cmd)
 {
     if (!strcasecmp(cmd[0].c_str(),"KICK") && !strcasecmp(cmd[2].c_str(),nick.c_str())) {
-	    S(f,"OMODE %s -o %s\n",chan.c_str(),snick.c_str());
+	    S(f,"OMODE %s -o %s\n",cmd[1].c_str(),snick.c_str());
 	    S(f,"OJOIN @%s\n",cmd[1].c_str());
 	    S(f,"MODE %s b\n",cmd[1].c_str());
     }
