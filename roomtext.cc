@@ -10,7 +10,7 @@ namespace xchat {
     /*
      * Recode to client_charset
      */
-    inline string XChat::recode_to_client(const string& s) {
+    string XChat::recode_to_client(const string& s) {
 	return (client_charset.length())?recode(s, "UTF-8", client_charset):s;
     }
 

@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
     try {
 	s.listen(port
 #ifdef WIN32
-		, "0.0.0.0"
+		, "127.0.0.1"
 #endif
 		);
 main_accept:

@@ -1,6 +1,10 @@
 # vim:set sw=8 nosta:
 
-DEBUG=yes
+ifeq ($(TARGET),i386-mingw32msvc)
+ DEBUG=no
+else
+ DEBUG=yes
+endif
 
 CFLAGS=-Wall -D_GNU_SOURCE
 CXXFLAGS=$(CFLAGS)
@@ -17,6 +21,8 @@ endif
 ifeq ($(TARGET),i386-mingw32msvc)
  LDLIBS += -liconv -lws2_32
  LDFLAGS += -Wl,--wrap -Wl,strerror
+ CFLAGS += -O2
+ CXXLAGS += -O2
 endif
 
 .PHONY: all clean dep dummy
@@ -37,6 +43,9 @@ libxchat-bttrw.a: xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o \
 
 gate: gate.o md5.o libxchat-bttrw.a TomiTCP/libTomiTCP.a
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+ifeq ($(TARGET),i386-mingw32msvc)
+	strip $@
+endif
 
 clean:
 	$(RM) libxchat-bttrw.a gate *.o
