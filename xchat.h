@@ -41,10 +41,11 @@ namespace xchat {
 
 namespace xchat {
     /*
-     * Flood protection, refresh rate and idle protection
+     * Flood protection, refresh rate, max msg length and idle protection
      * 720 is optimal for flood protection
      */
     const int send_interval = 5, recv_interval = 3;
+    const unsigned int max_msg_length = 200;
     extern int idle_interval;
 
     /*
@@ -93,7 +94,7 @@ namespace xchat {
 	    ~XChat();
 
 	    void join(const string& rid);
-	    void leave(const string& rid);
+	    void leave(string rid);
 	    void getmsg(room& r);
 	    void putmsg(room& r, const string& target, const string& msg);
 	    void setdesc(const string& rid, const string& desc);
@@ -156,18 +157,10 @@ namespace xchat {
     }
     
     inline void XChat::whisper(const string &target, const string &msg) {
-	if (rooms.size()) {
-	    // decide if we have to send global msg
-	    room *r;
-	    x_nick *n = findnick(target, &r);
-	    if (n)
-		sendq.push(send_item(r->rid, target, msg));
-	    else
-		sendq.push(send_item(rooms.begin()->first,
-			    "~", "/m " + target + " " + msg));
-	} else {
-	    throw runtime_error("Can't send PRIVMSG's without channel joined");
-	}
+	/*
+	 * final decision on target room will be made in do_sendq
+	 */
+	sendq.push(send_item("", target, msg));
     }
 
     inline void XChat::kick(const string &room, const string &user, const string &reason) {

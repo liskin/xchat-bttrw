@@ -65,10 +65,70 @@ namespace xchat {
      */
     void XChat::do_sendq()
     {
+	/*
+	    // decide if we have to send global msg
+	    room *r;
+	    x_nick *n = findnick(target, &r);
+	    if (n)
+		sendq.push(send_item(r->rid, target, msg));
+	    else
+		sendq.push(send_item(rooms.begin()->first,
+			    "~", "/m " + target + " " + msg));
+			    */
 	if (!sendq.empty() && time(0) - last_sent >= send_interval) {
-	    send_item e = sendq.front(); sendq.pop();
-	    if (rooms.find(e.room) != rooms.end())
-		putmsg(rooms[e.room], e.target, e.msg);
+	    send_item &e = sendq.front(), f = e;
+	    bool pop = true;
+	    string prepend;
+
+	    /*
+	     * Handle whisper with unknown room
+	     */
+	    if (e.room.empty()) {
+		if (!rooms.size()) {
+		    sendq.pop();
+		    throw runtime_error("Can't send PRIVMSG's without channel joined");
+		}
+
+		/*
+		 * Decide if we have to send global msg
+		 */
+		room *r;
+		x_nick *n = findnick(e.target, &r);
+		if (n) {
+		    f.room = r->rid;
+		} else {
+		    f.room = rooms.begin()->first;
+		    prepend = "/m " + e.target + " ";
+		    f.target = "~";
+		}
+	    }
+
+	    /*
+	     * Look if we have to split the message
+	     */
+	    if (e.msg.length() + prepend.length() > max_msg_length) {
+		if (e.msg.length() && e.msg[0] == '/') {
+		    EvRoomError *ev = new EvRoomError;
+		    ev->s = "Message might have been shortened";
+		    ev->rid = e.room;
+		    ev->fatal = false;
+		    recvq_push(ev);
+		} else {
+		    if (prepend.length() >= max_msg_length) {
+			sendq.pop();
+			throw runtime_error("Fuck... this should have never happened!");
+		    }
+		    f.msg.erase(max_msg_length - prepend.length());
+		    e.msg.erase(0, max_msg_length - prepend.length());
+		    pop = false;
+		}
+	    }
+
+	    if (rooms.find(f.room) != rooms.end())
+		putmsg(rooms[f.room], f.target, prepend + f.msg);
+
+	    if (pop)
+		sendq.pop();
 	}
 
 	// f00king idler

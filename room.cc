@@ -168,7 +168,7 @@ namespace xchat {
     /*
      * Leave room.
      */
-    void XChat::leave(const string& rid)
+    void XChat::leave(string rid)
     {
 	rooms.erase(rid);
 	
