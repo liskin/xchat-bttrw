@@ -128,16 +128,19 @@ namespace net {
 	connect(hostname,uinttostr(port));
     }
 
-    void TomiTCP::connect(const string& hostname, const string& service)
+    void TomiTCP::connect(const string& hostname, const string& service,
+	    const string& bindhostname)
     {
 	if (ok()) {
 	    close();
 	}
 
-	vector<sockaddr_uni> addrs;
-	resolve(hostname,service,addrs);
+	vector<sockaddr_uni> addrs, bindaddrs;
+	resolve(hostname, service, addrs);
+	if (bindhostname.length())
+	    resolve(bindhostname, "0", bindaddrs);
 
-	string err = "No adress to connect to";
+	string err = "No address to connect to";
 
 	for (vector<sockaddr_uni>::iterator i = addrs.begin(); i != addrs.end(); i++) {
 	    memcpy(&rname,&(*i),SIZEOF_SOCKADDR(*i));
@@ -146,6 +149,12 @@ namespace net {
 	    if (socket < 0) {
 		err = strerror(sock_errno);
 	    } else {
+		for (vector<sockaddr_uni>::iterator j = bindaddrs.begin();
+			j != bindaddrs.end(); j++)
+		    if (j->sa.sa_family == rname.sa.sa_family)
+			if (!::bind(sock, &j->sa, SIZEOF_SOCKADDR(*j)))
+			    break;
+
 		if (::connect(sock,(const sockaddr*)&rname,SIZEOF_SOCKADDR(rname))) {
 		    int er = sock_errno;
 		    close();

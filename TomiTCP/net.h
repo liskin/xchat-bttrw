@@ -50,7 +50,8 @@ namespace net {
 	    TomiTCP(uint16_t port, const string& addr = "::"); // listening socket
 	    TomiTCP(const string& hostname, uint16_t port); // connection
 	    void listen(uint16_t port, const string& addr = "::");
-	    void connect(const string& hostname, const string& service);
+	    void connect(const string& hostname, const string& service,
+		    const string& bindhostname = "");
 	    void attach(int filedes);
 	    void close();
 	    ~TomiTCP();
