@@ -548,6 +548,18 @@ main_accept:
 		    else
 			fprintf(*c, ":%s 332 %s #%s :%s\n", me, nick.c_str(), cmd[1].c_str(),
 				(x->rooms[cmd[1]].name + " - " + x->rooms[cmd[1]].desc).c_str());
+		} else if (cmd[0] == "TOPIC" && cmd.size() >= 3) {
+		    /*
+		     * Set topic
+		     */
+		    if (cmd[1][0] == '#')
+			cmd[1].erase(cmd[1].begin());
+
+		    try { x->setdesc(cmd[1], cmd[2]); }
+		    catch (runtime_error e) {
+			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+				nick.c_str(), e.what());
+		    }
 		} else if (cmd[0] == "NAMES" && cmd.size() == 2) {
 		    /*
 		     * Output names reply

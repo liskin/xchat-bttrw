@@ -168,7 +168,7 @@ namespace xchat {
     /*
      * Leave room.
      */
-    void XChat::leave(string rid)
+    void XChat::leave(const string& rid)
     {
 	rooms.erase(rid);
 	
@@ -428,5 +428,17 @@ parse_error:
 		!msg.compare(0, 3, "/m ") || !msg.compare(0, 5, "/msg ")) {
 	    r.last_sent = last_sent;
 	}
+    }
+
+    /*
+     * Set room description
+     */
+    void XChat::setdesc(const string& rid, const string& desc)
+    {
+	TomiHTTP s;
+	int ret = s.POST(makeurl2("modchat"),"op=rightadmine&skin=2&rid=" + rid +
+		"&desc=" + TomiHTTP::URLencode(desc), 0);
+	if (ret != 200)
+	    throw runtime_error("Not HTTP 200 Ok while posting msg");
     }
 }

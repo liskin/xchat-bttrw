@@ -93,9 +93,10 @@ namespace xchat {
 	    ~XChat();
 
 	    void join(const string& rid);
-	    void leave(string rid);
+	    void leave(const string& rid);
 	    void getmsg(room& r);
 	    void putmsg(room& r, const string& target, const string& msg);
+	    void setdesc(const string& rid, const string& desc);
 
 	    string makeurl(const string& url);
 	    string makeurl2(const string& url);
