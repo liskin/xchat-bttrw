@@ -29,6 +29,8 @@ void parse_updateinfo(string s, string &admin, bool &locked)
 
     strtolower(s);
     admin = s;
+    if (admin == "-----")
+	admin = "";
 }
 
 namespace xchat {

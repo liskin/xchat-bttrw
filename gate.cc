@@ -556,9 +556,13 @@ main_accept:
 		} else if (dynamic_cast<EvRoomAdminChange*>(e.get())) {
 		    auto_ptr<EvRoomAdminChange> f((EvRoomAdminChange*)e.release());
 
-		    if (x->ispermadmin(f->getrid(), f->getbefore()))
+		    if (f->getbefore().empty() ||
+			    x->ispermadmin(f->getrid(), f->getbefore()))
 			fprintf(*c, ":%s MODE #%s +o %s\n", me,
 				f->getrid().c_str(), f->getnow().c_str());
+		    else if (f->getnow().empty())
+			fprintf(*c, ":%s MODE #%s -o %s\n", me,
+				f->getrid().c_str(), f->getbefore().c_str());
 		    else
 			fprintf(*c, ":%s MODE #%s -o+o %s %s\n", me,
 				f->getrid().c_str(), f->getbefore().c_str(),
