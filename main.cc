@@ -40,6 +40,7 @@ auto_ptr<XChat> x;
 int main(int argc, char *argv[])
 {
     srand(time(0) ^ getpid());
+    init_recode();
 
     int port = 6669;
     if (argc == 2 && atol(argv[1]))
@@ -246,6 +247,14 @@ int main(int argc, char *argv[])
 		    }
 		    fprintf(*c, ":%s 315 %s %s :End of /WHO list.\n", me,
 			    nick.c_str(), cmd[1].c_str());
+		} else if (cmd[0] == "WHOIS" && cmd.size() == 2) {
+		    /*
+		     * Mangle `WHOIS nick' into `/info nick'
+		     */
+		} else if (cmd[0] == "WHOIS" && cmd.size() == 3) {
+		    /*
+		     * Mangle `WHOIS nick nick' into `/info2 nick'
+		     */
 		} else {
 		    cout << l << endl;
 		    fprintf(*c, ":%s NOTICE %s :Unknown command\n", me, nick.c_str());
@@ -330,8 +339,9 @@ int main(int argc, char *argv[])
 	}
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
-	return -1;
     }
+
+    exit_recode();
 
     return 0;
 }

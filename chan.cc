@@ -18,7 +18,7 @@ namespace xchat {
 	room r;
 
 	r.rid = rid;
-	r.last_sent = 0;
+	r.last_sent = time(0) - idle_interval + 10;
 
 	int ret = s.GET(makeurl2("modchat?op=mainframeset&rid="+rid),0);
 	if (ret != 200)
@@ -98,8 +98,14 @@ namespace xchat {
     void XChat::getmsg(room& r)
     {
 	TomiHTTP s;
-	int ret = s.GET(makeurl2("modchat?op=roomtopng&js=1&rid="+r.rid+"&inc=1&last_line="+
-		    inttostr(r.l)),0);
+	int ret;
+	try {
+	    ret = s.GET(makeurl2("modchat?op=roomtopng&js=1&rid=" + r.rid +
+			"&inc=1&last_line=" + inttostr(r.l)),0);
+	} catch (...) {
+	    // we don't want to die on any request timeout
+	    return;
+	}
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
 

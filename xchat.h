@@ -6,9 +6,19 @@
 #include <map>
 #include <ctime>
 #include <queue>
+#include <recode.h>
 
 namespace xchat {
     using namespace std;
+
+    struct recode_t {
+	RECODE_OUTER outer;
+	RECODE_REQUEST request;
+    };
+    extern recode_t recode;
+
+    void init_recode();
+    void exit_recode();
 
     static const int servers = 5;
 
