@@ -62,6 +62,26 @@ namespace xchat {
 	}
 	s.close();
 	
+	ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid="+rid),0);
+	if (ret != 200)
+	    throw runtime_error("Not HTTP 200 Ok while joining channel");
+
+	while (s.getline(l)) {
+	    static string pat1 = "&inc=1&last_line=";
+	    unsigned int a, b;
+	    if ((a = l.find(pat1)) != string::npos &&
+		    (b = l.find('"', a + pat1.length())) != string::npos) {
+		r.l = atol(string(l, a + pat1.length(), b - a - pat1.length()).c_str());
+		continue;
+	    }
+
+	    static string pat2 = "update_info('";
+	    if ((a = l.find(pat2)) != string::npos) {
+		parse_updateinfo(string(l, a + pat2.length()), r.admin, r.locked);
+	    }
+	}
+	s.close();
+
 	ret = s.GET(makeurl2("modchat?op=textpageng&skin=2&js=1&rid="+rid),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
@@ -87,26 +107,6 @@ namespace xchat {
 	    }
 
 	    r.nicklist[strtolower_nr(nick)] = (struct x_nick){nick, 2};
-	}
-	s.close();
-
-	ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid="+rid),0);
-	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while joining channel");
-
-	while (s.getline(l)) {
-	    static string pat1 = "&inc=1&last_line=";
-	    unsigned int a, b;
-	    if ((a = l.find(pat1)) != string::npos &&
-		    (b = l.find('"', a + pat1.length())) != string::npos) {
-		r.l = atol(string(l, a + pat1.length(), b - a - pat1.length()).c_str());
-		continue;
-	    }
-
-	    static string pat2 = "update_info('";
-	    if ((a = l.find(pat2)) != string::npos) {
-		parse_updateinfo(string(l, a + pat2.length()), r.admin, r.locked);
-	    }
 	}
 	s.close();
 
@@ -214,7 +214,7 @@ namespace xchat {
 		    unsigned int pos;
 		    if ((pos = l.find('\'', 1)) != string::npos) {
 			tv.push_back(string(l, 1, pos - 1));
-			if (l[pos + 2] == ',') {
+			if (l[pos + 1] == ',') {
 			    expect_apos = true;
 			}
 		    }
