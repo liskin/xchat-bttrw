@@ -78,6 +78,7 @@ void sigchld(int) {
 void welcome()
 {
     cout << "Hello, this is an IRC to xchat gateway from xchat-bttrw r." REVISION << endl;
+    cout << "Built with TomiTCP r." TOMITCP_REV << endl;
     cout << "Coded by Tomas Janousek <tomi@nomi.cz> and others" << endl;
     cout << "Homepage: http://nomi.cz/projects.shtml?id=xchat-bttrw" << endl;
 #ifdef WIN32

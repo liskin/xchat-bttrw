@@ -7,7 +7,8 @@ else
 endif
 
 CFLAGS=-Wall -D_GNU_SOURCE \
-       -DREVISION=\"$(shell svn info | perl -ne 'if(/Revision: (\d+)/){print $$1;}')\"
+       -DREVISION=\"$(shell svn info | perl -ne 'if(/Revision: (\d+)/){print $$1;}')\" \
+       -DTOMITCP_REV=\"$(shell svn info TomiTCP | perl -ne 'if(/Revision: (\d+)/){print $$1;}')\"
 CXXFLAGS=$(CFLAGS)
 LDLIBS=
 LDFLAGS=
