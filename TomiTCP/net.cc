@@ -243,6 +243,8 @@ namespace net {
 	    throw runtime_error(string(strerror(er)));
 	}
 
+	// fill lname & rname !!!
+
 	setvbuf(stream,NULL,_IONBF,0); // no buffering
     }
 
