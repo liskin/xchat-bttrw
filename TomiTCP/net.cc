@@ -1,5 +1,6 @@
 #pragma implementation
 #include <iostream>
+#include <sstream>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/socket.h>
@@ -127,6 +128,63 @@ namespace net {
 	    throw runtime_error(string(strerror(errno)));
 	}
 	setvbuf(stream,NULL,_IONBF,0); // no buffering
+    }
+
+    string TomiTCP::ident(int ms)
+    {
+	sockaddr_uni addr = rname;
+	PORT_SOCKADDR(addr) = htons(113);
+	int s = ::socket(addr.sa.sa_family, SOCK_STREAM, 0);
+	if (s < 0) {
+	    throw runtime_error(string("Ident: ")+strerror(errno));
+	}
+	if (::connect(s,(const sockaddr*)&addr,SIZEOF_SOCKADDR(addr))) {
+	    int er = errno;
+	    ::close(s);
+	    throw runtime_error(string("Ident: ")+strerror(er));
+	}
+
+	char query[64];
+	sprintf(query,"%hi , %hi\n",ntohs(PORT_SOCKADDR(rname)),ntohs(PORT_SOCKADDR(lname)));
+
+	int retval = TEMP_FAILURE_RETRY(::send(s,query,strlen(query),0));
+	if (retval < 0) {
+	    int er = errno;
+	    ::close(s);
+	    throw runtime_error(string("Ident: ")+string(strerror(er)));
+	}
+
+	char buffer[513];
+
+	if (input_timeout(s,ms) > 0)
+	{
+	    retval = TEMP_FAILURE_RETRY(::recv(s,buffer,512,0));
+	    if (retval <= 0) {
+		int er = errno;
+		::close(s);
+		if (retval < 0)
+		    throw runtime_error(string("Ident: ")+string(strerror(er)));
+		return "";
+	    }
+	    buffer[retval] = 0;
+	} else {
+	    throw timeout("ident Timeout (recv)");
+	}
+	::close(s);
+
+	stringstream ss(buffer);
+	string tmp;
+
+	std::getline(ss,tmp,':');
+	ss >> tmp;
+	if (tmp != "USERID") {
+	    return "";
+	} else {
+	    std::getline(ss,tmp,':');
+	    std::getline(ss,tmp,':');
+	    ss >> tmp;
+	    return tmp;
+	}
     }
 
     void TomiTCP::attach(int filedes)

@@ -13,6 +13,9 @@
 #define SIZEOF_SOCKADDR(so) ((so).sa.sa_family == AF_INET6 ? \
     sizeof(so.sin6) : sizeof(so.sin))
 
+#define PORT_SOCKADDR(so) (((so).sa.sa_family == AF_INET) ? \
+	((so).sin.sin_port):((so).sin6.sin6_port))
+
 namespace net {
     using namespace std;
 
@@ -50,6 +53,7 @@ namespace net {
 	    int recv(char* buf, int sz, unsigned int ms = 5000);
 	    FILE* makestream();
 	    int getline(string& s);
+	    string ident(int ms = 10000);
 
 	    operator FILE* ();
 

@@ -37,9 +37,8 @@ int main(int argc, char *argv[])
 	t.close();
 
 	getline(cin,s);*/
-	net::TomiTCP a("nomi.cz",80);
-	cout << net::tomi_ntop(a.lname) << endl;
-	cout << net::tomi_ntop(a.rname) << endl;
+	net::TomiTCP a("62.77.119.154",6667);
+	cout << a.ident() << endl;
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
     }
