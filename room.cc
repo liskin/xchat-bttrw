@@ -369,7 +369,7 @@ namespace xchat {
 	    }
 
 	    static string pat3 = "chvilku strpení prosím</body></html>";
-	    if (l.find(pat1) != string::npos) {
+	    if (l.find(pat3) != string::npos) {
 		r.l = -2;
 	    }
 	}
