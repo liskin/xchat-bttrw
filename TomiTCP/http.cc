@@ -50,7 +50,7 @@ namespace net {
 	if (port < 1)
 	    port = 80;
 
-	connect(host,port);
+	connect(host,uinttostr(port));
 
 	if (port != 80) {
 	    stringstream s;
@@ -151,7 +151,7 @@ namespace net {
 	if (port < 1)
 	    port = 80;
 
-	connect(host,port);
+	connect(host,uinttostr(port));
 
 	if (port != 80) {
 	    stringstream s;

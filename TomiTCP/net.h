@@ -31,7 +31,7 @@ namespace net {
     string tomi_ntop(const sockaddr_uni& name);
     void tomi_pton(string p, sockaddr_uni& name);
     string revers(const sockaddr_uni& name);
-    void resolve(const string& hostname, vector<sockaddr_uni> &addrs);
+    void resolve(const string& hostname, const string& service, vector<sockaddr_uni> &addrs);
 
     class timeout : public runtime_error {
 	public:
@@ -44,7 +44,7 @@ namespace net {
 	    TomiTCP(uint16_t port, const string& addr = "::"); // listening socket
 	    TomiTCP(const string& hostname, uint16_t port); // connection
 	    void listen(uint16_t port, const string& addr = "::");
-	    void connect(const string& hostname, uint16_t port);
+	    void connect(const string& hostname, const string& service);
 	    void attach(int filedes);
 	    void close();
 	    ~TomiTCP();

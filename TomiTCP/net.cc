@@ -8,6 +8,7 @@
 #include <netinet/tcp.h>
 #include <netdb.h>
 #include "net.h"
+#include "str.h"
 
 namespace net {
     TomiTCP::TomiTCP() : sock(-1), stream(0) {
@@ -64,23 +65,22 @@ namespace net {
     {
 	memset(&lname,0,sizeof(lname));
 	memset(&rname,0,sizeof(rname));
-	connect(hostname,port);
+	connect(hostname,uinttostr(port));
     }
 
-    void TomiTCP::connect(const string& hostname, uint16_t port)
+    void TomiTCP::connect(const string& hostname, const string& service)
     {
 	if (ok()) {
 	    close();
 	}
 
 	vector<sockaddr_uni> addrs;
-	resolve(hostname,addrs);
+	resolve(hostname,service,addrs);
 
 	string err = "No adress to connect to";
 
 	for (vector<sockaddr_uni>::iterator i = addrs.begin(); i != addrs.end(); i++) {
 	    memcpy(&rname,&(*i),SIZEOF_SOCKADDR(*i));
-	    PORT_SOCKADDR(rname) = htons(port);
 
 	    sock = ::socket(rname.sa.sa_family, SOCK_STREAM, 0);
 	    if (socket < 0) {
@@ -112,17 +112,16 @@ namespace net {
 	setvbuf(stream,NULL,_IONBF,0); // no buffering
     }
 
-    void resolve(const string& hostname, vector<sockaddr_uni> &addrs) {
+    void resolve(const string& hostname, const string& service, vector<sockaddr_uni> &addrs) {
 	struct addrinfo *ai,*aip,hints;
 	int ret;
 	
 	sockaddr_uni rname;
-	memset(&rname,0,sizeof(rname));
 
 	memset(&hints,0,sizeof(hints));
 	hints.ai_socktype = SOCK_STREAM;
 
-	ret = getaddrinfo(hostname.c_str(),0,&hints,&ai);
+	ret = getaddrinfo(hostname.c_str(),service.c_str(),&hints,&ai);
 	if (ret) {
 	    throw runtime_error(string(gai_strerror(ret)));
 	}
@@ -131,8 +130,8 @@ namespace net {
 	string err = "No adress for hostname";
 
 	while (aip) {
+	    memset(&rname,0,sizeof(rname));
 	    memcpy(&rname,aip->ai_addr,aip->ai_addrlen);
-	    rname.sa.sa_family = aip->ai_family;
 	    addrs.push_back(rname);
 
 	    aip = aip->ai_next;

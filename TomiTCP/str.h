@@ -34,6 +34,48 @@ namespace std {
 	return str;
     }
 
+    inline string inttostr(int i)
+    {
+	char a[12];
+	sprintf(a,"%i",i);
+	return string(a);
+    }
+
+    inline string llinttostr(long long int i)
+    {
+	char a[21];
+	sprintf(a,"%lli",i);
+	return string(a);
+    }
+
+    inline string uinttostr(unsigned int i)
+    {
+	char a[12];
+	sprintf(a,"%u",i);
+	return string(a);
+    }
+
+    inline string ullinttostr(unsigned long long int i)
+    {
+	char a[21];
+	sprintf(a,"%llu",i);
+	return string(a);
+    }
+
+    inline string uinttohstr(unsigned int i)
+    {
+	char a[9];
+	sprintf(a,"%x",i);
+	return string(a);
+    }
+
+    inline string ullinttohstr(unsigned long long int i)
+    {
+	char a[17];
+	sprintf(a,"%llx",i);
+	return string(a);
+    }
+
 #define INDENT_DETECT "\033"
     int len(string s, int ini = 0, int tab = 8);
     int ntokens(string s);
