@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <stdint.h>
 #include <string>
+#include <vector>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <exception>
@@ -30,6 +31,7 @@ namespace net {
     string tomi_ntop(const sockaddr_uni& name);
     void tomi_pton(string p, sockaddr_uni& name);
     string revers(const sockaddr_uni& name);
+    void resolve(const string& hostname, vector<sockaddr_uni> &addrs);
 
     class timeout : public runtime_error {
 	public:

@@ -98,7 +98,8 @@ namespace net {
 	    }
 
 	    memcpy(&rname,aip->ai_addr,aip->ai_addrlen);
-	    ((rname.sa.sa_family == AF_INET)?(rname.sin.sin_port):(rname.sin6.sin6_port)) = htons(port);
+	    rname.sa.sa_family = aip->ai_family;
+	    PORT_SOCKADDR(rname) = htons(port);
 	    sock = ::socket(aip->ai_family, SOCK_STREAM, 0);
 	    if (socket < 0) {
 		err = strerror(errno);
@@ -127,6 +128,37 @@ namespace net {
 	    throw runtime_error(string(strerror(errno)));
 	}
 	setvbuf(stream,NULL,_IONBF,0); // no buffering
+    }
+
+    void resolve(const string& hostname, vector<sockaddr_uni> &addrs) {
+	struct addrinfo *ai,*aip,hints;
+	int ret;
+	
+	sockaddr_uni rname;
+	memset(&rname,0,sizeof(rname));
+
+	memset(&hints,0,sizeof(hints));
+	hints.ai_socktype = SOCK_STREAM;
+
+	ret = getaddrinfo(hostname.c_str(),0,&hints,&ai);
+	if (ret) {
+	    throw runtime_error(string(gai_strerror(ret)));
+	}
+	aip = ai;
+
+	string err = "No adress for hostname";
+
+	while (aip) {
+	    memcpy(&rname,aip->ai_addr,aip->ai_addrlen);
+	    rname.sa.sa_family = aip->ai_family;
+	    addrs.push_back(rname);
+
+	    aip = aip->ai_next;
+	}
+
+	freeaddrinfo(ai);
+	if (!addrs.size())
+	    throw runtime_error(err);
     }
 
     string TomiTCP::ident(int ms)

@@ -37,10 +37,15 @@ int main(int argc, char *argv[])
 	t.close();
 
 	getline(cin,s);*/
-	net::TomiTCP a(12345,"0.0.0.0");
+	/*net::TomiTCP a(12345,"0.0.0.0");
 	string s;
-	getline(cin,s);
+	getline(cin,s);*/
 	//cout << a.ident() << endl;
+	vector<net::sockaddr_uni> p;
+	net::resolve("nomi.cz",p);
+	for (vector<net::sockaddr_uni>::iterator it = p.begin(); it != p.end(); it++) {
+	    cout << tomi_ntop(*it) << endl;
+	}
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
     }
