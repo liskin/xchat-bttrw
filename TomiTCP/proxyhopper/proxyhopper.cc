@@ -166,9 +166,9 @@ int main(int argc, char *argv[])
 
 	} catch (runtime_error e) {
 	    cerr << e.what() << endl;
-	    out.close();
-	    in.reset(0);
 	}
+	out.close();
+	in.reset(0);
 	cerr << "Connection closed" << endl << endl;
     }
 
