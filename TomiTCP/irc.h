@@ -32,7 +32,7 @@ struct module {
 extern map<string,module> modules;
 
 extern int port;
-extern string server,nick,password,oname,opassword,config,autotake;
+extern string server,nick,password,oname,opassword,config,autotake,myhost;
 extern vector<string> masters,masternicks;
 extern unsigned int max_modes;
 extern int safe_mode,some_time;

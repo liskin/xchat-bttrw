@@ -35,6 +35,7 @@ void m_nomi_connected(FILE *f)
     for (vector<string>::iterator i = nomi_channels.begin();
 	    i != nomi_channels.end(); i++) {
 	S(f,"OJOIN @%s\n",i->c_str());
+	S(f,"MODE %s b\n",i->c_str());
     }
 }
 
@@ -54,11 +55,13 @@ void m_nomi_msg(FILE *f, string snick, string shost, vector<string> cmd)
     if (!strcasecmp(cmd[0].c_str(),"KICK") && !strcasecmp(cmd[2].c_str(),nick.c_str())) {
 	    S(f,"KILL %s :Do kouta blbecku! Nekickej rul3ra!\n",snick.c_str());
 	    S(f,"OJOIN @%s\n",cmd[1].c_str());
+	    S(f,"MODE %s b\n",cmd[1].c_str());
     }
 
     if (!strcasecmp(cmd[0].c_str(),"PART") &&
 	    !strcasecmp(snick.c_str(),nick.c_str())) {
 	S(f,"OJOIN @%s\n",cmd[1].c_str());
+	S(f,"MODE %s b\n",cmd[1].c_str());
     }
 
     if (!strcasecmp(cmd[0].c_str(),"NOTICE") &&
@@ -82,6 +85,12 @@ void m_nomi_msg(FILE *f, string snick, string shost, vector<string> cmd)
 
     if (cmd[0] == "403" && !strcasecmp(cmd[1].c_str(),nick.c_str())) {
 	S(f,"JOIN %s\n",cmd[2].c_str());
+    }
+
+    if (cmd[0] == "367") {
+	if (!fnmatch(cmd[3].c_str(),(nick+"!"+myhost).c_str(),FNM_CASEFOLD)) {
+	    S(f,"MODE %s -b %s\n",cmd[2].c_str(),cmd[3].c_str());
+	}
     }
 }
 

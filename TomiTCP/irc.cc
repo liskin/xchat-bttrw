@@ -29,6 +29,7 @@ int safe_mode = 0; // safe mode, needed for dancer ircd, specifies level of nice
 int some_time = 300; // time for waiting for some input during operation
 
 bool oper = 0;
+string myhost;
 
 string config;
 
@@ -512,15 +513,16 @@ void processbuf(FILE *f, char *buf)
 		cout << "Nick busy" << endl;
 		nick[nick.length()-1]++;
 		S(f,"NICK %s\n",nick.c_str());
-	    }
-	    if (n == 431 || n == 436 || /*n == 451 ||*/ n == 464 || n == 465) {
+	    } else if (n == 431 || n == 436 || /*n == 451 ||*/ n == 464 || n == 465) {
 		fclose(f);
 		cout << "Server returned fatal error" << endl;
-	    }
-	    if (n == 381) {
+	    } else if (n == 381) {
 		oper = 1;
-	    }
-	    if (n == 1) {
+	    } else if (n == 311) {
+		myhost = cmd[3]+"@"+cmd[4];
+		cout << myhost << endl;
+	    } else if (n == 1) {
+		S(f,"WHOIS %s\n",nick.c_str());
 		loper(f);
 		for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
 		    if (i->second.connected)
