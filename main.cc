@@ -61,8 +61,12 @@ const char * getsexhost(const string& src)
 
 int main(int argc, char *argv[])
 {
+    int port = 6669;
+    if (argc == 2 && atol(argv[1]))
+	port = atol(argv[1]);
+
     try {
-	s.listen(6669);
+	s.listen(port);
 	c.reset(s.accept());
 
 	string nick, pass;
