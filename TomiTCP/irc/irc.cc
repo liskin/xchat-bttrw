@@ -887,7 +887,7 @@ int main(int argc, char *argv[])
 	    std::cerr << e.what() << std::endl;
 	}
 
-	sleep(10);
+	sleep(40);
     }
 
     for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
