@@ -436,7 +436,7 @@ parse_error:
     void XChat::setdesc(const string& rid, const string& desc)
     {
 	TomiHTTP s;
-	int ret = s.POST(makeurl2("modchat"),"op=rightadmine&skin=2&rid=" + rid +
+	int ret = s.POST(makeurl2("modchat"),"op=rightadmin&skin=2&rid=" + rid +
 		"&desc=" + TomiHTTP::URLencode(desc), 0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while posting msg");
