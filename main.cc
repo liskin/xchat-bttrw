@@ -41,14 +41,23 @@ TomiTCP s;
 auto_ptr<TomiTCP> c;
 auto_ptr<XChat> x;
 
-struct room {
-    int l;
-};
-typedef map<string,room> rooms_t;
 rooms_t rooms;
 
 const char *me = "xchat.cz";
 const char *userhost = "users.xchat.cz";
+const char *sexhost[] = {
+    "girls.xchat.cz",
+    "boys.xchat.cz"
+};
+
+const char * getsexhost(const string& src)
+{
+    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++)
+	if (i->second.nicklist.find(src) != i->second.nicklist.end())
+	    return sexhost[i->second.nicklist[src]];
+
+    return userhost;
+}
 
 int main(int argc, char *argv[])
 {
@@ -101,25 +110,29 @@ int main(int argc, char *argv[])
 		    if (cmd[1][0] == '#')
 			cmd[1].erase(cmd[1].begin());
 
-		    vector<string> nicklist;
-		    nicklist.push_back(nick);
-
-		    try { rooms[cmd[1]].l = x->join(cmd[1], nicklist); }
+		    try { rooms[cmd[1]] = x->join(cmd[1]); }
 		    catch (runtime_error e) {
 			fprintf(*c, ":%s ERROR :%s\n", me, e.what());
 			break;
 		    }
 
+		    rooms[cmd[1]].nicklist[nick] = 0;
+
 		    fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
 			    userhost, cmd[1].c_str());
-		    string tmp; int i; vector<string>::iterator j;
-		    for (i = 1, j = nicklist.begin(); j != nicklist.end(); j++, i++) {
-			tmp += *j + " ";
-			if (i % 5 == 0 || j + 1 == nicklist.end()) {
+		    string tmp; int i; nicklist_t::iterator j;
+		    for (i = 1, j = rooms[cmd[1]].nicklist.begin();
+			    j != rooms[cmd[1]].nicklist.end(); j++, i++) {
+			tmp += j->first + " ";
+			if (i % 5 == 0) {
 			    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
 				    cmd[1].c_str(), tmp.c_str());
 			    tmp.clear();
 			}
+		    }
+		    if (tmp.length()) {
+			fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
+				cmd[1].c_str(), tmp.c_str());
 		    }
 		    fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
 			    nick.c_str(), cmd[1].c_str());
@@ -184,7 +197,7 @@ int main(int argc, char *argv[])
 
 			    if (src != nick)
 				fprintf(*c, ":%s!%s@%s PRIVMSG %s :%s\n", src.c_str(),
-					hash(src).c_str(), userhost,
+					hash(src).c_str(), getsexhost(src),
 					target.c_str(), m.c_str());
 			}
 		    }
