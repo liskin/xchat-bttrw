@@ -123,6 +123,19 @@ int main(int argc, char *argv[])
 		    }
 		    fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
 			    nick.c_str(), cmd[1].c_str());
+		} else if (cmd[0] == "PART" && cmd.size() >= 2) {
+		    if (cmd[1][0] == '#')
+			cmd[1].erase(cmd[1].begin());
+
+		    if (rooms.find(cmd[1]) != rooms.end()) {
+			x->part(cmd[1]);
+			rooms.erase(cmd[1]);
+			fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
+				hash(nick).c_str(), userhost, cmd[1].c_str());
+		    } else {
+			fprintf(*c, ":%s 403 %s %s :No such channel\n", me,
+				nick.c_str(), cmd[1].c_str());
+		    }
 		} else if (cmd[0] == "PRIVMSG" && cmd.size() == 3) {
 		    if (cmd[1][0] == '#') {
 			cmd[1].erase(cmd[1].begin());

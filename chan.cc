@@ -58,6 +58,16 @@ namespace xchat {
 	throw runtime_error("Parse error");
     }
 
+    void XChat::part(const string& room)
+    {
+	TomiHTTP s;
+
+	int ret = s.GET(makeurl2("modchat?op=mainframeset&js=1&menuaction=leave"
+		    "&leftroom="+room),0);
+	if (ret != 200)
+	    throw runtime_error("Not HTTP 200 Ok while parting channel");
+    }
+
     int XChat::getmsg(const string& room, int lastmsg, vector<string>& msgs)
     {
 	TomiHTTP s;
