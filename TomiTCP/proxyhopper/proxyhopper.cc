@@ -157,6 +157,8 @@ int main(int argc, char *argv[])
 		lasthost = argv[marg - 1];
 	    }
 
+	    cerr << "Ready, Go on!" << endl;
+
 	    /*
 	     * Pass data between sockets
 	     */
