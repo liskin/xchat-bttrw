@@ -75,6 +75,22 @@ void sigchld(int) {
 }
 #endif
 
+void welcome()
+{
+    cout << "Hello, this is an IRC to xchat gateway from xchat-bttrw r." REVISION << endl;
+    cout << "Coded by Tomas Janousek <tomi@nomi.cz> and others" << endl;
+    cout << "Homepage: http://nomi.cz/projects.shtml?id=xchat-bttrw" << endl;
+#ifdef WIN32
+    cout << "This is a Win32 build. Should work on Windows Xp SP 1 and up." << endl;
+#endif
+    cout << endl;
+    cout << "This is free software; see COPYRIGHT for copying conditions.  There is NO" << endl;
+    cout << "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." << endl;
+    cout << endl;
+    cout << "Listening for incoming connections on " << tomi_ntop(s.lname) << "/" <<
+	ntohs(PORT_SOCKADDR(s.lname)) << endl;
+}
+
 int main(int argc, char *argv[])
 {
     xchat_init();
@@ -92,6 +108,9 @@ int main(int argc, char *argv[])
 		, "127.0.0.1"
 #endif
 		);
+
+	welcome();
+
 main_accept:
 	c.reset(s.accept());
 

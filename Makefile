@@ -6,7 +6,8 @@ else
  DEBUG=yes
 endif
 
-CFLAGS=-Wall -D_GNU_SOURCE
+CFLAGS=-Wall -D_GNU_SOURCE \
+       -DREVISION=\"$(shell svn info | perl -ne 'if(/Revision: (\d+)/){print $$1;}')\"
 CXXFLAGS=$(CFLAGS)
 LDLIBS=
 LDFLAGS=
