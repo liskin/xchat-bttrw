@@ -51,7 +51,13 @@ namespace net {
 	if (port < 1)
 	    port = 80;
 
-	connect(host,uinttostr(port));
+	char *proxyhost = getenv("PROXYHOST");
+	char *proxyport = getenv("PROXYPORT");
+
+	if (proxyhost && proxyhost)
+	    connect(proxyhost, proxyport);
+	else
+	    connect(host,uinttostr(port));
 
 	if (port != 80) {
 	    stringstream s;
@@ -66,7 +72,8 @@ namespace net {
 		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\n"
 		"Accept-Charset: utf-8;q=0.7,*;q=0.7\n"
 		"Connection: close\n",
-		path.c_str(), host.c_str() );
+		(proxyhost && proxyhost)?("http://"+host+path).c_str():path.c_str(),
+		host.c_str() );
 	/* cookies... */
 	if (cookies) {
 	    string c;
@@ -154,7 +161,13 @@ namespace net {
 	if (port < 1)
 	    port = 80;
 
-	connect(host,uinttostr(port));
+	char *proxyhost = getenv("PROXYHOST");
+	char *proxyport = getenv("PROXYPORT");
+
+	if (proxyhost && proxyhost)
+	    connect(proxyhost, proxyport);
+	else
+	    connect(host,uinttostr(port));
 
 	if (port != 80) {
 	    stringstream s;
@@ -171,7 +184,8 @@ namespace net {
 		"Connection: close\n"
 		"Content-type: application/x-www-form-urlencoded\n"
 		"Content-length: %i\n",
-		path.c_str(), host.c_str(), (int)data.length() );
+		(proxyhost && proxyhost)?("http://"+host+path).c_str():path.c_str(),
+		host.c_str(), (int)data.length() );
 	/* cookies... */
 	if (cookies) {
 	    string c;
