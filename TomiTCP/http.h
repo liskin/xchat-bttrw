@@ -17,6 +17,7 @@ namespace net {
 	    headers_t headers;
 
 	    static string URLencode(const string& s);
+	    static string URLdecode(const string& s);
     };
 }
 

@@ -4,6 +4,7 @@
 #include "version.h"
 #include <cstdio>
 #include <sstream>
+#include <cctype>
 
 namespace net {
     TomiHTTP::TomiHTTP()
@@ -269,6 +270,34 @@ namespace net {
 		char c[5];
 		sprintf(c,"%%%.2hhX",(unsigned char)*i);
 		out += c;
+	    } else {
+		out += *i;
+	    }
+	}
+
+	return out;
+    }
+    
+    string TomiHTTP::URLdecode(const string& s)
+    {
+	string out;
+
+	for (string::const_iterator i = s.begin(); i != s.end(); i++) {
+	    char a, b;
+	    if (*i == '%' && (i + 2) < s.end() && isxdigit(a = *(i + 1)) &&
+		    isxdigit(b = *(i + 2))) {
+		if (a <= '9')
+		    a -= '0';
+		else
+		    a = (a & 7) + 9;
+
+		if (b <= '9')
+		    b -= '0';
+		else
+		    b = (b & 7) + 9;
+
+		out += (char) a * 16 + b;
+		i += 2;
 	    } else {
 		out += *i;
 	    }
