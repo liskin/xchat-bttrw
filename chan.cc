@@ -20,12 +20,12 @@ namespace xchat {
 	r.rid = rid;
 	r.last_sent = time(0) - idle_interval + 10;
 
-	int ret = s.GET(makeurl2("modchat?op=mainframeset&rid="+rid),0);
+	int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&rid="+rid),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
 	s.close();
 	
-	ret = s.GET(makeurl2("modchat?op=textpageng&js=1&rid="+rid),0);
+	ret = s.GET(makeurl2("modchat?op=textpageng&skin=2&js=1&rid="+rid),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
 	while (s.getline(l)) {
@@ -55,7 +55,7 @@ namespace xchat {
 	}
 	s.close();
 
-	ret = s.GET(makeurl2("modchat?op=roomtopng&js=1&rid="+rid),0);
+	ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid="+rid),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
 
@@ -84,7 +84,7 @@ namespace xchat {
     {
 	TomiHTTP s;
 
-	int ret = s.GET(makeurl2("modchat?op=mainframeset&js=1&menuaction=leave"
+	int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&js=1&menuaction=leave"
 		    "&leftroom="+rid),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while parting channel");
@@ -100,7 +100,7 @@ namespace xchat {
 	TomiHTTP s;
 	int ret;
 	try {
-	    ret = s.GET(makeurl2("modchat?op=roomtopng&js=1&rid=" + r.rid +
+	    ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid=" + r.rid +
 			"&inc=1&last_line=" + inttostr(r.l)),0);
 	} catch (...) {
 	    // we don't want to die on any request timeout
@@ -199,7 +199,7 @@ namespace xchat {
     void XChat::putmsg(room &r, const string& msg)
     {
 	TomiHTTP s;
-	int ret = s.POST(makeurl2("modchat"),"op=textpage&rid="+r.rid+"&aid=0"+
+	int ret = s.POST(makeurl2("modchat"),"op=textpage&skin=2&rid="+r.rid+"&aid=0"+
 		"&target=~&textarea="+TomiHTTP::URLencode(msg),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while posting msg");

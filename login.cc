@@ -14,7 +14,7 @@ namespace xchat {
     {
 	TomiHTTP s;
 	int ret = s.POST(makeurl("~guest~/login/"),
-		"js=1&name="+TomiHTTP::URLencode(user)+"&pass="+
+		"js=1&skin=2&name="+TomiHTTP::URLencode(user)+"&pass="+
 		TomiHTTP::URLencode(pass),0);
 	if (ret != 302)
 	    throw runtime_error("Not HTTP 302 Found while logging in");
