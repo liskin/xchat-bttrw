@@ -136,6 +136,13 @@ namespace xchat {
 		who = string(m, a + sizeof("spravcem ") - 1, b - a - sizeof("spravcem ") + 1);
 		wstrip(who);
 	    }
+	    
+	    if ((a = m.find("administratorem")) != string::npos &&
+		    (b = m.find("z mistnosti")) != string::npos) {
+		who = string(m, a + sizeof("administratorem ") - 1,
+			b - a - sizeof("administratorem ") + 1);
+		wstrip(who);
+	    }
 
 	    if ((a = m.find_last_of("(")) != string::npos &&
 		    (b = m.find_last_of(")")) != string::npos) {
