@@ -16,10 +16,14 @@ namespace xchat {
 	TomiHTTP s;
 	string l;
 
-	int ret = s.GET(makeurl("~guest~/modchat?op=homepage&skin=2"),0);
-	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while getting list - "
-		    + lastsrv_broke());
+	try {
+	    int ret = s.GET(makeurl("~guest~/modchat?op=homepage&skin=2"),0);
+	    if (ret != 200)
+		throw runtime_error("Not HTTP 200 Ok while getting list");
+	} catch (runtime_error e) {
+	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
+
 	while (s.getline(l)) {
 	    unsigned int a, b, c;
 	    unsigned int pos = 0;

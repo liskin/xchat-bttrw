@@ -47,10 +47,14 @@ namespace xchat {
 	r.rid = rid;
 	r.last_sent = time(0) - idle_interval + 10;
 
-	int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&rid="+rid),0);
-	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while joining channel - "
-		    + lastsrv_broke());
+	int ret;
+	try {
+	    ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&rid="+rid),0);
+	    if (ret != 200)
+		throw runtime_error("Not HTTP 200 Ok while joining channel");
+	} catch (runtime_error e) {
+	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
 	while (s.getline(l)) {
 	    static string pat1 = "<h3 class=\"hdrsuccess\">", pat2 = "</h3>";
 	    unsigned int a, b;
@@ -65,11 +69,13 @@ namespace xchat {
 	}
 	s.close();
 	
-	ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid="+rid),0);
-	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while joining channel - "
-		    + lastsrv_broke());
-
+	try {
+	    ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid="+rid),0);
+	    if (ret != 200)
+		throw runtime_error("Not HTTP 200 Ok while joining channel");
+	} catch (runtime_error e) {
+	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
 	while (s.getline(l)) {
 	    static string pat1 = "&inc=1&last_line=";
 	    unsigned int a, b;
@@ -86,10 +92,13 @@ namespace xchat {
 	}
 	s.close();
 
-	ret = s.GET(makeurl2("modchat?op=textpageng&skin=2&js=1&rid="+rid),0);
-	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while joining channel - "
-		    + lastsrv_broke());
+	try {
+	    ret = s.GET(makeurl2("modchat?op=textpageng&skin=2&js=1&rid="+rid),0);
+	    if (ret != 200)
+		throw runtime_error("Not HTTP 200 Ok while joining channel");
+	} catch (runtime_error e) {
+	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
 	while (s.getline(l)) {
 	    if (l.find("<select name=\"target\">") != string::npos) {
 		while (s.getline(l)) {
@@ -115,10 +124,13 @@ namespace xchat {
 	}
 	s.close();
 
-	ret = s.GET(makeurl2("modchat?op=roominfo&skin=2&rid="+rid),0);
-	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while joining channel - "
-		    + lastsrv_broke());
+	try {
+	    ret = s.GET(makeurl2("modchat?op=roominfo&skin=2&rid="+rid),0);
+	    if (ret != 200)
+		throw runtime_error("Not HTTP 200 Ok while joining channel");
+	} catch (runtime_error e) {
+	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
 
 	while (s.getline(l)) {
 	    chomp(l);
@@ -177,11 +189,14 @@ namespace xchat {
 	rooms.erase(rid);
 	
 	TomiHTTP s;
-	int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&js=1&menuaction=leave"
-		    "&leftroom="+rid),0);
-	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while parting channel - "
-		    + lastsrv_broke());
+	try {
+	    int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&js=1&menuaction=leave"
+			"&leftroom="+rid),0);
+	    if (ret != 200)
+		throw runtime_error("Not HTTP 200 Ok while parting channel");
+	} catch (runtime_error e) {
+	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
     }
 
     /*
@@ -194,13 +209,11 @@ namespace xchat {
 	try {
 	    ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid=" + r.rid +
 			"&inc=1&last_line=" + inttostr(r.l)),0);
-	} catch (...) {
-	    // we don't want to die on any request timeout
-	    return;
+	    if (ret != 200)
+		throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
+	} catch (runtime_error e) {
+	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
-	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while getting channels msgs - "
-		    + lastsrv_broke());
 
 	vector<string> dbg;
 	string kicker, kickmsg;
@@ -416,12 +429,15 @@ parse_error:
     void XChat::putmsg(room &r, const string& target, const string& msg)
     {
 	TomiHTTP s;
-	int ret = s.POST(makeurl2("modchat"),"op=textpage&skin=2&rid=" + r.rid +
-		"&aid=0" + "&target=" + TomiHTTP::URLencode(target) +
-		"&textarea=" + TomiHTTP::URLencode(msg), 0);
-	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while posting msg - "
-		    + lastsrv_broke());
+	try {
+	    int ret = s.POST(makeurl2("modchat"),"op=textpage&skin=2&rid=" + r.rid +
+		    "&aid=0" + "&target=" + TomiHTTP::URLencode(target) +
+		    "&textarea=" + TomiHTTP::URLencode(msg), 0);
+	    if (ret != 200)
+		throw runtime_error("Not HTTP 200 Ok while posting msg");
+	} catch (runtime_error e) {
+	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
 
 	/*
 	 * Update last_sent, if
@@ -443,10 +459,13 @@ parse_error:
     void XChat::setdesc(const string& rid, const string& desc)
     {
 	TomiHTTP s;
-	int ret = s.POST(makeurl2("modchat"),"op=rightadmin&skin=2&rid=" + rid +
-		"&desc=" + TomiHTTP::URLencode(desc), 0);
-	if (ret != 200)
-	    throw runtime_error("Not HTTP 200 Ok while setting room desc - "
-		    + lastsrv_broke());
+	try {
+	    int ret = s.POST(makeurl2("modchat"),"op=rightadmin&skin=2&rid=" + rid +
+		    "&desc=" + TomiHTTP::URLencode(desc), 0);
+	    if (ret != 200)
+		throw runtime_error("Not HTTP 200 Ok while setting room desc");
+	} catch (runtime_error e) {
+	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
     }
 }

@@ -23,12 +23,15 @@ namespace xchat {
 	    servers.push_back(server(*i));
 
 	TomiHTTP s;
-	int ret = s.POST(makeurl("~guest~/login/"),
-		"js=1&skin=2&name="+TomiHTTP::URLencode(user)+"&pass="+
-		TomiHTTP::URLencode(pass),0);
-	if (ret != 302)
-	    throw runtime_error("Not HTTP 302 Found while logging in - "
-		    + lastsrv_broke());
+	try {
+	    int ret = s.POST(makeurl("~guest~/login/"),
+		    "js=1&skin=2&name="+TomiHTTP::URLencode(user)+"&pass="+
+		    TomiHTTP::URLencode(pass),0);
+	    if (ret != 302)
+		throw runtime_error("Not HTTP 302 Found while logging in");
+	} catch (runtime_error e) {
+	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
 
 	string l = s.headers["location"];
 
@@ -54,9 +57,12 @@ namespace xchat {
 	}
 
 	TomiHTTP s;
-	int ret = s.GET(makeurl("~~logout/~$" + uid + "~" + sid + "/"),0);
-	if (ret != 302)
-	    throw runtime_error("Not HTTP 302 Found while logging off - "
-		    + lastsrv_broke());
+	try {
+	    int ret = s.GET(makeurl("~~logout/~$" + uid + "~" + sid + "/"),0);
+	    if (ret != 302)
+		throw runtime_error("Not HTTP 302 Found while logging off");
+	} catch (runtime_error e) {
+	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
     }
 }
