@@ -6,6 +6,7 @@
 #include <dlfcn.h>
 #include <unistd.h>
 #include <signal.h>
+#include <errno.h>
 #include "irc.h"
 #include "../str.h"
 using namespace std;
