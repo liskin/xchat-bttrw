@@ -31,7 +31,7 @@ void httpconnect(TomiTCP &c, char *host, bool last)
     char *mylasthost = lasthost;
     lasthost = host;
 
-    cout << "HTTP Connect Proxy connecting to " << host << endl;
+    cerr << "HTTP Connect Proxy connecting to " << host << endl;
     fprintf(c, "CONNECT %s HTTP/1.0\n\n", host);
 
     if (input_timeout(c.sock, proxy_timeout * 1000) <= 0) {
@@ -136,7 +136,7 @@ void socks(TomiTCP &c, char *host, bool last)
     memcpy(sbuf + 2, &PORT_SOCKADDR(addrs[0]), 2);
     memcpy(sbuf + 4, &addrs[0].sin.sin_addr.s_addr, 4);
 
-    cout << "SOCKS v4 Proxy connecting to " << host << endl;
+    cerr << "SOCKS v4 Proxy connecting to " << host << endl;
     fwrite(sbuf, 9, 1, c);
 
     if (input_timeout(c.sock, proxy_timeout * 1000) <= 0) {
@@ -177,25 +177,35 @@ int main(int argc, char *argv[])
 
     if (argc < 3) {
 	cerr << "Usage: proxyhopper <port> [proxy:port] [-sh] [proxy:port...] [-sh] <host>:<port>"
-	    << endl << " -s - SOCKS v4, -h - HTTP CONNECT" << endl
+	    << endl << " port -1 - single mode" << endl
+	    << " -s - SOCKS v4, -h - HTTP CONNECT" << endl
 	    << " (yes, you specify the proxy type AFTER the address and it" << endl
 	    << "  takes effect on all following proxys)" << endl;
 	return -1;
     }
+    
+    bool single = false;
 
     int arg = 1;
 
-    try {
-	srv.listen(atol(argv[arg++]));
-    } catch (runtime_error e) {
-	cerr << e.what() << endl;
-	return -1;
+    int port = atol(argv[arg++]);
+    if (port == -1)
+	single = true;
+
+    if (!single) {
+	try {
+	    srv.listen(port);
+	} catch (runtime_error e) {
+	    cerr << e.what() << endl;
+	    return -1;
+	}
     }
 
     while (1) {
 	int marg = arg;
 	try {
-	    in.reset(srv.accept());
+	    if (!single)
+		in.reset(srv.accept());
 
 	    /*
 	     * Skip removed hosts
@@ -266,26 +276,31 @@ int main(int argc, char *argv[])
 
 	    cerr << "Ready, Go on!" << endl;
 
-	    /*
-	     * We can handle the connection in another process, as we don't
-	     * need to modify anything here.
-	     */
-	    int ret = fork();
-	    if (ret < 0)
-		throw runtime_error(strerror(errno));
-	    if (!ret) {
-		try {
-		    srv.close();
+	    if (single) {
+		goon(0, out.sock);
+		cerr << "Connection closed" << endl << endl;
+	    } else {
+		/*
+		 * We can handle the connection in another process, as we don't
+		 * need to modify anything here.
+		 */
+		int ret = fork();
+		if (ret < 0)
+		    throw runtime_error(strerror(errno));
+		if (!ret) {
+		    try {
+			srv.close();
 
-		    /*
-		     * Pass data between sockets
-		     */
-		    goon(in->sock, out.sock);
-		    cerr << "Connection closed" << endl << endl;
-		    return 0;
-		} catch (runtime_error e) {
-		    cerr << e.what() << endl << endl;
-		    return -1;
+			/*
+			 * Pass data between sockets
+			 */
+			goon(in->sock, out.sock);
+			cerr << "Connection closed" << endl << endl;
+			return 0;
+		    } catch (runtime_error e) {
+			cerr << e.what() << endl << endl;
+			return -1;
+		    }
 		}
 	    }
 	} catch (runtime_error e) {
@@ -293,6 +308,9 @@ int main(int argc, char *argv[])
 	}
 	out.close();
 	in.reset(0);
+
+	if (single)
+	    break;
     }
 
     return 0;
@@ -347,7 +365,7 @@ void goon(int a, int b)
 	    else if (!sz)
 		break;
 
-	    sz = sendall(a, buffer, sz);
+	    sz = sendall(a?a:1, buffer, sz);
 	    if (sz == -1)
 		throw runtime_error("error in write: " + string(strerror(errno)));
 	}
