@@ -1,8 +1,5 @@
 #include <iostream>
 #include <map>
-#include <stdexcept>
-#include <iconv.h>
-#include <errno.h>
 #include "charset.h"
 #include "TomiTCP/str.h"
 
@@ -333,53 +330,28 @@ namespace xchat {
     /*
      * Convert UCS-2 to UTF-8
      */
-    string ucs2_to_utf8(const char* src, int sz)
+    string ucs2_to_utf8(unsigned short c)
     {
-	iconv_t conv = iconv_open("UTF-8", "UCS-2");
-	if (conv == (iconv_t) -1)
-	    throw runtime_error("Could not init iconv UCS-2 => UTF-8");
+	string ret;
 
-	size_t fromsize = sz, tosize = fromsize, ressize = tosize;
-	const char *msgptr = src;
-	char *result = new char[fromsize+1];
-	char *resptr = result;
-
-	while ((fromsize>0) && (tosize>0)) {
-#ifdef WIN32
-	    if ((int)iconv(conv, &msgptr, &fromsize, &resptr, &tosize) == -1)
-#else
-	    if ((int)iconv(conv, (char **)&msgptr, &fromsize, &resptr, &tosize) == -1)
-#endif
-	    {
-		int err = errno;
-		
-		// array is not big enough
-		if (err == E2BIG) {
-		    // add fromsize + 4 more characters to array
-		    result = (char*) realloc(result,ressize + fromsize + 4);
-		    resptr = result + ressize;
-		    ressize += fromsize + 4;
-		    tosize += fromsize + 4;
-		    continue;
-		}
-
-		delete []result;
-
-		switch (err) {
-		    case EILSEQ:
-			throw runtime_error("An invalid multibyte sequence has been encountered in the input.");
-		    case EINVAL:
-		       	throw runtime_error("An incomplete multibyte sequence has been encountered in the input.");
-		    default:
-			throw runtime_error("Unknown error during iconv.");
-		}
-	    }
+	if (c < 0x80) {
+	    ret += (char)c;
+	} else if (c < 0x800) {
+	    ret = "  ";
+	    ret[1] = 0x80 | (c & 0x3f);
+	    c >>= 6;
+	    ret[0] = 0xc0 | (c & 0x1f);
+	} else if (c >= 0xd800 && c < 0xe000) {
+	    // part of utf-16 surrogate pair
+	} else {
+	    ret = "   ";
+	    ret[2] = 0x80 | (c & 0x3f);
+	    c >>= 6;
+	    ret[1] = 0x80 | (c & 0x3f);
+	    c >>= 6;
+	    ret[0] = 0xe0 | (c & 0xf); 
 	}
 
-	*resptr = 0;
-	iconv_close(conv);
-	string ret = result;
-	delete []result;
 	return ret;
     }
     
@@ -457,10 +429,7 @@ namespace xchat {
 	if (*input == ';')
 	    input++;
 	
-	static char buf[3] = {0, 0, 0};
-	*(unsigned short*)buf = value;
-
-	return strdup(ucs2_to_utf8(buf, 2).c_str());
+	return strdup(ucs2_to_utf8(value).c_str());
     }
 
     /*
