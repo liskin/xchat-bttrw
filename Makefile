@@ -10,8 +10,8 @@ CFLAGS=-Wall -D_GNU_SOURCE
 CXXFLAGS=$(CFLAGS)
 LDLIBS=
 LDFLAGS=
-REVISIONS=-DREVISION=\"$(shell svn info | perl -ne 'if(/Revision: (\d+)/){print $$1;}')\" \
-	-DTOMITCP_REV=\"$(shell svn info TomiTCP | perl -ne 'if(/Revision: (\d+)/){print $$1;}')\" \
+REVISIONS=-DREVISION=\"$(shell svn info | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\" \
+	-DTOMITCP_REV=\"$(shell svn info TomiTCP | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\" \
 
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
