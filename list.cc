@@ -34,6 +34,7 @@ namespace xchat {
 		    string name(l.begin() + b + pat2.length(), l.begin() + c);
 		    pos = c + pat3.length();
 
+		    striphtmlent(name);
 		    listout.push_back(pair<string,string>(rid, recode_to_client(name)));
 		} else {
 		    pos = a + 1;
