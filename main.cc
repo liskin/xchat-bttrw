@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 		    if (cmd[1][0] == '#') {
 			cmd[1].erase(cmd[1].begin());
 
-			try { x->putmsg(cmd[1], cmd[2]); }
+			try { sendq_push(cmd[1], cmd[2]); }
 			catch (runtime_error e) {
 			    fprintf(*c, ":%s 403 %s #%s :%s\n", me, nick.c_str(),
 				    cmd[1].c_str(), e.what());
@@ -222,10 +222,21 @@ int main(int argc, char *argv[])
 		}
 	    }
 
-	    if (time(0) - last_sent >= send_interval && x.get() && !sendq.empty()) {
+	    if (x.get() && !sendq.empty() && time(0) - last_sent >= send_interval) {
 		pair<string,string> msg = sendq.front(); sendq.pop();
 		x->putmsg(msg.first, msg.second);
 		last_sent = time(0);
+		rooms[msg.first].last_sent = last_sent;
+	    }
+
+	    // f00king idler
+	    if (sendq.empty()) {
+		for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
+		    if (time(0) - i->second.last_sent >= idle_interval) {
+			sendq_push(i->first, "/s " + nick + " " +
+				idle_msgs[rand() % idle_msgs_count]);
+		    }
+		}
 	    }
 
 	    if (time(0) - last_recv >= recv_interval && x.get()) {

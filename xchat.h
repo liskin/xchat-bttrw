@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <ctime>
 
 namespace xchat {
     using namespace std;
@@ -19,6 +20,7 @@ namespace xchat {
     struct room {
 	int l;
 	nicklist_t nicklist;
+	time_t last_sent;
     };
     typedef map<string,room> rooms_t;
 

@@ -14,6 +14,8 @@ namespace xchat {
 	string l;
 	room r;
 
+	r.last_sent = time(0);
+
 	int ret = s.GET(makeurl2("modchat?op=mainframeset&rid="+rid),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
