@@ -22,9 +22,9 @@
 # define sock_errno WSAGetLastError()
 # define EAFNOSUPPORT WSAEAFNOSUPPORT
 # define TEMP_FAILURE_RETRY(a) (a)
-# define strerror wsock_strerror
 # undef gai_strerror
-# define gai_strerror wsock_strerror
+# define gai_strerror strerror
+extern "C" char*__real_strerror(int);
 int winsock_init() {
     WORD wVersionRequested;
     WSADATA wsaData;
@@ -388,7 +388,7 @@ namespace net {
 
 #ifdef WIN32
 	DWORD len = 128;
-	if (!WSAAddressToString((struct sockaddr*)&name.sa,SIZEOF_SOCKADDR(name),0,tmp,&len))
+	if (WSAAddressToString((struct sockaddr*)&name.sa,SIZEOF_SOCKADDR(name),0,tmp,&len))
 	    throw runtime_error(string(strerror(sock_errno)));
 	tmp[len] = 0;
 #else
@@ -475,7 +475,7 @@ namespace net {
     }
 
 #ifdef WIN32
-    const char * wsock_strerror(int err) {
+    extern "C" const char * __wrap_strerror(int err) {
 	const char *error = 0;
 
 	switch(err) {
@@ -529,7 +529,13 @@ namespace net {
 	    case 11002: error = "Non-Authoritative Host not found"; break;
 	    case 11003: error = "Non-Recoverable errors: FORMERR, REFUSED, NOTIMP"; break;
 	    case 11004: error = "Valid name, no data record of requested type"; break;
-	    default: error = strerror(err); break;
+	    default: error = __real_strerror(err); break;
+	}
+
+	if (!error || !*error) {
+	    static char t[20];
+	    sprintf(t, "%i", err);
+	    error = t;
 	}
 
 	return error;
