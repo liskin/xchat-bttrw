@@ -32,3 +32,6 @@ dep:
 clean:
 	$(RM) irc *.{o,so}
 irc: irc.o ../libTomiTCP.a
+
+m_xchatsux.so: m_xchatsux.cc irc.h smiles.o
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -fPIC -DPIC -shared $(TARGET_ARCH) $< smiles.o $(LOADLIBES) -o $@
