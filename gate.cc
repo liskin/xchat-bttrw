@@ -144,6 +144,19 @@ void sigchld(int) {
 	    break;
     errno = serrno;
 }
+
+void sighup(int) {
+    /*
+     * Close parent process and leave clients' processes
+     */
+    if (!connect_time) {
+	exit(0);
+    }
+
+    close(0);
+    close(1);
+    close(2);
+}
 #endif
 
 void welcome()
@@ -168,6 +181,7 @@ int main(int argc, char *argv[])
     xchat_init();
 #ifndef WIN32
     signal(SIGCHLD, sigchld);
+    signal(SIGHUP, sighup);
 #endif
 
     int port = 6669;
@@ -188,7 +202,6 @@ int main(int argc, char *argv[])
 
 main_accept:
 	c.reset(s.accept());
-	connect_time = time(0);
 
 #ifndef WIN32
 	pid_t pid = fork();
@@ -198,12 +211,16 @@ main_accept:
 	    c.reset(0);
 	    goto main_accept;
 	}
+
+	// clients should not keep the server socket
+	s.close();
 #endif
 
 #ifdef LOG_ENABLED
 	log(tomi_ntop(c->rname) + " - Connected");
 #endif
 
+	connect_time = time(0);
 	setproctitle(("gate: " + tomi_ntop(c->rname)).c_str());
 
 	string nick, pass;
@@ -667,7 +684,11 @@ main_accept:
 		    }
 		    fprintf(*c, ":%s 303 %s :%s\n", me, nick.c_str(), rpl.c_str());
 		} else {
+#ifdef LOG_ENABLED
+		    log(tomi_ntop(c->rname) + " - Unknown command (" + l + ")");
+#else
 		    cout << l << endl;
+#endif
 		    fprintf(*c, ":%s 421 %s %s :Unknown command\n", me, nick.c_str(),
 			    cmd[0].c_str());
 		}
