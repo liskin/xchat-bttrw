@@ -52,7 +52,7 @@ namespace net {
 #ifdef WIN32
 			 , w32socket(-1), netsock(w32socket)
 #else
-			 netsock(sock)
+			 , netsock(sock)
 #endif
     {
 	memset(&lname,0,sizeof(lname));
@@ -63,7 +63,7 @@ namespace net {
 #ifdef WIN32
 		     , w32socket(-1), netsock(w32socket)
 #else
-		     netsock(sock)
+		     , netsock(sock)
 #endif
     {
 	memset(&lname,0,sizeof(lname));
@@ -110,14 +110,16 @@ namespace net {
 	    throw runtime_error(string(strerror(er)));
 	}
 
+#ifdef WIN32
 	w32socket = sock;
+#endif
     }
 
     TomiTCP::TomiTCP(const string& hostname, uint16_t port) : sock(-1), stream(0)
 #ifdef WIN32
 		     , w32socket(-1), netsock(w32socket)
 #else
-		     netsock(sock)
+		     , netsock(sock)
 #endif
     {
 	memset(&lname,0,sizeof(lname));
