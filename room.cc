@@ -208,7 +208,7 @@ namespace xchat {
 	int ret;
 	try {
 	    ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid=" + r.rid +
-			"&inc=1&last_line=" + inttostr(r.l)),0);
+			"&inc=1&last_line=" + ((r.l>=0)?inttostr(r.l):"")),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
 	} catch (runtime_error e) {
@@ -367,6 +367,11 @@ namespace xchat {
 		    }
 		}
 	    }
+
+	    static string pat3 = "chvilku strpení prosím</body></html>";
+	    if (l.find(pat1) != string::npos) {
+		r.l = -2;
+	    }
 	}
 
 	/*
@@ -431,14 +436,17 @@ namespace xchat {
 
 	/*
 	 * Update last_sent, if
-	 *  - it does not begin with "/"
+	 *  - it has a nonzero length
+	 *  and
+	 *  - it does not begin with "/" and it does not begin with a
+	 *    nonprintable character
 	 *  - it begins with "/s "
 	 *  - it begins with "/m "
 	 *  - it begins with "/msg "
 	 */
 	last_sent = time(0);
-	if (msg.compare(0, 1, "/") || !msg.compare(0, 3, "/s ") ||
-		!msg.compare(0, 3, "/m ") || !msg.compare(0, 5, "/msg ")) {
+	if (msg.length() && ((msg[0] != '/' && isprint(msg[0])) || !msg.compare(0, 3, "/s ") ||
+		!msg.compare(0, 3, "/m ") || !msg.compare(0, 5, "/msg "))) {
 	    r.last_sent = last_sent;
 	}
     }
