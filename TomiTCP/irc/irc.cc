@@ -26,7 +26,7 @@ string password = "";
 masters_t masters;
 string oname = "";
 string opassword = "";
-string modpath = "/home/pytt_l/c++/TomiTCP/irc";
+string modpath = "..";
 string bindhostname = "";
 unsigned int max_modes = 4;
 int safe_mode = 0; // safe mode, needed for dancer ircd, specifies level of niceness to ircd
