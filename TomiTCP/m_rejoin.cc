@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unistd.h>
 #include "irc.h"
 using namespace std;
 
