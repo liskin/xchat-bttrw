@@ -482,7 +482,7 @@ void processsome(FILE *f)
 {
     char buf[4096];
 
-    while (net::input_timeout(fileno(f),300) > 0) {
+    while (net::input_timeout(fileno(f),some_time) > 0) {
 	fgets(buf,4096,f);
 	processbuf(f,buf);
     }
@@ -492,8 +492,17 @@ void body(net::TomiTCP &f)
 {
     char buf[4096];
 
-    while (fgets(buf,4096,f)) {
-	processbuf(f,buf);
+    while (1) {
+	if (net::input_timeout(f.sock, 1000) > 0) {
+	    if (! fgets(buf,4096,f))
+		break;
+	    processbuf(f,buf);
+	}
+
+	for (map<string,module>::iterator i = modules.begin(); i != modules.end(); i++) {
+	    if (i->second.timer)
+		i->second.timer(f);
+	}
     }
 }
 

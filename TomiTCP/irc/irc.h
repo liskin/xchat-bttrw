@@ -21,6 +21,7 @@ typedef void (*module_msg)(FILE*,string,string,vector<string>);
 				// nick  host   cmd
 typedef void (*module_cmd)(FILE*,string,vector<string>);
 				// nick  cmd list
+typedef void (*module_timer)(FILE*);
 
 struct module {
     void *lib;
@@ -30,6 +31,7 @@ struct module {
     module_mode mode;
     module_msg msg;
     module_cmd cmd;
+    module_timer timer;
 };
 
 extern map<string,module> modules;
