@@ -165,7 +165,7 @@ main_accept:
 			fprintf(*c, ":%s 004 %s :%s xchat-bttrw-" VERSION " 0 io\n",
 				me, nick.c_str(), me);
 			fprintf(*c, ":%s 005 %s :MODES=1 MAXTARGETS=1 NICKLEN=256\n", me, nick.c_str());
-			fprintf(*c, ":%s 005 %s :CHANTYPES=# PREFIX=o(@) CHANMODES=,,,"
+			fprintf(*c, ":%s 005 %s :CHANTYPES=# PREFIX=(o)@ CHANMODES=,,,"
 				" NETWORK=xchat.cz CASEMAPPING=ascii\n", me, nick.c_str());
 		    }
 
