@@ -400,13 +400,14 @@ namespace xchat {
 	    e->target = (struct x_nick){ nick, 2 };
 	    e->reason = recode_to_client(kickmsg);
 	    recvq_push(e);
-	    try { leave(r.rid); } catch (...) { }
+	    rooms.erase(e->rid);
 	} else if (kickmsg.length()) {
 	    EvRoomError *e = new EvRoomError;
 	    e->s = recode_to_client(kickmsg);
 	    e->rid = r.rid;
 	    e->fatal = true;
 	    recvq_push(e);
+	    rooms.erase(e->rid);
 	} else if (r.l == -1) {
 	    for (vector<string>::iterator i = dbg.begin(); i != dbg.end(); i++)
 		cout << *i << endl;
@@ -415,6 +416,7 @@ namespace xchat {
 	    e->rid = r.rid;
 	    e->fatal = true;
 	    recvq_push(e);
+	    rooms.erase(e->rid);
 	}
     }
 

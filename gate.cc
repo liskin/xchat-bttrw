@@ -760,7 +760,6 @@ main_accept:
 		    auto_ptr<EvRoomError> f((EvRoomError*)e.release());
 
 		    if (f->isfatal()) {
-			x->rooms.erase(f->getrid());
 			fprintf(*c, ":%s KICK #%s %s :Error: %s\n", me,
 				f->getrid().c_str(), nick.c_str(),
 				f->str().c_str());
