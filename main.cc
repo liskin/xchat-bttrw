@@ -321,6 +321,9 @@ int main(int argc, char *argv[])
 		last_recv = time(0);
 	    }
 	}
+	for (rooms_t::iterator j = rooms.begin(); j != rooms.end(); j++) {
+	    try { x->part(j->first); } catch (...) { }
+	}
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
 	return -1;
