@@ -465,6 +465,10 @@ main_accept:
 				x->admin(cmd[1], i->second);
 				admin = 0;
 			    }
+			} else if (i->first == "+i") {
+			    x->lock(cmd[1]);
+			} else if (i->first == "-i") {
+			    x->unlock(cmd[1]);
 			}
 		    }
 		} else if (cmd[0] == "WHO" && cmd.size() == 2) {

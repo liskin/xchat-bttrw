@@ -116,6 +116,8 @@ namespace xchat {
 	    void whisper(const string &target, const string &msg);
 	    void kick(const string &room, const string &user, const string &reason);
 	    void admin(const string &room, const string &newadmin);
+	    void lock(const string &room);
+	    void unlock(const string &room);
 
 	    x_nick* findnick(string src, room **r);
 	    bool isadmin(const string &rid, string nick);
@@ -173,6 +175,14 @@ namespace xchat {
 
     inline void XChat::admin(const string &room, const string &newadmin) {
 	sendq.push(send_item(room, "~", "/admin " + newadmin));
+    }
+    
+    inline void XChat::lock(const string &room) {
+	sendq.push(send_item(room, "~", "/lock"));
+    }
+    
+    inline void XChat::unlock(const string &room) {
+	sendq.push(send_item(room, "~", "/unlock"));
     }
 }
 
