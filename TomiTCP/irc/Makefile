@@ -4,8 +4,8 @@ DEBUG=no
 
 CFLAGS=-Wall -D_GNU_SOURCE
 CXXFLAGS=$(CFLAGS)
-LDLIBS=-ldl -lTomiTCP
-LDFLAGS=-rdynamic -L..
+LDLIBS=-ldl
+LDFLAGS=-rdynamic
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
 ifeq ($(DEBUG),yes)
@@ -31,4 +31,4 @@ dep:
 
 clean:
 	$(RM) irc *.{o,so}
-irc: irc.o
+irc: irc.o ../libTomiTCP.a
