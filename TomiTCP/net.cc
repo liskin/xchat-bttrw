@@ -50,7 +50,9 @@ int winsock_init_tmp = winsock_init();
 namespace net {
     TomiTCP::TomiTCP() : sock(-1), stream(0)
 #ifdef WIN32
-			 , w32socket(-1)
+			 , w32socket(-1), netsock(w32socket)
+#else
+			 netsock(sock)
 #endif
     {
 	memset(&lname,0,sizeof(lname));
@@ -58,6 +60,11 @@ namespace net {
     }
 
     TomiTCP::TomiTCP(uint16_t port, const string &addr) : sock(-1), stream(0)
+#ifdef WIN32
+		     , w32socket(-1), netsock(w32socket)
+#else
+		     netsock(sock)
+#endif
     {
 	memset(&lname,0,sizeof(lname));
 	memset(&rname,0,sizeof(rname));
@@ -102,9 +109,16 @@ namespace net {
 	    sock = -1;
 	    throw runtime_error(string(strerror(er)));
 	}
+
+	w32socket = sock;
     }
 
     TomiTCP::TomiTCP(const string& hostname, uint16_t port) : sock(-1), stream(0)
+#ifdef WIN32
+		     , w32socket(-1), netsock(w32socket)
+#else
+		     netsock(sock)
+#endif
     {
 	memset(&lname,0,sizeof(lname));
 	memset(&rname,0,sizeof(rname));
