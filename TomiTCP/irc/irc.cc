@@ -502,7 +502,11 @@ void processbuf(FILE *f, const char *buf)
     }
 
     if (!strcasecmp(cmd[0].c_str(),"PING")) {
-	S(f,"PONG %s\n",nick.c_str());
+	if (cmd.size() >= 2) {
+	    S(f,"PONG :%s\n",cmd[1].c_str());
+	} else {
+	    S(f,"PONG %s\n",nick.c_str());
+	}
     }
 
     if ((!strcasecmp(cmd[0].c_str(),"PRIVMSG")) && (!strcasecmp(cmd[1].c_str(),nick.c_str()))

@@ -5,6 +5,7 @@ nick	J3r4b
 password	
 master  Liskni_s?!~pytt_l@62.77.119.154
 master  Liskni_s?!pytt_l@bigcomp.home.nomi.cz
-oname	
-opassword	
+master	Liskni_s?!pytt_l@ackle.nomi.cz
 max_modes	4
+module  channel
+module  take
