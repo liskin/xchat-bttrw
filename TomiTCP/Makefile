@@ -1,9 +1,20 @@
 # vim:set sw=8 nosta:
-CFLAGS=-Wall -D_GNU_SOURCE -g
+
+DEBUG=no
+
+CFLAGS=-Wall -D_GNU_SOURCE
 CXXFLAGS=$(CFLAGS)
 LDLIBS=-ldl
 LDFLAGS=-rdynamic
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
+
+ifeq ($(DEBUG),yes)
+ CFLAGS += -g -DDEBUG
+ CXXFLAGS += -g -DDEBUG
+else
+ CFLAGS += -DNDEBUG
+ CXXFLAGS += -DNDEBUG
+endif
 
 %.so: %.cc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -fPIC -DPIC -shared $(TARGET_ARCH) $< $(LOADLIBES) -o $@
