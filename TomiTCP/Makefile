@@ -12,15 +12,21 @@ else
  CFLAGS += -DNDEBUG
 endif
 
-.PHONY: all clean
+.PHONY: all clean dep
 
-all: libTomiTCP.a pok
+all: libTomiTCP.a pok .depend
+
+MAKEDEP=gcc -MM $(wildcard *.c *.cc) > .depend
+dep:
+	$(MAKEDEP)
+.depend:
+	$(MAKEDEP)
+	
+-include .depend
+
 clean:
 	$(RM) *.{o,so,a} pok
 libTomiTCP.a: net.o http.o cookies.o
 	$(AR) rsv $@ $?
-net.o: net.cc net.h
-http.o: http.cc http.h net.h str.h
-cookies.o: cookies.cc cookies.h
-pok.o: pok.cc http.h cookies.h net.h
+
 pok: pok.o libTomiTCP.a
