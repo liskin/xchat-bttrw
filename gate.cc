@@ -109,6 +109,8 @@ const char * const sexhost[] = {
     "users.xchat.cz"
 };
 
+time_t last_ping = 0, last_ping_sent = 0, connect_time = 0;
+
 #ifndef WIN32
 void sigchld(int) {
     int status, serrno;
@@ -162,6 +164,7 @@ int main(int argc, char *argv[])
 
 main_accept:
 	c.reset(s.accept());
+	connect_time = time(0);
 
 #ifndef WIN32
 	pid_t pid = fork();
@@ -328,6 +331,8 @@ main_accept:
 		    } else {
 			fprintf(*c, ":%s PONG %s\n", me, me);
 		    }
+		} else if (cmd[0] == "PONG" && cmd.size() >= 2 && cmd[1] == me) {
+		    last_ping_sent = 0;
 		} else if (cmd[0] == "QUIT") {
 		    break;
 		} else if (cmd[0] == "JOIN" && cmd.size() >= 2) {
@@ -733,6 +738,26 @@ main_accept:
 		    fprintf(*c, ":%s NOTICE %s :Other: %s - %s\n", me,
 			    nick.c_str(), typeid(*(e.get())).name(),
 			    e->str().c_str());
+		}
+	    }
+
+	    /*
+	     * Timeouts
+	     */
+	    if (!x.get()) {
+		if (time(0) - connect_time > 60) {
+		    fprintf(*c, "ERROR :Timeout\n");
+		    break;
+		}
+	    } else {
+		if (last_ping_sent && time(0) - last_ping_sent > 120) {
+		    fprintf(*c, "ERROR :Timeout\n");
+		    break;
+		}
+
+		if (time(0) - last_ping > 240) {
+		    fprintf(*c, "PING :%s\n", me);
+		    last_ping = last_ping_sent = time(0);
 		}
 	    }
 	}
