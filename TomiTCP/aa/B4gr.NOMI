@@ -10,3 +10,5 @@ masternick Liskni_s?
 #opassword	xxx
 max_modes	4
 module	rejoin
+module	channel
+ch_channels	#brno.czf
