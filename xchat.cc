@@ -121,13 +121,13 @@ namespace xchat {
     void XChat::do_sendq()
     {
 	if (!sendq.empty() && time(0) - last_sent >= send_interval) {
-	    send_item &e = sendq.front(), f = e;
+	    send_item &ref = sendq.front(), msg = ref, left = ref;
 	    string prepend;
 
 	    /*
 	     * Handle whisper with unknown room
 	     */
-	    if (e.room.empty()) {
+	    if (ref.room.empty()) {
 		if (!rooms.size()) {
 		    sendq.pop();
 		    throw runtime_error("Can't send PRIVMSG's without channel joined");
@@ -137,51 +137,64 @@ namespace xchat {
 		 * Decide if we have to send global msg
 		 */
 		room *r;
-		x_nick *n = findnick(e.target, &r);
+		x_nick *n = findnick(ref.target, &r);
 		if (n) {
-		    f.room = r->rid;
+		    msg.room = r->rid;
 		} else {
-		    f.room = rooms.begin()->first;
-		    prepend = "/m " + e.target + " ";
-		    f.target = "~";
+		    msg.room = rooms.begin()->first;
+		    prepend = "/m " + msg.target + " ";
+		    msg.target = "~";
 		}
 	    }
 
 	    /*
 	     * Look if we have to split the message
 	     */
-	    if (u8strlen(e.msg.c_str()) + u8strlen(prepend.c_str()) > max_msg_length) {
-		if (e.msg.length() && e.msg[0] == '/') {
+	    if (u8strlen(ref.msg.c_str()) + u8strlen(prepend.c_str()) > max_msg_length) {
+		if (ref.msg.length() && ref.msg[0] == '/') {
 		    EvRoomError *ev = new EvRoomError;
 		    ev->s = "Message might have been shortened";
-		    ev->rid = e.room;
+		    ev->rid = ref.room;
 		    ev->fatal = false;
 		    recvq_push(ev);
-
-		    sendq.pop();
 		} else {
 		    if (u8strlen(prepend.c_str()) >= max_msg_length) {
 			sendq.pop();
 			throw runtime_error("Fuck... this should have never happened!");
 		    }
 
-		    int split = u8strlimit(e.msg.c_str(),
+		    int split = u8strlimit(ref.msg.c_str(),
 			    max_msg_length - u8strlen(prepend.c_str()));
-		    f.msg.erase(split);
-		    e.msg.erase(0, split);
-
-		    /*
-		     * Fix messages splitted before '/' char
-		     */
-		    if (e.msg.length() && e.msg[0] == '/') {
-			e.msg.insert(0, " ");
-		    }
+		    msg.msg.erase(split);
 		}
-	    } else
-		sendq.pop();
+	    }
 
-	    if (rooms.find(f.room) != rooms.end())
-		putmsg(rooms[f.room], f.target, prepend + f.msg);
+	    left.msg.erase(0, msg.msg.length());
+
+	    /*
+	     * Fix messages splitted before '/' char
+	     */
+	    if (left.msg.length() && left.msg[0] == '/') {
+		left.msg.insert(0, " ");
+	    }
+
+	    /*
+	     * Post it
+	     */
+	    if (rooms.find(msg.room) != rooms.end()) {
+		putmsg(rooms[msg.room], msg.target, prepend + msg.msg);
+	    } else {
+		EvRoomError *ev = new EvRoomError;
+		ev->s = "Message lost, room is not available";
+		ev->rid = msg.room;
+		ev->fatal = false;
+		recvq_push(ev);
+	    }
+
+	    if (left.msg.length())
+		ref.msg = left.msg;
+	    else
+		sendq.pop();
 	}
 
 	// f00king idler
