@@ -51,12 +51,14 @@ namespace net {
 	if (::bind(sock,&lname.sa,SIZEOF_SOCKADDR(lname))) {
 	    int er = errno;
 	    ::close(sock);
+	    sock = -1;
 	    throw runtime_error(string(strerror(er)));
 	}
 
 	if (::listen(sock,5)) {
 	    int er = errno;
 	    ::close(sock);
+	    sock = -1;
 	    throw runtime_error(string(strerror(er)));
 	}
     }

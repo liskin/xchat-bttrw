@@ -72,6 +72,7 @@ typedef vector<slave_c> slavec_t;
 // 'slave' (i'm master)
 struct slave {
     string mask;
+    bool maskd, dead;
     net::TomiTCP *s;
 };
 typedef vector<slave> slaves_t;

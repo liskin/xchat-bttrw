@@ -8,14 +8,17 @@ extern "C" {
 
 int m_say_port = 12204;
 net::TomiTCP m_say_s;
+bool giveup = 0;
 
 void m_say_timer(FILE *f)
 {
+    if (giveup)
+	return;
     try {
 	if (!m_say_s.ok()) {
 	    m_say_s.listen(m_say_port);
 	}
-	if (net::input_timeout(m_say_s.sock,0) > 0) {
+	if (m_say_s.ok() && net::input_timeout(m_say_s.sock,0) > 0) {
 	    net::TomiTCP *cl = m_say_s.accept();
 
 	    string channel, msg;
@@ -32,7 +35,8 @@ void m_say_timer(FILE *f)
 	    delete cl;
 	}
     } catch (runtime_error e) {
-	cerr << e.what() << endl;
+	cerr << "m_say: " << e.what() << endl;
+	giveup = 1;
     }
 }
 

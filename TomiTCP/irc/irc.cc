@@ -200,6 +200,7 @@ void loper(FILE *f)
 void parsein(const char *bufa, string& prefix, vector<string>& cmd)
 {
     char buf[strlen(bufa)];
+    strcpy(buf,bufa);
     const char *p = buf, *e = buf + strlen(buf);
 
     buf[string(buf).find_last_not_of("\r\n")+1] = 0;
@@ -400,6 +401,26 @@ void docmd(FILE *f, string &snick, string &cmd)
 	    S(f,"PRIVMSG %s :Restarting...\n",snick.c_str());
 	    restart();
 	    throw runtime_error("Could not restart :(");
+	}
+	return;
+    }
+
+    // .addslave host port pass
+    if (cl[0] == ".addslave") {
+	if (cl.size() != 4)
+	    S(f,"PRIVMSG %s :Need 3 parameters\n",snick.c_str());
+	else {
+	    try {
+		slave s;
+		s.dead = 0;
+		s.maskd = 0;
+		s.s = new net::TomiTCP(cl[1],atol(cl[2].c_str()));
+		slaves.push_back(s);
+		fprintf(*(s.s),"%s\n",cl[3].c_str());
+		S(f,"PRIVMSG %s :slave added\n",snick.c_str());
+	    } catch (runtime_error e) {
+		S(f,"PRIVMSG %s :addslave error: %s\n",snick.c_str(),e.what());
+	    }
 	}
 	return;
     }
@@ -608,6 +629,9 @@ void body(net::TomiTCP &f)
 	for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
 	    FD_SET(i->s->sock, &set);
 	}
+	for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
+	    FD_SET(i->s->sock, &set);
+	}
 
 	int ret = TEMP_FAILURE_RETRY(select(FD_SETSIZE,&set,NULL,NULL,&timeout));
 	if (ret == -1)
@@ -640,8 +664,9 @@ void body(net::TomiTCP &f)
 		    if (! i->authd) { // has not authenticated
 			if (buf == slave_pass) {
 			    i->authd = 1;
+			    fprintf(*(i->s),"%s!%s\n",nick.c_str(),myhost.c_str());
 			} else {
-			    fprintf(*(i->s),"Access denied\n");
+			    fprintf(*(i->s),"\nAccess denied\n");
 			    i->dead = 1;
 			}
 		    } else {
@@ -652,6 +677,24 @@ void body(net::TomiTCP &f)
 	    }
 	}
 
+	// slave talks
+	for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
+	    if (FD_ISSET(i->s->sock, &set)) {
+		if (! i->s->getline(buf)) { // closed
+		    i->dead = 1;
+		} else {
+		    chomp(buf);
+		    if (! i->maskd) { // has not told his hostmask
+			i->mask = buf;
+			i->maskd = 1;
+		    } else {
+			cout << "slave said: " << buf << endl;
+		    }
+		}
+	    }
+	}
+
+	// clean dead 'slave' connections
 	bool clean = 0;
 	while (!clean) {
 	    clean = 1;
@@ -660,6 +703,20 @@ void body(net::TomiTCP &f)
 		    delete i->s;
 		    clean = 0;
 		    slavec.erase(i);
+		    break;
+		}
+	    }
+	}
+
+	// clean dead slaves
+	clean = 0;
+	while (!clean) {
+	    clean = 1;
+	    for (slaves_t::iterator i = slaves.begin(); i != slaves.end(); i++) {
+		if (i->dead) {
+		    delete i->s;
+		    clean = 0;
+		    slaves.erase(i);
 		    break;
 		}
 	    }
