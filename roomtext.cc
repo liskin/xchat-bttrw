@@ -94,8 +94,6 @@ namespace xchat {
 	string t = string(m, 0, m.find(": "));
 	if (t.length() == m.length())
 	    return;
-	if (t.find(' ', t.find_first_not_of(" ")) != string::npos)
-	    return;
 	m.erase(0, t.length() + 2);
 	if (m.length() && m[0] == ' ')
 	    m.erase(m.begin());
@@ -109,7 +107,17 @@ namespace xchat {
 	unsigned int a;
 	if (src[0] == '[' && ((a = src.find(']')) != string::npos)) {
 	    src.erase(0, a + 1);
-	    interroom = 1;
+	    interroom |= 1;
+	}
+	
+	if (target[0] == '[' && ((a = target.find(']')) != string::npos)) {
+	    target.erase(0, a + 1);
+	    interroom |= 1;
+	}
+
+	if (src.find(' ') != string::npos || target.find(' ') != string::npos) {
+	    src = "";
+	    target = "";
 	}
     }
 
@@ -286,7 +294,7 @@ namespace xchat {
 	}
 
 	static string pat3 = "není v žádné místnosti";
-	if (!m.compare(0, pat3.length(), pat3)) {
+	if (m.find(pat3) != string::npos) {
 	    return true;
 	}
 
