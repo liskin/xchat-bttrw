@@ -265,6 +265,8 @@ void parsemode(vector<string>& cmd, vector<string>& mode)
 	    ch[0] = *i;
 	else {
 	    t[0] = *i;
+	    // TODO: we REALLY should check if we should add param to mode,
+	    // either by parsing 005 CHANMODES, or statically
 	    mode.push_back(string(ch)+string(t)+" "+cmd[j]);
 	    j++;
 	}
