@@ -204,14 +204,41 @@ namespace xchat {
     }
 
     /*
+     * Check for advertisement messages
+     */
+    bool XChat::isadvert(string &m, string &link)
+    {
+	string pat = "<A TARGET=_blank HREF=\\\"/advert/advert.php";
+	unsigned int pos = m.find(pat);
+	if (pos != string::npos) {
+	    link = "http://xchat.centrum.cz/advert/advert.php" +
+		string(m, pos + pat.length());
+	    link.erase(link.find("\\\""));
+	    return 1;
+	}
+
+	return 0;
+    }
+
+    /*
      * Parse a line from xchat and push appropiate events to the recvq.
      */
     void XChat::recvq_parse_push(string m, room& r)
     {
-	// advert check...
+	string link;
+	bool advert = isadvert(m, link);
 	
 	striphtml(m);
 	stripdate(m);
+
+	if (advert) {
+	    EvRoomAdvert *e = new EvRoomAdvert;
+	    e->s = recode_to_client(m);
+	    e->rid = r.rid;
+	    e->link = link;
+	    recvq_push(e);
+	    return;
+	}
 
 	string src, target;
 	getnick(m, src, target);

@@ -91,6 +91,7 @@ namespace xchat {
 	    bool isjoin(room& r, string &m, string &src, int &sex);
 	    bool isleave(room& r, string &m, string &src, int &sex);
 	    bool iskick(room& r, string &m, string &src, string &reason, string &who, int &sex);
+	    bool isadvert(string &m, string &link);
 
 	    void msg(const string &room, const string &msg);
 	    void whisper(const string &room, const string &target, const string &msg);

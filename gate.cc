@@ -352,6 +352,7 @@ main_accept:
 	     */
 	    while (x.get() && !x->recvq.empty()) {
 		auto_ptr<Event> e(x->recvq_pop());
+		//cout << typeid(*(e.get())).name() << endl;
 
 		if (dynamic_cast<EvRoomError*>(e.get())) {
 		    auto_ptr<EvRoomError> f((EvRoomError*)e.release());
@@ -392,8 +393,6 @@ main_accept:
 			    hash(f->getsrc()).c_str(), getsexhost(f->getsrc()),
 			    f->getrid().c_str(), f->gettarget().nick.c_str(),
 			    f->getreason().c_str());
-		} else if (dynamic_cast<EvRoomAdvert*>(e.get())) {
-		    //auto_ptr<EvRoomAdvert> f((EvRoomAdvert*)e.release());
 		} else if (dynamic_cast<EvRoomSysMsg*>(e.get())) {
 		    auto_ptr<EvRoomSysMsg> f((EvRoomSysMsg*)e.release());
 
@@ -415,6 +414,12 @@ main_accept:
 		    fprintf(*c, ":%s MODE #%s -o+o %s %s\n", me,
 			    f->getrid().c_str(), f->getbefore().c_str(),
 			    f->getnow().c_str());
+		} else if (dynamic_cast<EvRoomAdvert*>(e.get())) {
+		    auto_ptr<EvRoomAdvert> f((EvRoomAdvert*)e.release());
+
+		    fprintf(*c, ":%s NOTICE #%s :Advert: %s [ %s ]\n", me,
+			    f->getrid().c_str(), f->str().c_str(),
+			    f->getlink().c_str());
 		} else if (dynamic_cast<EvRoomOther*>(e.get())) {
 		    auto_ptr<EvRoomOther> f((EvRoomOther*)e.release());
 
