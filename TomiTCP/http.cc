@@ -59,7 +59,7 @@ namespace net {
 	}
 
 	fprintf(stream,
-		"GET %s HTTP/1.1\r\n"
+		"GET %s HTTP/1.0\r\n"
 		"User-Agent: TomiTCP/" PACKAGE_VERSION "\r\n"
 		"Host: %s\r\n"
 		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\r\n"
@@ -162,7 +162,7 @@ namespace net {
 	}
 
 	fprintf(stream,
-		"POST %s HTTP/1.1\r\n"
+		"POST %s HTTP/1.0\r\n"
 		"User-Agent: TomiTCP/" PACKAGE_VERSION "\r\n"
 		"Host: %s\r\n"
 		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\r\n"
