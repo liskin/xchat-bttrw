@@ -1,4 +1,4 @@
-#!../irc
+#!../irc-run
 server	irc.nomi.cz
 #server irc.smoula.net
 port	6667

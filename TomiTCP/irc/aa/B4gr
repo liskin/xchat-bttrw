@@ -1,4 +1,4 @@
-#!../irc
+#!../irc-run
 server	irc.homelien.no
 port	6667
 nick	B4gr

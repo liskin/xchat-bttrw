@@ -1,4 +1,4 @@
-#!../irc
+#!../irc-run
 server	efnet.vuurwerk.nl
 port	6667
 nick	Tr4kt0r

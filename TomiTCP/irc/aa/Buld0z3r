@@ -1,4 +1,4 @@
-#!../irc
+#!../irc-run
 server	irc.inet.tele.dk
 port	6667
 nick	Buld0z3r
