@@ -406,10 +406,8 @@ namespace xchat {
 			value = 16 * value + *input - 'A' + 10;
 		    else if (*input >= 'a' && *input <= 'f')
 			value = 16 * value + *input - 'a' + 10;
-		    else if (*input == ';')
-			break;
 		    else
-			valid = false;
+			break;
 
 		    if (value >= 65535)
 			valid = false;
@@ -423,10 +421,8 @@ namespace xchat {
 		{
 		    if (*input >= '0' && *input <= '9')
 			value = 10 * value + *input - '0';
-		    else if (*input == ';')
-			break;
 		    else
-			valid = false;
+			break;
 
 		    if (value >= 65535)
 			valid = false;
@@ -437,8 +433,9 @@ namespace xchat {
 	} else if ((*input >= 'A' && *input <= 'Z') || (*input >= 'a' && *input <= 'z')) {
 	    /* Scan &[A-Za-z][A-Za-z0-9]*; notation.  */
 
-	    char *semicolon = strchr(input, ';');
-	    if (!semicolon) {
+	    const char *semicolon;
+	    for (semicolon = input; *semicolon && isalpha(*semicolon); semicolon++);
+	    if (!*semicolon || !(semicolon - input)) {
 		valid = false;
 	    } else {
 		map<string,unsigned short>::iterator i =
@@ -451,7 +448,7 @@ namespace xchat {
 	} else
 	    return 0;
 
-	if (!valid)
+	if (!valid || !value)
 	    return 0;
 	
 	static char buf[3] = {0, 0, 0};
