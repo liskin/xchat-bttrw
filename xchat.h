@@ -9,10 +9,6 @@ namespace xchat {
 
     static const int servers = 5;
 
-    struct msg_t {
-	string from, target, text;
-    };
-
     class XChat {
 	public:
 	    string uid, sid;
@@ -21,7 +17,7 @@ namespace xchat {
 	    ~XChat();
 
 	    int join(const string& room);
-	    int getmsg(const string& room, int lastmsg, vector<msg_t>& msgs);
+	    int getmsg(const string& room, int lastmsg, vector<string>& msgs);
 
 	    static string makeurl(const string& url);
 	    string makeurl2(const string& url);

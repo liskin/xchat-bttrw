@@ -36,7 +36,7 @@ namespace xchat {
 	throw runtime_error("Parse error");
     }
 
-    int XChat::getmsg(const string& room, int lastmsg, vector<msg_t>& msgs)
+    int XChat::getmsg(const string& room, int lastmsg, vector<string>& msgs)
     {
 	TomiHTTP s;
 	int ret = s.GET(makeurl2("modchat?op=roomtop&rid="+room+"&inc=1&last_line="+
@@ -46,8 +46,12 @@ namespace xchat {
 
 	lastmsg = -1;
 	string l;
+	bool expect_apos = false;
+	vector<string> tv;
 	while (s.getline(l)) {
-	    cout << l << endl;
+	    wstrip(l);
+	    if (!l.length()) continue;
+
 	    if (lastmsg == -1) {
 		string pat = "modchat?op=roomtop&rid="+room+"&inc=1&last_line=";
 		unsigned int pos = l.find(pat);
@@ -59,6 +63,38 @@ namespace xchat {
 		    lastmsg = atol(lastline.c_str());
 		}
 	    }
+
+	    if (expect_apos) {
+		expect_apos = false;
+		if (l[0] == '\'') {
+		    unsigned int pos;
+		    if ((pos = string(l,1).find('\'')) != string::npos) {
+			tv.push_back(string(l,1,pos));
+			if (l[pos+2] == ',') {
+			    expect_apos = true;
+			}
+		    }
+		}
+	    } else {
+		unsigned int pos = 0, pos2, pos3;
+		while ((pos3 = string(l,pos).find(".addText(")) != string::npos) {
+		    pos += pos3 + 9;
+		    if ((pos2 = string(l,pos).find("Array(")) != string::npos) {
+			if (l[pos+pos2+6] == '\'') {
+			    if ((pos3 = string(l,pos+pos2+7).find('\'')) != string::npos) {
+				tv.push_back(string(l,pos+pos2+7,pos3));
+				if (l[pos+pos2+7+pos3+1] == ',') {
+				    expect_apos = true;
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+
+	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++) {
+	    msgs.push_back(*i);
 	}
 
 	if (lastmsg == -1) {

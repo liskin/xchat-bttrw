@@ -18,8 +18,11 @@ int main(int argc, char *argv[])
 	cout << "DDD " << l << endl;
 	while (1) {
 	    cout << "---------------" << endl;
-	    vector<msg_t> m;
+	    vector<string> m;
 	    l = x.getmsg("324979",l,m);
+	    for (vector<string>::iterator i = m.begin(); i != m.end(); i++) {
+		cout << "DD= " << *i << endl;
+	    }
 	    cout << "DDD " << l << endl;
 	    sleep(5);
 	}
