@@ -44,11 +44,12 @@ int main(int argc, char *argv[])
 	//cout << a.ident() << endl;
 	
 	//cout << recode("Tomáš Janoušek","utf-8","iso-8859-2") << endl;
+	/*
 	net::TomiTCP t("localhost", 1025);
 	string s;
 	while (t.getline(s)) {
 	    cout << s << endl;
-	}
+	}*/
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
     }
