@@ -19,6 +19,8 @@ typedef void (*module_mode)(FILE*,string,string,string,vector<string>);
 				// nick   host   chan   modes
 typedef void (*module_msg)(FILE*,string,string,vector<string>);
 				// nick  host   cmd
+typedef void (*module_cmd)(FILE*,string,vector<string>);
+				// nick  cmd list
 
 struct module {
     void *lib;
@@ -27,12 +29,13 @@ struct module {
     module_connected connected;
     module_mode mode;
     module_msg msg;
+    module_cmd cmd;
 };
 
 extern map<string,module> modules;
 
 extern int port;
-extern string server,nick,password,oname,opassword,config,autotake,myhost;
+extern string server,nick,password,oname,opassword,config,myhost;
 extern vector<string> masters,masternicks;
 extern unsigned int max_modes;
 extern int safe_mode,some_time;

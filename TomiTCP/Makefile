@@ -31,3 +31,4 @@ m_pokus.so: m_pokus.cc net.h irc.h
 m_nomi.so: m_nomi.cc net.h irc.h
 m_rejoin.so: m_rejoin.cc net.h irc.h
 m_channel.so: m_channel.cc net.h irc.h
+m_take.so: m_take.cc net.h irc.h

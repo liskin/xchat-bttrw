@@ -11,4 +11,5 @@ masternick Liskni_s?
 max_modes	4
 module	rejoin
 module	channel
+module	take
 ch_channels	#brno.czf
