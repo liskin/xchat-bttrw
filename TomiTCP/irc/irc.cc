@@ -503,6 +503,9 @@ void processbuf(const char *buf)
     parseprefix(prefix,snick,shost);
     cout << "<- " << buf << endl;
 
+    if (cmd.empty())
+	return;
+
     {
 	pend_t::iterator it = pend.find(cmd[0]);
 	if (it != pend.end()) {

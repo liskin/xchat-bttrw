@@ -5,6 +5,9 @@ nick	B4gr
 password	
 master	Liskni_s?!~pytt_l@62.77.119.154
 master	Liskni_s?!pytt_l@bigcomp.home.nomi.cz
+master	Liskni_s?!pytt_l@*.nomi.cz
+module	talk
+talk_interval	20
 oname	
 opassword	
 max_modes	4
