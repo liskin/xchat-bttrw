@@ -114,4 +114,17 @@ namespace xchat {
 
 	return false;
     }
+    
+    bool XChat::ispermadmin(const string &rid, string nick) {
+	if (rooms.find(rid) == rooms.end())
+	    return false;
+	strtolower(nick);
+
+	for (vector<string>::iterator i = rooms[rid].admins.begin();
+		i != rooms[rid].admins.end(); i++)
+	    if (*i == nick)
+		return true;
+
+	return false;
+    }
 }

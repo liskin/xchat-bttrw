@@ -105,6 +105,7 @@ namespace xchat {
 
 	    x_nick* findnick(string src, room **r);
 	    bool isadmin(const string &rid, string nick);
+	    bool ispermadmin(const string &rid, string nick);
 
 	    void list(listout_t &listout);
     };

@@ -516,6 +516,9 @@ main_accept:
 		    fprintf(*c, ":%s!%s@%s JOIN #%s\n", f->getsrc().nick.c_str(),
 			    hash(f->getsrc().nick).c_str(), sexhost[f->getsrc().sex],
 			    f->getrid().c_str());
+		    if (x->ispermadmin(f->getrid(), f->getsrc().nick))
+			fprintf(*c, ":%s MODE #%s +o %s\n", me,
+				f->getrid().c_str(), f->getsrc().nick.c_str());
 		} else if (dynamic_cast<EvRoomLeave*>(e.get())) {
 		    auto_ptr<EvRoomLeave> f((EvRoomLeave*)e.release());
 
@@ -547,7 +550,7 @@ main_accept:
 		} else if (dynamic_cast<EvRoomAdminChange*>(e.get())) {
 		    auto_ptr<EvRoomAdminChange> f((EvRoomAdminChange*)e.release());
 
-		    if (x->isadmin(f->getrid(), f->getbefore())) // SS
+		    if (x->ispermadmin(f->getrid(), f->getbefore()))
 			fprintf(*c, ":%s MODE #%s +o %s\n", me,
 				f->getrid().c_str(), f->getnow().c_str());
 		    else
