@@ -367,7 +367,7 @@ namespace net {
 	if (ret == -1)
 	    throw runtime_error(strerror(errno));
 
-	return s.length();
+	return ret != 0;
     }
     
     string tomi_ntop(const sockaddr_uni& name)
