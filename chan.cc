@@ -15,14 +15,14 @@ namespace xchat {
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
 	s.close();
-	
-	ret = s.GET(makeurl2("modchat?op=roomframe&rid="+room),0);
+
+	ret = s.GET(makeurl2("modchat?op=roomtopng&js=1&rid="+room),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
 
 	string l;
 	while (s.getline(l)) {
-	    string pat = "modchat?op=roomtop&rid="+room+"&inc=1&last_line=";
+	    string pat = "&inc=1&last_line=";
 	    unsigned int pos = l.find(pat);
 	    if (pos != string::npos) {
 		stringstream ss(string(l,pos+pat.length()));
@@ -39,21 +39,22 @@ namespace xchat {
     int XChat::getmsg(const string& room, int lastmsg, vector<string>& msgs)
     {
 	TomiHTTP s;
-	int ret = s.GET(makeurl2("modchat?op=roomtop&rid="+room+"&inc=1&last_line="+
+	int ret = s.GET(makeurl2("modchat?op=roomtopng&js=1&rid="+room+"&inc=1&last_line="+
 		    inttostr(lastmsg)),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
 
-	lastmsg = -1;
+	//lastmsg = -1;
 	string l;
 	bool expect_apos = false;
 	vector<string> tv;
 	while (s.getline(l)) {
 	    wstrip(l);
 	    if (!l.length()) continue;
+	    //cout << l << endl;
 
 	    if (lastmsg == -1) {
-		string pat = "modchat?op=roomtop&rid="+room+"&inc=1&last_line=";
+		string pat = "&inc=1&last_line=";
 		unsigned int pos = l.find(pat);
 		if (pos != string::npos) {
 		    stringstream ss(string(l,pos+pat.length()));
