@@ -67,7 +67,7 @@ namespace std {
 	while (need) {
 	    int space = 0;
 	    bool skip = 0;
-	    out.clear();
+	    out = "";
 
 	    for (string::reverse_iterator i = in.rbegin(); i != in.rend(); i++) {
 		if (need) {
