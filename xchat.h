@@ -129,18 +129,12 @@ namespace xchat {
     }
 
     inline void XChat::whisper(const string &room, const string &target, const string &msg) {
-	sendq_push(room, "/m " + target + " " + msg);
+	sendq_push(room, "/s " + target + " " + msg);
     }
     
     inline void XChat::whisper(const string &target, const string &msg) {
 	if (rooms.size()) {
-	    // decide if we have to send global msg
-	    room *r;
-	    x_nick *n = findnick(target, &r);
-	    if (n)
-		sendq_push(r->rid, "/s " + target + " " + msg);
-	    else
-		sendq_push(rooms.begin()->first, "/m " + target + " " + msg);
+	    sendq_push(rooms.begin()->first, "/m " + target + " " + msg);
 	} else {
 	    throw runtime_error("Can't send PRIVMSG's without channel joined");
 	}
