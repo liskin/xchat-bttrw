@@ -2,10 +2,8 @@
 
 DEBUG=no
 
-CFLAGS=-Wall -D_GNU_SOURCE
+CFLAGS=-Wall -D_GNU_SOURCE -fPIC -DPIC
 CXXFLAGS=$(CFLAGS)
-LDLIBS=-ldl
-LDFLAGS=-rdynamic
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
 ifeq ($(DEBUG),yes)
@@ -14,21 +12,11 @@ else
  CFLAGS += -DNDEBUG
 endif
 
-%.so: %.cc
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -fPIC -DPIC -shared $(TARGET_ARCH) $< $(LOADLIBES) -o $@
-
 .PHONY: all clean
 
-all: pok irc $(patsubst %.cc,%.so,$(wildcard m_*.cc))
+all: libTomiTCP.so
 clean:
-	$(RM) pok irc *.{o,so}
-pok: pok.o net.o
-irc: irc.o net.o
-pok.o: pok.cc net.h
+	$(RM) *.{o,so}
+libTomiTCP.so: net.o
+	$(CXX) $(LDFLAGS) -shared $(TARGET_ARCH) $< $(LOADLIBES) -o $@
 net.o: net.cc net.h
-irc.o: irc.cc net.h irc.h
-m_pokus.so: m_pokus.cc net.h irc.h
-m_nomi.so: m_nomi.cc net.h irc.h
-m_rejoin.so: m_rejoin.cc net.h irc.h
-m_channel.so: m_channel.cc net.h irc.h
-m_take.so: m_take.cc net.h irc.h
