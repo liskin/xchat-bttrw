@@ -339,19 +339,24 @@ void goon(int a, int b)
     fd_set set;
     while (1) {
 	FD_ZERO(&set);
-	FD_SET(a, &set);
+	if (a >= 0)
+	    FD_SET(a, &set);
 	FD_SET(b, &set);
 
 	int ret = TEMP_FAILURE_RETRY(select((a >? b) + 1, &set, 0, 0, 0));
 	if (ret == -1)
 	    throw runtime_error("error in select: " + string(strerror(errno)));
 
-	if (FD_ISSET(a, &set)) {
+	if (a >= 0 && FD_ISSET(a, &set)) {
 	    int sz = TEMP_FAILURE_RETRY(read(a, buffer, 4096));
 	    if (sz == -1)
 		throw runtime_error("error in read: " + string(strerror(errno)));
-	    else if (!sz)
-		break;
+	    else if (!sz) {
+		if (a == 0)
+		    a = -1;
+		else
+		    break;
+	    }
 
 	    sz = sendall(b, buffer, sz);
 	    if (sz == -1)
@@ -365,7 +370,7 @@ void goon(int a, int b)
 	    else if (!sz)
 		break;
 
-	    sz = sendall(a?a:1, buffer, sz);
+	    sz = sendall((a>0)?a:1, buffer, sz);
 	    if (sz == -1)
 		throw runtime_error("error in write: " + string(strerror(errno)));
 	}
