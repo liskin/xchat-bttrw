@@ -222,6 +222,7 @@ void loadmodule(string name)
 
 void login()
 {
+    strtolower(username);
     if (password.length())
 	S(f,"PASS %s\n",password.c_str());
     S(f,"NICK %s\n",nick.c_str());
