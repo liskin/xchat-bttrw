@@ -18,7 +18,7 @@ namespace xchat {
      */
     string XChat::makeurl(const string& path)
     {
-	return "http://x" + inttostr(1 + (rand() % servers)) + ".xchat.centrum.cz/" + path;
+	return "http://" + tomi_ntop(servers[rand() % servers.size()]) + "/" + path;
     }
 
     /*
@@ -26,7 +26,7 @@ namespace xchat {
      */
     string XChat::makeurl2(const string& path)
     {
-	return "http://x" + inttostr(1 + (rand() % servers)) + ".xchat.centrum.cz/~$" +
+	return "http://" + tomi_ntop(servers[rand() % servers.size()]) + "/~$" +
 	    uid + "~" + sid + "/" + path;
     }
 

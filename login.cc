@@ -12,6 +12,11 @@ namespace xchat {
     XChat::XChat(const string& user, const string& pass)
 	: nick(user), mysex(1), last_sent(0), last_recv(0)
     {
+	// prepare list of available servers
+	resolve("xchat.centrum.cz", "", servers);
+	if (! servers.size())
+	    throw runtime_error("Could not get xchat server list from DNS.");
+
 	TomiHTTP s;
 	int ret = s.POST(makeurl("~guest~/login/"),
 		"js=1&skin=2&name="+TomiHTTP::URLencode(user)+"&pass="+

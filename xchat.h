@@ -7,6 +7,7 @@
 #include <ctime>
 #include <queue>
 #include <recode.h>
+#include "TomiTCP/net.h"
 
 namespace xchat {
     using namespace std;
@@ -19,8 +20,6 @@ namespace xchat {
 
     void init_recode();
     void exit_recode();
-
-    static const int servers = 5;
 
     struct x_nick {
 	string nick;
@@ -52,6 +51,8 @@ namespace xchat {
 
     class XChat {
 	public:
+	    vector<net::sockaddr_uni> servers;
+
 	    string uid, sid, nick;
 	    int mysex;
 	    rooms_t rooms;
@@ -76,7 +77,7 @@ namespace xchat {
 	    void getmsg(room& r);
 	    void putmsg(room& r, const string& msg);
 
-	    static string makeurl(const string& url);
+	    string makeurl(const string& url);
 	    string makeurl2(const string& url);
 
 	    static void striphtml(string &s);
