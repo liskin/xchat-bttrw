@@ -66,7 +66,8 @@ namespace xchat {
     {
 	if (!sendq.empty() && time(0) - last_sent >= send_interval) {
 	    pair<string,string> msg = sendq.front(); sendq.pop();
-	    putmsg(rooms[msg.first], msg.second);
+	    if (rooms.find(msg.first) != rooms.end())
+		putmsg(rooms[msg.first], msg.second);
 	}
 
 	// f00king idler
@@ -99,6 +100,8 @@ namespace xchat {
      * Check if given user is admin
      */
     bool XChat::isadmin(const string &rid, string nick) {
+	if (rooms.find(rid) == rooms.end())
+	    return false;
 	strtolower(nick);
 
 	if (rooms[rid].admin == nick)

@@ -29,21 +29,41 @@ namespace xchat {
      */
     void XChat::striphtml(string &s)
     {
-	unsigned int a, b;
+	unsigned int a, b, lastbr = string::npos, pos = 0;
 
-	while (((a = s.find('<')) != string::npos) &&
+	while (((a = s.find('<', pos)) != string::npos) &&
 		((b = string(s, a).find('>')) != string::npos)) {
 	    int smile = 0;
+	    bool br = 0;
 
 	    static string pat = "<img src=\\\"//img.centrum.cz/xs/";
 	    if (!s.compare(a, pat.length(), pat))
 		smile = atol(string(s, a + pat.length()).c_str());
+	    
+	    static string pat2 = "<br";
+	    if (!s.compare(a, pat2.length(), pat2))
+		br = 1;
 
 	    s.erase(s.begin() + a, s.begin() + a + b + 1);
+	    pos = a;
 
-	    if (smile)
+	    if (smile) {
 		s.insert(a, "*" + tostr(smile) + "*");
+		pos += ("*" + tostr(smile) + "*").length();
+	    }
+	    if (br) {
+		s.insert(a, " | ");
+		lastbr = a;
+		pos += 3;
+	    }
 	}
+
+	/*
+	 * Erase last br with a trailing whitespace, if there's no text.
+	 */
+	if (lastbr != string::npos &&
+		s.find_first_not_of(" \f\n\r\t\v|", lastbr) == string::npos)
+	    s.erase(lastbr);
     }
 
     /*

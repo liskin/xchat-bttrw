@@ -257,8 +257,10 @@ main_accept:
 			    fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
 				    nick.c_str(), chan.c_str());
 			} catch (runtime_error e) {
-			    fprintf(*c, ":%s 403 %s #%s :%s\n", me, nick.c_str(),
-				    chan.c_str(), e.what());
+			    fprintf(*c, ":%s 403 %s #%s :Could not join channel\n",
+				    me, nick.c_str(), chan.c_str());
+			    fprintf(*c, ":%s NOTICE %s :Could not join #%s: %s\n", me,
+				    nick.c_str(), chan.c_str(), e.what());
 			}
 		    }
 		} else if (cmd[0] == "PART" && cmd.size() >= 2) {
@@ -329,16 +331,18 @@ main_accept:
 		    if (cmd[1][0] == '#') {
 			cmd[1].erase(cmd[1].begin());
 
-			/*
-			 * Output channel WHO
-			 */
-			for (nicklist_t::iterator i = x->rooms[cmd[1]].nicklist.begin();
-				i != x->rooms[cmd[1]].nicklist.end(); i++) {
-			    fprintf(*c, ":%s 352 %s #%s %s %s %s %s %s :%d %s\n", me,
-				    nick.c_str(), cmd[1].c_str(), hash(i->second.nick).c_str(),
-				    sexhost[i->second.sex], me, i->second.nick.c_str(), 
-				    (x->isadmin(cmd[1], i->first))?"H@":"H", 0,
-				    "xchat.cz user");
+			if (x->rooms.find(cmd[1]) != x->rooms.end()) {
+			    /*
+			     * Output channel WHO
+			     */
+			    for (nicklist_t::iterator i = x->rooms[cmd[1]].nicklist.begin();
+				    i != x->rooms[cmd[1]].nicklist.end(); i++) {
+				fprintf(*c, ":%s 352 %s #%s %s %s %s %s %s :%d %s\n", me,
+					nick.c_str(), cmd[1].c_str(), hash(i->second.nick).c_str(),
+					sexhost[i->second.sex], me, i->second.nick.c_str(), 
+					(x->isadmin(cmd[1], i->first))?"H@":"H", 0,
+					"xchat.cz user");
+			    }
 			}
 			cmd[1] = "#" + cmd[1];
 		    } else {
@@ -483,10 +487,9 @@ main_accept:
 		    auto_ptr<EvRoomError> f((EvRoomError*)e.release());
 
 		    try { x->leave(f->getrid()); } catch (...) { }
-		    fprintf(*c, ":%s!%s@%s PART #%s :\n", nick.c_str(),
-			    hash(nick).c_str(), getsexhost(nick), f->getrid().c_str());
-		    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
-			    nick.c_str(), f->str().c_str());
+		    fprintf(*c, ":%s KICK #%s %s :Error: %s\n", me,
+			    f->getrid().c_str(), nick.c_str(),
+			    f->str().c_str());
 		} else if (dynamic_cast<EvRoomMsg*>(e.get())) {
 		    auto_ptr<EvRoomMsg> f((EvRoomMsg*)e.release());
 

@@ -48,7 +48,18 @@ namespace xchat {
 	int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&rid="+rid),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while joining channel");
-	// we should try to parse if an error occurs
+	while (s.getline(l)) {
+	    static string pat1 = "px;\">", pat2 = "<br><SCRIPT";
+	    unsigned int a, b;
+	    if ((a = l.find(pat1)) != string::npos &&
+		    (b = l.find(pat2, a + pat1.length())) != string::npos) {
+		string err(l, a + pat1.length(), b - a - pat1.length());
+		striphtml(err);
+		striphtmlent(err);
+		unsmilize(err);
+		throw runtime_error(err);
+	    }
+	}
 	s.close();
 	
 	ret = s.GET(makeurl2("modchat?op=textpageng&skin=2&js=1&rid="+rid),0);
@@ -97,6 +108,7 @@ namespace xchat {
 		parse_updateinfo(string(l, a + pat2.length()), r.admin, r.locked);
 	    }
 	}
+	s.close();
 
 	ret = s.GET(makeurl2("modchat?op=roominfo&skin=2&cid=0&rid="+rid),0);
 	if (ret != 200)
@@ -142,14 +154,13 @@ namespace xchat {
      */
     void XChat::leave(const string& rid)
     {
+	rooms.erase(rid);
+	
 	TomiHTTP s;
-
 	int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&js=1&menuaction=leave"
 		    "&leftroom="+rid),0);
 	if (ret != 200)
 	    throw runtime_error("Not HTTP 200 Ok while parting channel");
-	
-	rooms.erase(rid);
     }
 
     /*
@@ -170,6 +181,7 @@ namespace xchat {
 	    throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
 
 	vector<string> dbg;
+	string kicker, kickmsg;
 
 	r.l = -1;
 	string l;
@@ -197,7 +209,6 @@ namespace xchat {
 	     * working)
 	     */
 	    if (expect_apos) {
-		cout << l << endl;
 		expect_apos = false;
 		if (l[0] == '\'') {
 		    unsigned int pos;
@@ -213,7 +224,6 @@ namespace xchat {
 		static string pat1 = ".addText(", pat2 = "Array('";
 
 		if ((pos1 = l.find(pat1)) != string::npos) {
-		    cout << l << endl;
 		    if ((pos2 = l.find(pat2, pos1 + pat1.length())) != string::npos) {
 			if ((pos3 = l.find('\'', pos2 + pat2.length())) != string::npos) {
 			    tv.push_back(string(l, pos2 + pat2.length(),
@@ -261,7 +271,52 @@ namespace xchat {
 	    /*
 	     * If we got a redirect to error page, look at the error message.
 	     */
-	    // window.open("/~$3249019~2a899f0fea802195d52861d6b8e15c1c/modchat?op=fullscreenmessage&key=403&kicking_nick=&text=", '_top');
+	    static string pat1 = "window.open(\"", pat2 = "modchat?op=fullscreenmessage";
+	    unsigned int a, b, c;
+	    if ((a = l.find(pat1)) != string::npos &&
+		    (b = l.find(pat2, a)) != string::npos &&
+		    (c = l.find('"', b)) != string::npos) {
+		string url(l, b, c - b);
+
+		static string pat3 = "&kicking_nick=", pat4 = "&text=";
+		unsigned int pos;
+		if ((pos = url.find(pat3)) != string::npos) {
+		    kicker = string(url, pos + pat3.length(),
+			    url.find('&', pos + pat3.length()) - pos - pat3.length());
+		    kicker = TomiHTTP::URLdecode(kicker);
+		    wstrip(kicker);
+		}
+
+		if ((pos = url.find(pat4)) != string::npos) {
+		    kickmsg = string(url, pos + pat4.length(),
+			    url.find('&', pos + pat4.length()) - pos - pat4.length());
+		    kickmsg = TomiHTTP::URLdecode(kickmsg);
+		    wstrip(kickmsg);
+		}
+
+		if (!kicker.length() && !kickmsg.length()) {
+		    TomiHTTP c; string m;
+		    try {
+			ret = c.GET(makeurl2(url),0);
+			if (ret != 200)
+			    throw 0;
+			while (c.getline(m)) {
+			    static string pat1 = "px;\">", pat2 = "<br><SCRIPT";
+			    unsigned int a, b;
+			    if ((a = m.find(pat1)) != string::npos &&
+				    (b = m.find(pat2, a + pat1.length())) != string::npos) {
+				kickmsg = string(m, a + pat1.length(), b - a - pat1.length());
+				striphtml(kickmsg);
+				striphtmlent(kickmsg);
+				unsmilize(kickmsg);
+				break;
+			    }
+			}
+		    } catch (...) {
+			kickmsg = "Error, but I could not fetch error message - timeout";
+		    }
+		}
+	    }
 	}
 
 	/*
@@ -270,6 +325,30 @@ namespace xchat {
 	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++)
 	    recvq_parse_push(*i, r);
 
+
+	/*
+	 * Look if we should emit a kick/error message
+	 */
+	if (kicker.length()) {
+	    EvRoomKick *e = new EvRoomKick;
+	    e->s = kicker + " kicked you because: " + recode_to_client(kickmsg);
+	    e->rid = r.rid;
+	    e->src = kicker;
+	    e->target = (struct x_nick){ nick, 2 };
+	    e->reason = recode_to_client(kickmsg);
+	    recvq_push(e);
+	    try { leave(r.rid); } catch (...) { }
+	} else if (kickmsg.length()) {
+	    EvRoomError *e = new EvRoomError;
+	    e->s = recode_to_client(kickmsg);
+	    e->rid = r.rid;
+	    recvq_push(e);
+	} else
+	    goto parse_error;
+
+	return;
+
+parse_error:
 	/*
 	 * And don't forget to report parse error if we didn't get valid
 	 * last_line.
