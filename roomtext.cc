@@ -297,6 +297,7 @@ namespace xchat {
 	x_nick *n;
 	
 	striphtml(m);
+	striphtmlent(m);
 	stripdate(m);
 
 	if (advert) {
@@ -310,7 +311,6 @@ namespace xchat {
 
 	string src, target;
 	getnick(m, src, target);
-	striphtmlent(m);
 
 	if (src.length()) {
 	    unsmilize(m);
