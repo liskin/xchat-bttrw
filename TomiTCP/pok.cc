@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
     if (argc!=2) return -1;
 
-    try {
+    /*try {
 	net::TomiCookies c;
 	try {
 	    c.load("cookies");
@@ -24,5 +24,6 @@ int main(int argc, char *argv[])
 	}
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
-    }
+    }*/
+    cout << net::TomiHTTP::URLencode("ahoj tome") << endl;
 }
