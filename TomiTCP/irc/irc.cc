@@ -854,6 +854,8 @@ int main(int argc, char *argv[])
 {
     my_argv = argv;
 
+    srand(time(0) ^ getpid());
+
     // init structs...
     isupport.ab = "ohvbeIk";
     isupport.c = "l";
