@@ -38,6 +38,9 @@ namespace net {
     void tomi_pton(string p, sockaddr_uni& name);
     string revers(const sockaddr_uni& name);
     void resolve(const string& hostname, const string& service, vector<sockaddr_uni> &addrs);
+#ifdef WIN32
+    const char * wsock_strerror(int err);
+#endif
 
     class timeout : public runtime_error {
 	public:

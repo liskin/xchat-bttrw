@@ -18,7 +18,6 @@
 # define sock_errno WSAGetLastError()
 # define EAFNOSUPPORT WSAEAFNOSUPPORT
 # define TEMP_FAILURE_RETRY(a) (a)
-const char * wsock_strerror(int err);
 # define strerror wsock_strerror
 int winsock_init() {
     WORD wVersionRequested;
