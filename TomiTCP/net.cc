@@ -129,7 +129,7 @@ namespace net {
     }
 
     void TomiTCP::connect(const string& hostname, const string& service,
-	    const string& bindhostname)
+	    const string& bindhostname, const string& bindservice)
     {
 	if (ok()) {
 	    close();
@@ -137,8 +137,8 @@ namespace net {
 
 	vector<sockaddr_uni> addrs, bindaddrs;
 	resolve(hostname, service, addrs);
-	if (bindhostname.length())
-	    resolve(bindhostname, "0", bindaddrs);
+	if (bindhostname.length() || bindservice.length())
+	    resolve(bindhostname, bindservice, bindaddrs);
 
 	string err = "No address to connect to";
 
@@ -197,7 +197,8 @@ namespace net {
 	memset(&hints,0,sizeof(hints));
 	hints.ai_socktype = SOCK_STREAM;
 
-	ret = getaddrinfo(hostname.c_str(),service.c_str(),&hints,&ai);
+	ret = getaddrinfo(hostname.length()?hostname.c_str():0,
+		service.length()?service.c_str():0, &hints, &ai);
 	if (ret) {
 	    throw runtime_error(string(gai_strerror(ret)));
 	}
