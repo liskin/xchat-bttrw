@@ -116,10 +116,10 @@ int main(int argc, char *argv[])
 				cmd[1].c_str(), e.what());
 		    }
 
-		    rooms[cmd[1]].nicklist[nick] = 0;
+		    rooms[cmd[1]].nicklist[nick] = 1;
 
 		    fprintf(*c, ":%s!%s@%s JOIN #%s\n", nick.c_str(), hash(nick).c_str(),
-			    userhost, cmd[1].c_str());
+			    getsexhost(nick), cmd[1].c_str());
 		    string tmp; int i; nicklist_t::iterator j;
 		    for (i = 1, j = rooms[cmd[1]].nicklist.begin();
 			    j != rooms[cmd[1]].nicklist.end(); j++, i++) {
