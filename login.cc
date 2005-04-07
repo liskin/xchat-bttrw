@@ -13,14 +13,7 @@ namespace xchat {
     XChat::XChat(const string& user, const string& pass)
 	: nick(user), last_sent(0), last_recv(0), lastsrv(0)
     {
-	// prepare list of available servers
-	vector<sockaddr_uni> sockaddrs;
-	resolve("xchat.centrum.cz", "", sockaddrs);
-	if (! sockaddrs.size())
-	    throw runtime_error("Could not get xchat server list from DNS.");
-	for (vector<sockaddr_uni>::iterator i = sockaddrs.begin();
-		i != sockaddrs.end(); i++)
-	    servers.push_back(server(*i));
+	makeservers();
 
 	TomiHTTP s;
 	try {
@@ -64,5 +57,29 @@ namespace xchat {
 	} catch (runtime_error e) {
 	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
+    }
+
+    /*
+     * Prepare list of available servers
+     */
+    void XChat::makeservers()
+    {
+	int i;
+	for (i = 1; i < 100 /* safety */; i++) {
+	    vector<sockaddr_uni> sockaddrs;
+	    try {
+		resolve("x" + tostr<int>(i) + ".xchat.centrum.cz", "", sockaddrs);
+	    } catch (...) { }
+
+	    if (!sockaddrs.size())
+		break;
+
+	    for (vector<sockaddr_uni>::iterator i = sockaddrs.begin();
+		    i != sockaddrs.end(); i++)
+		servers.push_back(server(*i));
+	}
+
+	if (i == 1)
+	    throw runtime_error("Could not get xchat server list from DNS.");
     }
 }

@@ -92,6 +92,7 @@ namespace xchat {
     class XChat {
 	public:
 	    vector<server> servers;
+	    void makeservers();
 
 	    string uid, sid, nick;
 	    rooms_t rooms;
