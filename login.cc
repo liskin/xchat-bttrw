@@ -65,7 +65,7 @@ namespace xchat {
     void XChat::makeservers()
     {
 	int i;
-	for (i = 1; i < 10 /* xchat motofoko */; i++) {
+	for (i = 1; i <= 10 /* xchat motofoko */; i++) {
 	    vector<sockaddr_uni> sockaddrs;
 	    try {
 		resolve("x" + tostr<int>(i) + ".xchat.cz", "", sockaddrs);
