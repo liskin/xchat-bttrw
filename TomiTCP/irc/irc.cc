@@ -57,14 +57,16 @@ void processsome(net::TomiTCP &f);
 
 void S(net::TomiTCP &f, const char* fmt, ...)
 {
-    va_list ap;
-    va_start(ap,fmt);
+    va_list ap, aq;
+    va_start(ap, fmt);
+    va_copy(aq, ap);
 
     fputs("-> ",stdout);
-    vprintf(fmt,ap);
-    vfprintf(f,fmt,ap);
+    vprintf(fmt, ap);
+    vfprintf(f, fmt, aq);
 
     va_end(ap);
+    va_end(aq);
 }
 
 void addslave(string host, int port, string pass)
