@@ -2,6 +2,7 @@
 #define _EVENTS_H_INCLUDED
 
 #include <string>
+#include <ctime>
 
 namespace xchat {
     using namespace std;
@@ -19,8 +20,10 @@ namespace xchat {
 	    friend class XChat;
 	protected:
 	    string s;
+	    string d;
 	public:
 	    virtual const string & str() { return s; }
+	    virtual const string & date() { return d; }
 	    virtual ~Event() {}
     };
 

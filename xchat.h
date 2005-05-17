@@ -125,7 +125,7 @@ namespace xchat {
 
 	    static void stripjsescapes(string &s);
 	    static void striphtml(string &s);
-	    static void stripdate(string &m);
+	    static void getdate(string &m, string &date);
 	    static void getnick(string &m, string &src, string &target);
 	    static void unsmilize(string &s);
 	    bool isjoin(room& r, string &m, string &src, int &sex);

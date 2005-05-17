@@ -135,7 +135,7 @@ const char * const me = "xchat.cz";
 
 time_t last_ping = 0, last_ping_sent = 0, connect_time = 0;
 
-bool voiced_girls = false, show_advert = true;
+bool voiced_girls = false, show_advert = true, show_date = false;
 
 #ifndef WIN32
 void sigchld(int) {
@@ -390,6 +390,10 @@ main_accept:
 			recv_interval = atol(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :recv_interval set to %i\n",
 				me, nick.c_str(), recv_interval);
+		    } else if (cmd[1] == "SHOW_DATE" && cmd.size() == 3) {
+			show_date = atol(cmd[2].c_str());
+			fprintf(*c, ":%s NOTICE %s :show_date set to %i\n",
+				me, nick.c_str(), show_date);
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
 				" count\n", me, nick.c_str());
@@ -756,6 +760,10 @@ main_accept:
 	    while (x.get() && !x->recvq.empty()) {
 		auto_ptr<Event> e(x->recvq_pop());
 
+		string date;
+		if (show_date && e->date().length())
+		    date = "\x01" "DATE " + e->date() + "\x01";
+
 		if (dynamic_cast<EvRoomError*>(e.get())) {
 		    auto_ptr<EvRoomError> f((EvRoomError*)e.release());
 
@@ -772,19 +780,19 @@ main_accept:
 		    string str = f->str();
 		    bool notice = is_notice(str);
 
-		    fprintf(*c, ":%s %s #%s :%s\n",
+		    fprintf(*c, ":%s %s #%s :%s%s\n",
 			    mask(f->getsrc()).c_str(),
 			    notice?"NOTICE":"PRIVMSG", f->getrid().c_str(),
-			    str.c_str());
+			    date.c_str(), str.c_str());
 		} else if (dynamic_cast<EvWhisper*>(e.get())) {
 		    auto_ptr<EvWhisper> f((EvWhisper*)e.release());
 		    string str = f->str();
 		    bool notice = is_notice(str);
 
-		    fprintf(*c, ":%s %s %s :%s\n",
+		    fprintf(*c, ":%s %s %s :%s%s\n",
 			    mask(f->getsrc()).c_str(),
 			    notice?"NOTICE":"PRIVMSG", f->gettarget().nick.c_str(),
-			    str.c_str());
+			    date.c_str(), str.c_str());
 		} else if (dynamic_cast<EvRoomJoin*>(e.get())) {
 		    auto_ptr<EvRoomJoin> f((EvRoomJoin*)e.release());
 
@@ -820,18 +828,18 @@ main_accept:
 		} else if (dynamic_cast<EvRoomSysMsg*>(e.get())) {
 		    auto_ptr<EvRoomSysMsg> f((EvRoomSysMsg*)e.release());
 
-		    fprintf(*c, ":%s NOTICE #%s :System: %s\n", me,
-			    f->getrid().c_str(), f->str().c_str());
+		    fprintf(*c, ":%s NOTICE #%s :%sSystem: %s\n", me,
+			    f->getrid().c_str(), date.c_str(), f->str().c_str());
 		} else if (dynamic_cast<EvRoomIdlerMsg*>(e.get())) {
 		    auto_ptr<EvRoomIdlerMsg> f((EvRoomIdlerMsg*)e.release());
 
-		    fprintf(*c, ":%s NOTICE #%s :System: %s [IDLER]\n", me,
-			    f->getrid().c_str(), f->str().c_str());
+		    fprintf(*c, ":%s NOTICE #%s :%sSystem: %s [IDLER]\n", me,
+			    f->getrid().c_str(), date.c_str(), f->str().c_str());
 		} else if (dynamic_cast<EvRoomSysText*>(e.get())) {
 		    auto_ptr<EvRoomSysText> f((EvRoomSysText*)e.release());
 
-		    fprintf(*c, ":%s NOTICE #%s :%s\n", me,
-			    f->getrid().c_str(), f->str().c_str());
+		    fprintf(*c, ":%s NOTICE #%s :%s%s\n", me,
+			    f->getrid().c_str(), date.c_str(), f->str().c_str());
 		} else if (dynamic_cast<EvRoomAdminChange*>(e.get())) {
 		    auto_ptr<EvRoomAdminChange> f((EvRoomAdminChange*)e.release());
 
@@ -855,29 +863,29 @@ main_accept:
 		    auto_ptr<EvRoomAdvert> f((EvRoomAdvert*)e.release());
 
 		    if (show_advert)
-			fprintf(*c, ":%s NOTICE #%s :Advert: %s [ %s ]\n", me,
-				f->getrid().c_str(), f->str().c_str(),
+			fprintf(*c, ":%s NOTICE #%s :%sAdvert: %s [ %s ]\n", me,
+				f->getrid().c_str(), date.c_str(), f->str().c_str(),
 				f->getlink().c_str());
 		} else if (dynamic_cast<EvRoomOther*>(e.get())) {
 		    auto_ptr<EvRoomOther> f((EvRoomOther*)e.release());
 
-		    fprintf(*c, ":%s NOTICE #%s :Other: %s - %s\n", me,
-			    f->getrid().c_str(), typeid(*(f.get())).name(),
-			    f->str().c_str());
+		    fprintf(*c, ":%s NOTICE #%s :%sOther: %s - %s\n", me,
+			    f->getrid().c_str(), date.c_str(),
+			    typeid(*(f.get())).name(), f->str().c_str());
 		} else if (dynamic_cast<EvError*>(e.get())) {
 		    auto_ptr<EvError> f((EvError*)e.release());
 
-		    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
-			    nick.c_str(), f->str().c_str());
+		    fprintf(*c, ":%s NOTICE %s :%sError: %s\n", me,
+			    nick.c_str(), date.c_str(), f->str().c_str());
 		} else if (dynamic_cast<EvSysMsg*>(e.get())) {
 		    auto_ptr<EvSysMsg> f((EvSysMsg*)e.release());
 
-		    fprintf(*c, ":%s NOTICE %s :System: %s\n", me,
-			    nick.c_str(), f->str().c_str());
+		    fprintf(*c, ":%s NOTICE %s :%sSystem: %s\n", me,
+			    nick.c_str(), date.c_str(), f->str().c_str());
 		} else {
-		    fprintf(*c, ":%s NOTICE %s :Other: %s - %s\n", me,
-			    nick.c_str(), typeid(*(e.get())).name(),
-			    e->str().c_str());
+		    fprintf(*c, ":%s NOTICE %s :%sOther: %s - %s\n", me,
+			    nick.c_str(), date.c_str(),
+			    typeid(*(e.get())).name(), e->str().c_str());
 		}
 	    }
 

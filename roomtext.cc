@@ -105,9 +105,9 @@ namespace xchat {
     }
 
     /*
-     * Strip date, if it is there.
+     * Strip and get date, if it is there.
      */
-    void XChat::stripdate(string &m)
+    void XChat::getdate(string &m, string &date)
     {
 	string n = m, d;
 
@@ -116,11 +116,14 @@ namespace xchat {
 	n.erase(0, n.find_first_of(" "));
 	n.erase(0, n.find_first_not_of(" "));
 
+	date = d;
+
 	d.erase(0, d.find_first_of(":"));
 	d.erase(d.find_last_of(":") + 1);
-	if (d.length() > 1 && d[0] == ':' && d[d.length()-1] == ':') {
+	if (d.length() > 1 && d[0] == ':' && d[d.length()-1] == ':')
 	    m = n;
-	}
+	else
+	    date = "";
     }
 
     /*
@@ -378,13 +381,16 @@ namespace xchat {
 	stripjsescapes(m);
 	striphtml(m);
 	striphtmlent(m);
-	stripdate(m);
+	
+	string date;
+	getdate(m, date);
 
 	if (advert) {
 	    EvRoomAdvert *e = new EvRoomAdvert;
 	    e->s = recode_to_client(m);
 	    e->rid = r.rid;
 	    e->link = link;
+	    e->d = date;
 	    recvq_push(e);
 	    return;
 	}
@@ -401,15 +407,18 @@ namespace xchat {
 		    EvRoomIdlerMsg *e = new EvRoomIdlerMsg;
 		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
+		    e->d = date;
 		    recvq_push(e);
 		} else if (sysnoroom(m)) {
 		    EvSysMsg *e = new EvSysMsg;
 		    e->s = recode_to_client(m);
+		    e->d = date;
 		    recvq_push(e);
 		} else {
 		    EvRoomSysMsg *e = new EvRoomSysMsg;
 		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
+		    e->d = date;
 		    recvq_push(e);
 		}
 	    } else if (target.length() && strtolower_nr(src) != strtolower_nr(nick)) {
@@ -417,6 +426,7 @@ namespace xchat {
 		e->s = recode_to_client(m);
 		e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
 		e->target = (struct x_nick){ target, (n = findnick(target, 0))?n->sex:2 };
+		e->d = date;
 		if (!whisper_in_queue(e->s, e->src.nick))
 		    recvq_push(e);
 	    } else if (strtolower_nr(src) != strtolower_nr(nick)) {
@@ -424,6 +434,7 @@ namespace xchat {
 		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
+		e->d = date;
 		recvq_push(e);
 	    }
 	} else {
@@ -435,12 +446,14 @@ namespace xchat {
 		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		e->src = (struct x_nick){ src, sex };
+		e->d = date;
 		recvq_push(e);
 	    } else if (isleave(r, m, src, sex)) {
 		EvRoomLeave *e = new EvRoomLeave;
 		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		e->src = (struct x_nick){ src, sex };
+		e->d = date;
 		recvq_push(e);
 	    } else if (iskick(r, m, src, reason, who, sex)) {
 		if (who.length()) {
@@ -450,6 +463,7 @@ namespace xchat {
 		    e->src = (struct x_nick){ who, (n = findnick(who, 0))?n->sex:2 };
 		    e->target = (struct x_nick){ src, sex };
 		    e->reason = recode_to_client(reason);
+		    e->d = date;
 		    recvq_push(e);
 		} else {
 		    EvRoomLeave *e = new EvRoomLeave;
@@ -457,12 +471,14 @@ namespace xchat {
 		    e->rid = r.rid;
 		    e->src = (struct x_nick){ src, sex };
 		    e->reason = recode_to_client(reason);
+		    e->d = date;
 		    recvq_push(e);
 		}
 	    } else {
 		EvRoomSysText *e = new EvRoomSysText;
 		e->s = recode_to_client(m);
 		e->rid = r.rid;
+		e->d = date;
 		recvq_push(e);
 	    }
 	}
