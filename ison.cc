@@ -8,8 +8,6 @@ using namespace net;
 namespace xchat {
     /*
      * Check, if a nick is online.
-     * This uses a length of reply from scripts/online_img.php, which may
-     * change, so count with this possibility.
      */
     bool XChat::ison(const string& nick)
     {
