@@ -620,6 +620,16 @@ main_accept:
 		    }
 
 		    x->kick(cmd[1], cmd[2], (cmd.size() > 3)?cmd[3]:"");
+		} else if (cmd[0] == "KILL" && cmd.size() >= 2) {
+		    /*
+		     * Kill user.
+		     */
+		    try {
+			x->kill(cmd[1], (cmd.size() > 2)?cmd[2]:"");
+		    } catch (runtime_error e) {
+			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+				nick.c_str(), e.what());
+		    }
 		} else if (cmd[0] == "TOPIC" && cmd.size() == 2) {
 		    /*
 		     * Output topic

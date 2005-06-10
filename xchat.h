@@ -138,7 +138,8 @@ namespace xchat {
 	    void msg(const string &room, const string &msg);
 	    void whisper(const string &room, const string &target, const string &msg);
 	    void whisper(const string &target, const string &msg);
-	    void kick(const string &room, const string &user, const string &reason);
+	    void kick(const string &room, const string &target, const string &reason);
+	    void kill(const string &target, const string &reason);
 	    void admin(const string &room, const string &newadmin);
 	    void lock(const string &room);
 	    void unlock(const string &room);
@@ -185,8 +186,16 @@ namespace xchat {
 	sendq.push(send_item("", target, msg));
     }
 
-    inline void XChat::kick(const string &room, const string &user, const string &reason) {
-	sendq.push(send_item(room, "~", "/kick " + user + " " + reason));
+    inline void XChat::kick(const string &room, const string &target, const string &reason) {
+	sendq.push(send_item(room, "~", "/kick " + target + " " + reason));
+    }
+
+    inline void XChat::kill(const string &target, const string &reason) {
+	if (rooms.size()) {
+	    sendq.push(send_item(rooms.begin()->first, "~", "/kill " + target + " " + reason));
+	} else {
+	    throw runtime_error("Can't do KILL without channel joined");
+	}
     }
 
     inline void XChat::admin(const string &room, const string &newadmin) {
