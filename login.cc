@@ -65,18 +65,21 @@ namespace xchat {
     void XChat::makeservers()
     {
 	int i;
-	for (i = 1; i <= 10 /* xchat motofoko */; i++) {
-	    vector<sockaddr_uni> sockaddrs;
-	    try {
-		resolve("x" + tostr<int>(i) + ".xchat.cz", "", sockaddrs);
-	    } catch (...) { }
+	
+	for (char *c = "sp"; *c; c++) {
+	    for (i = 1; i <= 10 /* xchat motofoko */; i++) {
+		vector<sockaddr_uni> sockaddrs;
+	        try {
+		    resolve(*c + string("x") + tostr<int>(i) + ".xchat.cz", "", sockaddrs);
+		} catch (...) { }
 
-	    if (!sockaddrs.size())
-		break;
+		if (!sockaddrs.size())
+		    break;
 
-	    for (vector<sockaddr_uni>::iterator i = sockaddrs.begin();
-		    i != sockaddrs.end(); i++)
-		servers.push_back(server(*i));
+		for (vector<sockaddr_uni>::iterator i = sockaddrs.begin();
+			i != sockaddrs.end(); i++)
+		    servers.push_back(server(*i));
+	    }
 	}
 
 	if (i == 1)
