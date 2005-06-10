@@ -47,6 +47,7 @@ namespace xchat {
     const int send_interval = 5;
     const unsigned int max_msg_length = 200;
     extern int idle_interval, recv_interval;
+    extern bool convert_smiles;
 
     /*
      * Load balancing consts

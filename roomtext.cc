@@ -165,6 +165,9 @@ namespace xchat {
 	unsigned int a, b;
 	unsigned int pos = 0;
 
+	if (!convert_smiles)
+	    return;
+
 	while (((a = s.find('*', pos)) != string::npos) &&
 		((b = s.find('*', a + 1)) != string::npos)) {
 	    bool fail = 0;

@@ -394,6 +394,10 @@ main_accept:
 			show_date = atol(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :show_date set to %i\n",
 				me, nick.c_str(), show_date);
+		    } else if (cmd[1] == "CONVERT_SMILES" && cmd.size() == 3) {
+			convert_smiles = atol(cmd[2].c_str());
+			fprintf(*c, ":%s NOTICE %s :convert_smiles set to %i\n",
+				me, nick.c_str(), convert_smiles);
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
 				" count\n", me, nick.c_str());
