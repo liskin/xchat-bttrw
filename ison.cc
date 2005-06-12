@@ -12,13 +12,20 @@ namespace xchat {
     bool XChat::ison(const string& nick)
     {
 	TomiHTTP s;
+
+	int retries = servers.size();
+retry:
 	try {
 	    int ret = s.GET(makeurl("scripts/online_txt.php?nick=" + 
 			TomiHTTP::URLencode(nick)),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting online status");
 	} catch (runtime_error e) {
-	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	    if (retries--) {
+		lastsrv_broke();
+		goto retry;
+	    } else
+		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
 
 	string l;

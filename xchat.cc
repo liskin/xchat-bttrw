@@ -22,7 +22,6 @@ namespace xchat {
      */
     void xchat_init()
     {
-	srand(time(0) ^ getpid());
 	init_recode();
     }
 

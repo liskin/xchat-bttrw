@@ -47,13 +47,17 @@ namespace xchat {
     const int send_interval = 5;
     const unsigned int max_msg_length = 200;
     extern int idle_interval, recv_interval;
-    extern bool convert_smiles;
 
     /*
      * Load balancing consts
      */
     const int tries_to_rest = 5, rest_duration = 1800,
 	  nextchance_interval = 30;
+
+    /*
+     * Bools
+     */
+    extern bool convert_smiles;
 
     /*
      * Recoding
