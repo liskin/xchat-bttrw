@@ -76,6 +76,22 @@ inline string mask(const x_nick &n)
 }
 
 /*
+ * Make star
+ */
+inline string star(const userinfo_t &n)
+{
+    static const char * const stars[] = {
+	"Blue",
+	"Green",
+	"Yellow",
+	"Red",
+	"Black",
+    };
+
+    return stars[n.star - 1] + string(" star");
+}
+
+/*
  * Is it a notice from bttrw?
  */
 bool is_notice(string &s)
@@ -593,26 +609,77 @@ main_accept:
 			    nick.c_str(), cmd[1].c_str());
 		} else if (cmd[0] == "WHOIS" && cmd.size() >= 2) {
 		    /*
-		     * Mangle `WHOIS nick' into `/info nick'
-		     * or
-		     * Mangle `WHOIS nick nick' into `/info2 nick'
-		     * Also, output a simple WHOIS reply.
+		     * Output user WHOIS
 		     */
-		    if (x->rooms.size()) {
-			x->msg(x->rooms.begin()->first,
-				string("/info") + ((cmd.size() != 2)?"2 ":" ")
-				    + cmd[1]);
-		    } else {
-			fprintf(*c, ":%s NOTICE %s :Can't do WHOIS "
-				"without channel joined\n", me, nick.c_str());
-		    }
 
-		    x_nick *n = x->findnick(cmd[1], 0);
-		    if (n)
+		    userinfo_t us = x->userinfo(cmd[1]);
+
+		    if (!us.nick.length()) {
+			fprintf(*c, ":%s 401 %s %s :No such nick/channel\n", me,
+				nick.c_str(), cmd[1].c_str());
+		    } else {
+			x_nick n;
+			n.nick = us.nick;
+			n.sex = us.sex;
+			
+			string info = us.name;
+			
+			if (us.surname != "") {
+			    if (info != "")
+				info += " ";
+			    info += us.surname;
+			}
+			
+			if (us.age != 0) {
+			    if (info != "")
+				info += " ";
+			    info += "(" + tostr<int>(us.age) + ")";
+			}
+			
+			if (us.email != "") {
+			    if (info != "")
+				info += " ";
+			    info += "(" + us.email + ")";
+			}
+			
+			if (info != "")
+			    info += " ";
+			info += "created: " + us.nick_created + ", ";
+			
+			info += "wasted: " +
+			    tostr_float<double>(us.time_wasted / 3600.0, 2) +
+			    " h, ";
+
+			info += "TOP: " + us.top_pos;
+
 			fprintf(*c, ":%s 311 %s %s %s %s * :%s\n", me,
-				nick.c_str(), n->nick.c_str(),
-				username(*n).c_str(), host(*n).c_str(),
-				"xchat.cz user");
+				nick.c_str(), cmd[1].c_str(),
+				username(n).c_str(), host(n).c_str(),
+				info.c_str());
+
+			string rooms = "";
+			if (us.rooms.size()!=0) {
+			    for (vector<userinfo_room>::iterator i = us.rooms.begin(); 
+				i != us.rooms.end(); i++) {
+				if (rooms != "")
+				    rooms += " ";
+				string name = i->name;
+				for (string::iterator j = name.begin(); j != name.end(); j++)
+				    if (*j == ' ')
+					*j = '_';
+				rooms += "#" + i->rid + "(" + name + "-" + i->idle + ")";
+			    }
+			    fprintf(*c, ":%s 319 %s %s :%s\n", me,
+				nick.c_str(), cmd[1].c_str(),
+				rooms.c_str());
+			}
+			if (us.star || us.cert)
+			    fprintf(*c, ":%s 313 %s %s :is an %s%s%s\n", me,
+				    nick.c_str(), cmd[1].c_str(),
+				    (us.star)?star(us).c_str():"",
+				    (us.star && us.cert)?", ":"",
+				    (us.cert)?"certified":"");
+		    }
 		    fprintf(*c, ":%s 318 %s %s :End of /WHOIS list.\n", me,
 			    nick.c_str(), cmd[1].c_str());
 		} else if (cmd[0] == "KICK" && cmd.size() >= 3) {

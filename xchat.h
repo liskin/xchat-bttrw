@@ -35,6 +35,27 @@ namespace xchat {
     };
     typedef map<string,room> rooms_t;
     typedef vector<pair<string, string> > listout_t;
+    
+    struct userinfo_room {
+	string rid;
+	string idle;
+	string name;
+    };
+    struct userinfo_t {
+	string nick;
+	string name;
+	string surname;
+	int age;
+	bool cert;
+	int sex;
+	int star;
+	string email;
+	string nick_created;
+	int time_wasted;
+	string last_online;
+	string top_pos;
+	vector<userinfo_room> rooms;
+    };
 }
 
 #include "events.h"
@@ -155,6 +176,7 @@ namespace xchat {
 
 	    void list(listout_t &listout);
 	    bool ison(const string& nick);
+	    userinfo_t userinfo(const string& nick);
     };
 
     inline void XChat::recvq_push(Event *e) {
