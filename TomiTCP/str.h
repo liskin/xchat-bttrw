@@ -80,7 +80,7 @@ namespace std {
     {
 	stringstream s;
 	if (precision != -1)
-	    s << setprecision(precision);
+	    s << fixed << setprecision(precision);
 	s << a;
 	return s.str();
     }
