@@ -124,14 +124,21 @@ retry3:
 		    if (l.find("</select>") != string::npos)
 			break;
 
-		    unsigned int pos;
+		    unsigned int pos, pos2;
 		    l.erase(0, l.find('"') + 1);
 		    string nick(l, 0, l.find('"'));
 		    l.erase(0, nick.length() + 1);
 
 		    bool muz = 0;
-		    if ((pos = l.find(")</option>")) != string::npos && pos != 0) {
-			muz = (l[pos-1] == 'M');
+		    if ((pos = l.find(")</option>")) != string::npos && pos != 0 &&
+			    (pos2 = l.find_last_of('(', pos)) != string::npos) {
+			string sex(l, pos2 + 1, pos - pos2 - 1);
+			if (sex == "M")
+			    muz = 1;
+			else if (sex == "Ž")
+			    muz = 0;
+			else
+			    continue;
 		    }
 
 		    if (nick != "~" && nick != "!")
