@@ -124,25 +124,34 @@ retry3:
 		    if (l.find("</select>") != string::npos)
 			break;
 
-		    unsigned int pos, pos2;
-		    l.erase(0, l.find('"') + 1);
-		    string nick(l, 0, l.find('"'));
-		    l.erase(0, nick.length() + 1);
+		    unsigned int a, b = 0;
+		    static string pat1 = "<option ", pat2 = "</option>";
+		    while ((a = l.find(pat1, b)) != string::npos &&
+			    (b = l.find(pat2, a)) != string::npos) {
+			string o(l, a, b - a + pat2.length());
 
-		    bool muz = 0;
-		    if ((pos = l.find(")</option>")) != string::npos && pos != 0 &&
-			    (pos2 = l.find_last_of('(', pos)) != string::npos) {
-			string sex(l, pos2 + 1, pos - pos2 - 1);
-			if (sex == "M")
-			    muz = 1;
-			else if (sex == "Ž")
-			    muz = 0;
-			else
-			    continue;
+			unsigned int pos, pos2;
+			static string pat = "value=\"";
+			o.erase(0, o.find(pat));
+			o.erase(0, pat.length());
+			string nick(o, 0, o.find('"'));
+			o.erase(0, nick.length() + 1);
+
+			bool muz = 0;
+			if ((pos = o.find(")</option>")) != string::npos && pos != 0 &&
+				(pos2 = o.find_last_of('(', pos)) != string::npos) {
+			    string sex(o, pos2 + 1, pos - pos2 - 1);
+			    if (sex == "M")
+				muz = 1;
+			    else if (sex == "Ž")
+				muz = 0;
+			    else
+				continue;
+			}
+
+			if (nick != "~" && nick != "!")
+			    r.nicklist[strtolower_nr(nick)] = (struct x_nick){nick, muz};
 		    }
-
-		    if (nick != "~" && nick != "!")
-			r.nicklist[strtolower_nr(nick)] = (struct x_nick){nick, muz};
 		}
 	    }
 
