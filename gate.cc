@@ -939,13 +939,6 @@ main_accept:
 			fprintf(*c, ":%s MODE #%s -o+o %s %s\n", me,
 				f->getrid().c_str(), f->getbefore().c_str(),
 				f->getnow().c_str());
-
-		    if (voiced_girls) {
-			x_nick *n = x->findnick(f->getbefore(), 0);
-			if (n && n->sex == 0)
-			    fprintf(*c, ":%s MODE #%s +v %s\n", me,
-				    f->getrid().c_str(), f->getbefore().c_str());
-		    }
 		} else if (dynamic_cast<EvRoomLockChange*>(e.get())) {
 		    auto_ptr<EvRoomLockChange> f((EvRoomLockChange*)e.release());
 
