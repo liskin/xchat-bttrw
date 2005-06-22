@@ -11,7 +11,7 @@ namespace xchat {
      * Init variables, connect to the xchat.cz network.
      */
     XChat::XChat(const string& user, const string& pass)
-	: nick(user), last_sent(0), last_recv(0), lastsrv(0)
+	: last_sent(0), last_recv(0), lastsrv(0)
     {
 	srand(time(0) ^ getpid());
 	makeservers();
@@ -46,6 +46,14 @@ retry:
 
 	if (!uid.length() || !sid.length())
 	    throw runtime_error("Parse error while logging in: " + l);
+
+	me.nick = user;
+	me.sex = 2;
+	try {
+	    userinfo_t ui = userinfo(user);
+	    if (ui.nick.length())
+		me.sex = ui.sex;
+	} catch (...) {	}
     }
 
     /*

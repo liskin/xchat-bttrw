@@ -120,7 +120,8 @@ namespace xchat {
 	    vector<server> servers;
 	    void makeservers();
 
-	    string uid, sid, nick;
+	    string uid, sid;
+	    x_nick me;
 	    rooms_t rooms;
 
 	    time_t last_sent, last_recv;

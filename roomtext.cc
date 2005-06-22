@@ -405,7 +405,7 @@ namespace xchat {
 	    unsmilize(m);
 
 	    if (strtolower_nr(src) == "system" &&
-		    strtolower_nr(target) == strtolower_nr(nick)) {
+		    strtolower_nr(target) == strtolower_nr(me.nick)) {
 		if (checkidle(wstrip_nr(m))) {
 		    EvRoomIdlerMsg *e = new EvRoomIdlerMsg;
 		    e->s = recode_to_client(m);
@@ -424,7 +424,7 @@ namespace xchat {
 		    e->d = date;
 		    recvq_push(e);
 		}
-	    } else if (target.length() && strtolower_nr(src) != strtolower_nr(nick)) {
+	    } else if (target.length() && strtolower_nr(src) != strtolower_nr(me.nick)) {
 		EvWhisper *e = new EvWhisper;
 		e->s = recode_to_client(m);
 		e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
@@ -432,7 +432,7 @@ namespace xchat {
 		e->d = date;
 		if (!whisper_in_queue(e->s, e->src.nick))
 		    recvq_push(e);
-	    } else if (strtolower_nr(src) != strtolower_nr(nick)) {
+	    } else if (strtolower_nr(src) != strtolower_nr(me.nick)) {
 		EvRoomMsg *e = new EvRoomMsg;
 		e->s = recode_to_client(m);
 		e->rid = r.rid;

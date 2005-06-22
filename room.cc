@@ -155,7 +155,7 @@ retry3:
 		}
 	    }
 
-	    r.nicklist[strtolower_nr(nick)] = (struct x_nick){nick, 2};
+	    r.nicklist[strtolower_nr(me.nick)] = me;
 	}
 	s.close();
 
@@ -445,7 +445,7 @@ retry:
 	    e->s = kicker + " kicked you because: " + recode_to_client(kickmsg);
 	    e->rid = r.rid;
 	    e->src = (struct x_nick){ kicker, (n = findnick(kicker, 0))?n->sex:2 };
-	    e->target = (struct x_nick){ nick, 2 };
+	    e->target = me;
 	    e->reason = recode_to_client(kickmsg);
 	    recvq_push(e);
 	    rooms.erase(e->rid);

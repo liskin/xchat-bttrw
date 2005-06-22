@@ -443,11 +443,10 @@ main_accept:
 			    x->join(chan);
 
 			    fprintf(*c, ":%s JOIN #%s\n",
-				    mask((struct x_nick){ nick, 2 }).c_str(),
+				    mask(x->me).c_str(),
 				    chan.c_str());
 			    fprintf(*c, ":%s 332 %s #%s :%s\n", me, nick.c_str(), chan.c_str(),
 				    (x->rooms[chan].name + " - " + x->rooms[chan].desc).c_str());
-
 			    // output userlist (NAMES)
 			    string tmp; int i; nicklist_t::iterator j;
 			    for (i = 1, j = x->rooms[chan].nicklist.begin();
@@ -468,6 +467,11 @@ main_accept:
 			    }
 			    fprintf(*c, ":%s 366 %s #%s :End of /NAMES list.\n", me,
 				    nick.c_str(), chan.c_str());
+
+			    if (x->me.sex == 0 && voiced_girls)
+				fprintf(*c, ":%s MODE #%s +v %s\n", me,
+					chan.c_str(), nick.c_str());
+
 			} catch (runtime_error e) {
 			    fprintf(*c, ":%s 403 %s #%s :Could not join channel\n",
 				    me, nick.c_str(), chan.c_str());
@@ -490,7 +494,7 @@ main_accept:
 			    try {
 				x->leave(chan);
 				fprintf(*c, ":%s PART #%s :\n",
-					mask((struct x_nick){ nick, 2 }).c_str(),
+					mask(x->me).c_str(),
 					chan.c_str());
 			    } catch (runtime_error e) {
 				fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
@@ -935,6 +939,13 @@ main_accept:
 			fprintf(*c, ":%s MODE #%s -o+o %s %s\n", me,
 				f->getrid().c_str(), f->getbefore().c_str(),
 				f->getnow().c_str());
+
+		    if (voiced_girls) {
+			x_nick *n = x->findnick(f->getbefore(), 0);
+			if (n && n->sex == 0)
+			    fprintf(*c, ":%s MODE #%s +v %s\n", me,
+				    f->getrid().c_str(), f->getbefore().c_str());
+		    }
 		} else if (dynamic_cast<EvRoomLockChange*>(e.get())) {
 		    auto_ptr<EvRoomLockChange> f((EvRoomLockChange*)e.release());
 

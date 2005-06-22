@@ -103,6 +103,10 @@ namespace xchat {
     x_nick* XChat::findnick(string src, room **r)
     {
 	strtolower(src);
+
+	if (strtolower_nr(me.nick) == src)
+	    return &me;
+
 	for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
 	    nicklist_t::iterator n = i->second.nicklist.find(src);
 	    if (n != i->second.nicklist.end()) {
@@ -202,7 +206,7 @@ namespace xchat {
 	if (idle_interval && sendq.empty())
 	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
 		if (time(0) - i->second.last_sent >= idle_interval) {
-		    sendq.push(send_item(i->first, nick, genidle()));
+		    sendq.push(send_item(i->first, me.nick, genidle()));
 		}
 	    }
     }
