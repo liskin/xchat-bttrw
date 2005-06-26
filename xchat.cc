@@ -104,9 +104,6 @@ namespace xchat {
     {
 	strtolower(src);
 
-	if (strtolower_nr(me.nick) == src)
-	    return &me;
-
 	for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
 	    nicklist_t::iterator n = i->second.nicklist.find(src);
 	    if (n != i->second.nicklist.end()) {
@@ -114,6 +111,13 @@ namespace xchat {
 		    *r = &i->second;
 		return &n->second;
 	    }
+	}
+
+	if (strtolower_nr(me.nick) == src) {
+	    static room tmpr;
+	    if (r)
+		*r = &tmpr;
+	    return &me;
 	}
 
 	return 0;

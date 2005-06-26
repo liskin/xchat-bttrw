@@ -495,8 +495,11 @@ retry:
 	 *  - it begins with "/msg "
 	 */
 	last_sent = time(0);
-	if (msg.length() && ((msg[0] != '/' && isprint(msg[0])) || !msg.compare(0, 3, "/s ") ||
-		!msg.compare(0, 3, "/m ") || !msg.compare(0, 5, "/msg "))) {
+	if (msg.length() &&
+		((msg[0] != '/' && isprint(msg[0])) ||
+		 (!msg.compare(0, 3, "/s ") && isprint(msg[3])) ||
+		 (!msg.compare(0, 3, "/m ") && isprint(msg[3])) ||
+		 (!msg.compare(0, 5, "/msg ") && isprint(msg[5])))) {
 	    r.last_sent = last_sent;
 	}
     }
