@@ -490,16 +490,9 @@ retry:
 	 *  and
 	 *  - it does not begin with "/" and it does not begin with a
 	 *    nonprintable character
-	 *  - it begins with "/s "
-	 *  - it begins with "/m "
-	 *  - it begins with "/msg "
 	 */
 	last_sent = time(0);
-	if (msg.length() &&
-		((msg[0] != '/' && isprint(msg[0])) ||
-		 (!msg.compare(0, 3, "/s ") && isprint(msg[3])) ||
-		 (!msg.compare(0, 3, "/m ") && isprint(msg[3])) ||
-		 (!msg.compare(0, 5, "/msg ") && isprint(msg[5])))) {
+	if (msg.length() && msg[0] != '/' && isprint(msg[0])) {
 	    r.last_sent = last_sent;
 	}
     }
