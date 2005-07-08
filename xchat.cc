@@ -67,7 +67,7 @@ namespace xchat {
 	if (good.size())
 	    return good[rand() % good.size()];
 	else {
-	    EvError *e = new EvError;
+	    EvNeedRelogin *e = new EvNeedRelogin;
 	    e->s = "All servers considered bad, cleaning.";
 	    recvq_push(e);
 

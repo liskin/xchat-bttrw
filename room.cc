@@ -426,7 +426,8 @@ retry:
 	 * Push messages to recvq in reverse.
 	 */
 	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++)
-	    recvq_parse_push(*i, r);
+	    if (i->length())
+		recvq_parse_push(*i, r);
 
 	/*
 	 * Emit Admin/LockChange

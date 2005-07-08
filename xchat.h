@@ -120,7 +120,7 @@ namespace xchat {
 	    vector<server> servers;
 	    void makeservers();
 
-	    string uid, sid;
+	    string uid, sid, pass;
 	    x_nick me;
 	    rooms_t rooms;
 
@@ -137,6 +137,8 @@ namespace xchat {
 
 	    XChat(const string& user, const string& pass);
 	    ~XChat();
+	    void login(const string& user, const string& pass);
+	    void relogin();
 
 	    void join(const string& rid);
 	    void leave(string rid);

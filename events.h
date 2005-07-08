@@ -152,6 +152,12 @@ namespace xchat {
 	    virtual ~EvError() {}
     };
     
+    class EvNeedRelogin : public EvError {
+	    friend class XChat;
+	public:
+	    virtual ~EvNeedRelogin() {}
+    };
+    
     class EvSysMsg : public Event {
 	    friend class XChat;
 	public:

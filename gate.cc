@@ -962,6 +962,9 @@ main_accept:
 
 		    fprintf(*c, ":%s NOTICE %s :%sError: %s\n", me,
 			    nick.c_str(), date.c_str(), f->str().c_str());
+
+		    if (dynamic_cast<EvNeedRelogin*>(f.get()))
+			x->relogin();
 		} else if (dynamic_cast<EvSysMsg*>(e.get())) {
 		    auto_ptr<EvSysMsg> f((EvSysMsg*)e.release());
 

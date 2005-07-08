@@ -16,6 +16,20 @@ namespace xchat {
 	srand(time(0) ^ getpid());
 	makeservers();
 
+	login(user, pass);
+
+	this->pass = pass;
+	me.nick = user;
+	me.sex = 2;
+	try {
+	    userinfo_t ui = userinfo(user);
+	    if (ui.nick.length())
+		me.sex = ui.sex;
+	} catch (...) {	}
+    }
+
+    void XChat::login(const string& user, const string& pass)
+    {
 	TomiHTTP s;
 
 	int retries = servers.size();
@@ -46,14 +60,17 @@ retry:
 
 	if (!uid.length() || !sid.length())
 	    throw runtime_error("Parse error while logging in: " + l);
+    }
 
-	me.nick = user;
-	me.sex = 2;
+    void XChat::relogin()
+    {
 	try {
-	    userinfo_t ui = userinfo(user);
-	    if (ui.nick.length())
-		me.sex = ui.sex;
-	} catch (...) {	}
+	    login(me.nick, pass);
+	} catch (runtime_error e) {
+	    EvError *f = new EvError;
+	    f->s = e.what();
+	    recvq_push(f);
+	}
     }
 
     /*
