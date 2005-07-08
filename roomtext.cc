@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <cctype>
 #include <iostream>
 #include "xchat.h"
 #include "smiles.h"
@@ -74,13 +75,22 @@ namespace xchat {
 	    int smile = 0;
 	    bool br = 0;
 
-	    static string pat = "<img src=\"//img.centrum.cz/xs/";
-	    if (!s.compare(a, pat.length(), pat))
-		smile = atol(string(s, a + pat.length()).c_str());
+	    {
+		static string pat = "<img src=\"http://img.centrum.cz/",
+		    pat2 = ".gif\"";
+		unsigned int b;
+		if (!s.compare(a, pat.length(), pat) &&
+			(b = s.find(pat2, a)) != string::npos) {
+		    while (--b > a + pat.length() && isdigit(s[b])); b++;
+		    smile = atol(string(s, b).c_str());
+		}
+	    }
 	    
-	    static string pat2 = "<br";
-	    if (!s.compare(a, pat2.length(), pat2))
-		br = 1;
+	    {
+		static string pat = "<br";
+		if (!s.compare(a, pat.length(), pat))
+		    br = 1;
+	    }
 
 	    s.erase(s.begin() + a, s.begin() + a + b + 1);
 	    pos = a;
