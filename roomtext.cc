@@ -9,7 +9,7 @@
 
 namespace xchat {
     /*
-     * Recode to client_charset
+     * Recode from UTF-8 to client_charset
      */
     string XChat::recode_to_client(string s) {
 	if (!client_charset.length())
@@ -29,6 +29,23 @@ namespace xchat {
 	    }
 
 	    return recode(s, "UTF-8", client_charset);
+	} catch (runtime_error er) {
+	    EvError *e = new EvError;
+	    e->s = er.what();
+	    recvq_push(e);
+	    return s;
+	}
+    }
+
+    /*
+     * Recode from client_charset to UTF-8
+     */
+    string XChat::recode_from_client(string s) {
+	if (!client_charset.length())
+	    return s;
+
+	try {
+	    return recode(s, client_charset, "UTF-8");
 	} catch (runtime_error er) {
 	    EvError *e = new EvError;
 	    e->s = er.what();

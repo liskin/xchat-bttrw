@@ -145,6 +145,16 @@ namespace xchat {
 	    virtual const bool & getnow() { return now; }
 	    virtual ~EvRoomLockChange() {}
     };
+
+    class EvRoomTopicChange : public EvRoomOther {
+	    friend class XChat;
+	protected:
+	    string name, desc;
+	public:
+	    virtual const string & getname() { return name; }
+	    virtual const string & getdesc() { return desc; }
+	    virtual ~EvRoomTopicChange() {}
+    };
     
     class EvError : public Event {
 	    friend class XChat;

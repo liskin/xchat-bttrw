@@ -951,6 +951,11 @@ main_accept:
 			fprintf(*c, ":%s NOTICE #%s :%sAdvert: %s [ %s ]\n", me,
 				f->getrid().c_str(), date.c_str(), f->str().c_str(),
 				f->getlink().c_str());
+		} else if (dynamic_cast<EvRoomTopicChange*>(e.get())) {
+		    auto_ptr<EvRoomTopicChange> f((EvRoomTopicChange*)e.release());
+		
+		    fprintf(*c, ":%s TOPIC #%s :%s\n", me, f->getrid().c_str(),
+    			(f->getname() + " - " + f->getdesc()).c_str());
 		} else if (dynamic_cast<EvRoomOther*>(e.get())) {
 		    auto_ptr<EvRoomOther> f((EvRoomOther*)e.release());
 

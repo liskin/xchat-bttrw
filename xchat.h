@@ -28,6 +28,7 @@ namespace xchat {
 	int l;
 	nicklist_t nicklist;
 	time_t last_sent;
+	time_t last_roominfo;
 	string admin;
 	bool locked;
 	string name, desc;
@@ -62,12 +63,14 @@ namespace xchat {
 
 namespace xchat {
     /*
-     * Flood protection, refresh rate, max msg length and idle protection
+     * Flood protection, refresh rate, max msg length, idle protection
+     * and roominfo refresh rate
      * 720 is optimal for flood protection
      */
     const int send_interval = 5;
     const unsigned int max_msg_length = 200;
     extern int idle_interval, recv_interval;
+    const int roominfo_interval = 15 * 60;
 
     /*
      * Load balancing consts
@@ -96,12 +99,7 @@ namespace xchat {
 	public:
 	    string room, target, msg;
 	    send_item(const string& r, const string& t, const string& m) :
-		room(r), target(t) {
-		    if (client_charset.length())
-			msg = recode(m, client_charset, "UTF-8");
-		    else
-			msg = m;
-		}
+		room(r), target(t), msg(m) { }
     };
 
     class server {
@@ -134,6 +132,7 @@ namespace xchat {
 	    void recvq_parse_push(string m, room& r);
 	    Event * recvq_pop();
 	    string recode_to_client(string s);
+	    string recode_from_client(string s);
 
 	    XChat(const string& user, const string& pass);
 	    ~XChat();
@@ -142,6 +141,7 @@ namespace xchat {
 
 	    void join(const string& rid);
 	    void leave(string rid);
+	    void getroominfo(room& r);
 	    void getmsg(room& r);
 	    void putmsg(room& r, const string& target, const string& msg);
 	    void setdesc(const string& rid, const string& desc);
@@ -202,27 +202,29 @@ namespace xchat {
     }
     
     inline void XChat::msg(const string &room, const string &msg) {
-	sendq.push(send_item(room, "~", msg));
+	sendq.push(send_item(room, "~", recode_from_client(msg)));
     }
 
     inline void XChat::whisper(const string &room, const string &target, const string &msg) {
-	sendq.push(send_item(room, target, msg));
+	sendq.push(send_item(room, target, recode_from_client(msg)));
     }
     
     inline void XChat::whisper(const string &target, const string &msg) {
 	/*
 	 * final decision on target room will be made in do_sendq
 	 */
-	sendq.push(send_item("", target, msg));
+	sendq.push(send_item("", target, recode_from_client(msg)));
     }
 
     inline void XChat::kick(const string &room, const string &target, const string &reason) {
-	sendq.push(send_item(room, "~", "/kick " + target + " " + reason));
+	sendq.push(send_item(room, "~", "/kick " + target + " " +
+		    recode_from_client(reason)));
     }
 
     inline void XChat::kill(const string &target, const string &reason) {
 	if (rooms.size()) {
-	    sendq.push(send_item(rooms.begin()->first, "~", "/kill " + target + " " + reason));
+	    sendq.push(send_item(rooms.begin()->first, "~", "/kill " + target +
+			" " + recode_from_client(reason)));
 	} else {
 	    throw runtime_error("Can't do KILL without channel joined");
 	}

@@ -7,7 +7,7 @@
 
 using namespace net;
 
-void parse_updateinfo(string s, string &admin, bool &locked)
+static void parse_updateinfo(string s, string &admin, bool &locked)
 {
     s.erase(0, s.find(',') + 1);
     string slocked(s, 0, s.find(','));
@@ -46,13 +46,14 @@ namespace xchat {
 	r.l = -1;
 	r.rid = rid;
 	r.last_sent = time(0) - idle_interval + 10;
+	r.last_roominfo = time(0);
 
 	int ret, retries;
 
 	retries = servers.size();
 retry1:
 	try {
-	    ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&rid="+rid),0);
+	    ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&rid=" + rid),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while joining channel");
 	} catch (runtime_error e) {
@@ -79,7 +80,7 @@ retry1:
 	retries = servers.size();
 retry2:
 	try {
-	    ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid="+rid),0);
+	    ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid=" + rid),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while joining channel");
 	} catch (runtime_error e) {
@@ -108,7 +109,7 @@ retry2:
 	retries = servers.size();
 retry3:
 	try {
-	    ret = s.GET(makeurl2("modchat?op=textpageng&skin=2&js=1&rid="+rid),0);
+	    ret = s.GET(makeurl2("modchat?op=textpageng&skin=2&js=1&rid=" + rid),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while joining channel");
 	} catch (runtime_error e) {
@@ -159,16 +160,61 @@ retry3:
 	}
 	s.close();
 
-	retries = servers.size();
-retry4:
+	getroominfo(r);
+
+	if (r.l != -1) {
+	    rooms[rid] = r;
+	    return;
+	}
+
+	throw runtime_error("Parse error");
+    }
+
+    /*
+     * Leave room.
+     */
+    void XChat::leave(string rid)
+    {
+	rooms.erase(rid);
+	
+	TomiHTTP s;
+
+	int retries = servers.size();
+retry:
 	try {
-	    ret = s.GET(makeurl2("modchat?op=roominfo&skin=2&rid="+rid),0);
+	    int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&js=1&menuaction=leave"
+			"&leftroom=" + rid),0);
+	    if (ret != 200)
+		throw runtime_error("Not HTTP 200 Ok while parting channel");
+	} catch (runtime_error e) {
+	    if (retries--) {
+		lastsrv_broke();
+		goto retry;
+	    } else
+		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
+    }
+
+    /*
+     * Get room info.
+     */
+    void XChat::getroominfo(room& r)
+    {
+	TomiHTTP s;
+	string l;
+
+	int ret, retries;
+
+	retries = servers.size();
+retry:
+	try {
+	    ret = s.GET(makeurl2("modchat?op=roominfo&skin=2&rid=" + r.rid),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while joining channel");
 	} catch (runtime_error e) {
 	    if (retries--) {
 		lastsrv_broke();
-		goto retry4;
+		goto retry;
 	    } else
 		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
@@ -208,42 +254,11 @@ retry4:
 		wstrip(l);
 		stringstream ss(l);
 		string admin;
+		r.admins.clear();
 		while (ss >> admin)
 		    r.admins.push_back(strtolower_nr(admin));
 		continue;
 	    }
-	}
-
-	if (r.l != -1) {
-	    rooms[rid] = r;
-	    return;
-	}
-
-	throw runtime_error("Parse error");
-    }
-
-    /*
-     * Leave room.
-     */
-    void XChat::leave(string rid)
-    {
-	rooms.erase(rid);
-	
-	TomiHTTP s;
-
-	int retries = servers.size();
-retry:
-	try {
-	    int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&js=1&menuaction=leave"
-			"&leftroom="+rid),0);
-	    if (ret != 200)
-		throw runtime_error("Not HTTP 200 Ok while parting channel");
-	} catch (runtime_error e) {
-	    if (retries--) {
-		lastsrv_broke();
-		goto retry;
-	    } else
-		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
     }
 
@@ -509,7 +524,7 @@ retry:
 retry:
 	try {
 	    int ret = s.POST(makeurl2("modchat"),"op=rightadmin&skin=2&rid=" + rid +
-		    "&desc=" + TomiHTTP::URLencode(desc), 0);
+		    "&desc=" + TomiHTTP::URLencode(recode_from_client(desc)), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while setting room desc");
 	} catch (runtime_error e) {

@@ -213,6 +213,34 @@ namespace xchat {
 		    sendq.push(send_item(i->first, me.nick, genidle()));
 		}
 	    }
+
+	// roominfo reload
+	for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
+	    if (time(0) - i->second.last_roominfo >= roominfo_interval) {
+		room old = i->second;
+		
+		getroominfo(i->second);
+
+		/*
+		 * Check for room name and description change (resulting in
+		 * one EvRoomTopicChange event)
+		 */
+		if (old.name != i->second.name || old.desc != i->second.desc) {
+		    EvRoomTopicChange *e = new EvRoomTopicChange;
+		    e->rid = i->first;
+		    e->name = i->second.name;
+		    e->desc = i->second.desc;
+		    recvq_push(e);
+		}
+
+		/*
+		 * Check for permanent admins change - TODO
+		 */
+		
+		i->second.last_roominfo = time(0);
+	    }
+	}
+
     }
 
     /*
