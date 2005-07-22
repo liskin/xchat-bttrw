@@ -33,6 +33,14 @@ static void parse_updateinfo(string s, string &admin, bool &locked)
 	admin = "";
 }
 
+static bool tryagainplease(const string &l)
+{
+    static string pat = "chvilku strpení prosím</body></html>";
+    if (l.find(pat) != string::npos)
+	return true;
+    return false;
+}
+
 namespace xchat {
     /*
      * Join room and get all needed info about it
@@ -74,6 +82,14 @@ retry1:
 		unsmilize(err);
 		throw runtime_error(err);
 	    }
+
+	    if (tryagainplease(l)) {
+		if (retries--) {
+		    lastsrv_broke();
+		    goto retry1;
+		} else
+		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
+	    }
 	}
 	s.close();
 	
@@ -102,6 +118,14 @@ retry2:
 	    static string pat2 = "update_info('";
 	    if ((a = l.find(pat2)) != string::npos) {
 		parse_updateinfo(string(l, a + pat2.length()), r.admin, r.locked);
+	    }
+	    
+	    if (tryagainplease(l)) {
+		if (retries--) {
+		    lastsrv_broke();
+		    goto retry2;
+		} else
+		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
 	    }
 	}
 	s.close();
@@ -155,10 +179,17 @@ retry3:
 		    }
 		}
 	    }
-
-	    r.nicklist[strtolower_nr(me.nick)] = me;
+	    
+	    if (tryagainplease(l)) {
+		if (retries--) {
+		    lastsrv_broke();
+		    goto retry3;
+		} else
+		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
+	    }
 	}
 	s.close();
+	r.nicklist[strtolower_nr(me.nick)] = me;
 
 	getroominfo(r);
 
@@ -192,6 +223,17 @@ retry:
 		goto retry;
 	    } else
 		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
+
+	string l;
+	while (s.getline(l)) {
+	    if (tryagainplease(l)) {
+		if (retries--) {
+		    lastsrv_broke();
+		    goto retry;
+		} else
+		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
+	    }
 	}
     }
 
@@ -258,6 +300,14 @@ retry:
 		while (ss >> admin)
 		    r.admins.push_back(strtolower_nr(admin));
 		continue;
+	    }
+
+	    if (tryagainplease(l)) {
+		if (retries--) {
+		    lastsrv_broke();
+		    goto retry;
+		} else
+		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
 	    }
 	}
     }
@@ -432,9 +482,9 @@ retry:
 		}
 	    }
 
-	    static string pat3 = "chvilku strpení prosím</body></html>";
-	    if (l.find(pat3) != string::npos) {
+	    if (tryagainplease(l)) {
 		r.l = old_l;
+		throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
 	    }
 	}
 
@@ -501,6 +551,11 @@ retry:
 	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
 
+	string l;
+	while (s.getline(l))
+	    if (tryagainplease(l))
+		throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
+
 	/*
 	 * Update last_sent, if
 	 *  - it has a nonzero length
@@ -534,6 +589,17 @@ retry:
 		goto retry;
 	    } else
 		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
+	
+	string l;
+	while (s.getline(l)) {
+	    if (tryagainplease(l)) {
+		if (retries--) {
+		    lastsrv_broke();
+		    goto retry;
+		} else
+		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
+	    }
 	}
     }
 }
