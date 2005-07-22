@@ -106,17 +106,20 @@ retry2:
 	    } else
 		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
+	bool lastline = false, updateinfo = false;
 	while (s.getline(l)) {
 	    static string pat1 = "&inc=1&last_line=";
 	    unsigned int a, b;
 	    if ((a = l.find(pat1)) != string::npos &&
 		    (b = l.find('"', a + pat1.length())) != string::npos) {
+		lastline = true;
 		r.l = atol(string(l, a + pat1.length(), b - a - pat1.length()).c_str());
 		continue;
 	    }
 
 	    static string pat2 = "update_info('";
 	    if ((a = l.find(pat2)) != string::npos) {
+		updateinfo = true;
 		parse_updateinfo(string(l, a + pat2.length()), r.admin, r.locked);
 	    }
 	    
@@ -127,6 +130,13 @@ retry2:
 		} else
 		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
 	    }
+	}
+	if (!lastline || !updateinfo) {
+	    if (retries--) {
+		lastsrv_broke();
+		goto retry2;
+	    } else
+		throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
 	}
 	s.close();
 
@@ -309,6 +319,14 @@ retry:
 		} else
 		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
 	    }
+	}
+
+	if (!r.name.length() && !r.desc.length() && !r.admins.size()) {
+	    if (retries--) {
+		lastsrv_broke();
+		goto retry;
+	    } else
+		throw runtime_error("No roominfo - " + lastsrv_broke());
 	}
     }
 
