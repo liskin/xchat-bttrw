@@ -283,6 +283,7 @@ retry:
 	EvRoomAdminChange *erac = 0;
 	EvRoomLockChange *erlc = 0;
 
+	int old_l = r.l;
 	r.l = -1;
 	string l;
 	bool expect_apos = false;
@@ -433,7 +434,7 @@ retry:
 
 	    static string pat3 = "chvilku strpení prosím</body></html>";
 	    if (l.find(pat3) != string::npos) {
-		r.l = -2;
+		r.l = old_l;
 	    }
 	}
 

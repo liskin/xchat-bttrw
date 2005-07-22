@@ -472,12 +472,14 @@ namespace xchat {
 	    string reason, who;
 
 	    if (isjoin(r, m, src, sex)) {
-		EvRoomJoin *e = new EvRoomJoin;
-		e->s = recode_to_client(m);
-		e->rid = r.rid;
-		e->src = (struct x_nick){ src, sex };
-		e->d = date;
-		recvq_push(e);
+		if (strtolower_nr(src) != strtolower_nr(me.nick)) {
+		    EvRoomJoin *e = new EvRoomJoin;
+		    e->s = recode_to_client(m);
+		    e->rid = r.rid;
+		    e->src = (struct x_nick){ src, sex };
+		    e->d = date;
+		    recvq_push(e);
+		}
 	    } else if (isleave(r, m, src, sex)) {
 		EvRoomLeave *e = new EvRoomLeave;
 		e->s = recode_to_client(m);
