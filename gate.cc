@@ -939,6 +939,24 @@ main_accept:
 			fprintf(*c, ":%s MODE #%s -o+o %s %s\n", me,
 				f->getrid().c_str(), f->getbefore().c_str(),
 				f->getnow().c_str());
+		} else if (dynamic_cast<EvRoomAdminsChange*>(e.get())) {
+		    auto_ptr<EvRoomAdminsChange> f((EvRoomAdminsChange*)e.release());
+
+		    map<string, room>::iterator r = x->rooms.find(f->getrid());
+		    if (r != x->rooms.end()) {
+			for (vector<string>::const_iterator i = f->getadded().begin();
+				i != f->getadded().end(); i++)
+			    if (r->second.nicklist.find(*i) != r->second.nicklist.end())
+				fprintf(*c, ":%s MODE #%s +o %s\n", me,
+					f->getrid().c_str(), i->c_str());
+
+			for (vector<string>::const_iterator i = f->getremoved().begin();
+				i != f->getremoved().end(); i++)
+			    if (r->second.nicklist.find(*i) != r->second.nicklist.end()
+				    && !x->isadmin(f->getrid(), *i))
+				fprintf(*c, ":%s MODE #%s -o %s\n", me,
+					f->getrid().c_str(), i->c_str());
+		    }
 		} else if (dynamic_cast<EvRoomLockChange*>(e.get())) {
 		    auto_ptr<EvRoomLockChange> f((EvRoomLockChange*)e.release());
 

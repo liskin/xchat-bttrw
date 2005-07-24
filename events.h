@@ -129,6 +129,16 @@ namespace xchat {
 	    virtual const string & getnow() { return now; }
 	    virtual ~EvRoomAdminChange() {}
     };
+    
+    class EvRoomAdminsChange : public EvRoomOther {
+	    friend class XChat;
+	protected:
+	    vector<string> added, removed;
+	public:
+	    virtual const vector<string> & getadded() { return added; }
+	    virtual const vector<string> & getremoved() { return removed; }
+	    virtual ~EvRoomAdminsChange() {}
+    };
 
     class EvRoomLockChange : public EvRoomOther {
 	    friend class XChat;
@@ -149,8 +159,12 @@ namespace xchat {
     class EvRoomTopicChange : public EvRoomOther {
 	    friend class XChat;
 	protected:
-	    string name, desc;
+	    string name, desc, s2;
 	public:
+	    virtual const string & str() {
+		s2 = string("Topic change: ") + name + " " + desc;
+		return s2;
+	    }
 	    virtual const string & getname() { return name; }
 	    virtual const string & getdesc() { return desc; }
 	    virtual ~EvRoomTopicChange() {}

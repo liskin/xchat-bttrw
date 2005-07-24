@@ -8,6 +8,7 @@
 #include <queue>
 #include <deque>
 #include <memory>
+#include <set>
 #include "TomiTCP/net.h"
 #include "TomiTCP/str.h"
 #include "charset.h"
@@ -32,7 +33,7 @@ namespace xchat {
 	string admin;
 	bool locked;
 	string name, desc;
-	vector<string> admins;
+	set<string> admins;
     };
     typedef map<string,room> rooms_t;
     typedef vector<pair<string, string> > listout_t;
@@ -75,7 +76,7 @@ namespace xchat {
     /*
      * Load balancing consts
      */
-    const int tries_to_rest = 5, rest_duration = 1800,
+    const int tries_to_rest = 3, rest_duration = 7200,
 	  nextchance_interval = 30;
 
     /*

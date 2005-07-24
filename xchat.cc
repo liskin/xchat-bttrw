@@ -264,8 +264,22 @@ namespace xchat {
 		}
 
 		/*
-		 * Check for permanent admins change - TODO
+		 * Check for permanent admins change
 		 */
+		vector<string> added, removed;
+		set_difference(i->second.admins.begin(), i->second.admins.end(),
+			old.admins.begin(), old.admins.end(),
+			inserter(added, added.end()));
+		set_difference(old.admins.begin(), old.admins.end(),
+			i->second.admins.begin(), i->second.admins.end(),
+			inserter(removed, removed.end()));
+		if (added.size() || removed.size()) {
+		    EvRoomAdminsChange *e = new EvRoomAdminsChange;
+		    e->rid = i->first;
+		    e->added = added;
+		    e->removed = removed;
+		    recvq_push(e);
+		}
 		
 		i->second.last_roominfo = time(0);
 	    }
@@ -283,10 +297,8 @@ namespace xchat {
 	if (rooms[rid].admin == nick)
 	    return true;
 
-	for (vector<string>::iterator i = rooms[rid].admins.begin();
-		i != rooms[rid].admins.end(); i++)
-	    if (*i == nick)
-		return true;
+	if (rooms[rid].admins.find(nick) != rooms[rid].admins.end())
+	    return true;
 
 	return false;
     }
@@ -296,10 +308,8 @@ namespace xchat {
 	    return false;
 	strtolower(nick);
 
-	for (vector<string>::iterator i = rooms[rid].admins.begin();
-		i != rooms[rid].admins.end(); i++)
-	    if (*i == nick)
-		return true;
+	if (rooms[rid].admins.find(nick) != rooms[rid].admins.end())
+	    return true;
 
 	return false;
     }

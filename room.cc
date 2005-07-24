@@ -122,21 +122,13 @@ retry2:
 		updateinfo = true;
 		parse_updateinfo(string(l, a + pat2.length()), r.admin, r.locked);
 	    }
-	    
-	    if (tryagainplease(l)) {
-		if (retries--) {
-		    lastsrv_broke();
-		    goto retry2;
-		} else
-		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
-	    }
 	}
 	if (!lastline || !updateinfo) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry2;
 	    } else
-		throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
+		throw runtime_error("No initial room params - " + lastsrv_broke());
 	}
 	s.close();
 
@@ -189,14 +181,6 @@ retry3:
 		    }
 		}
 	    }
-	    
-	    if (tryagainplease(l)) {
-		if (retries--) {
-		    lastsrv_broke();
-		    goto retry3;
-		} else
-		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
-	    }
 	}
 	s.close();
 	r.nicklist[strtolower_nr(me.nick)] = me;
@@ -236,14 +220,18 @@ retry:
 	}
 
 	string l;
-	while (s.getline(l)) {
-	    if (tryagainplease(l)) {
-		if (retries--) {
-		    lastsrv_broke();
-		    goto retry;
-		} else
-		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
-	    }
+	bool bad = false;
+	if (s.getline(l)) {
+	    string pat = "<html><head><meta http-equiv=\"Refresh\"";
+	    if (!l.compare(0, pat.length(), pat))
+		bad = true;
+	}
+	if (bad) {
+	    if (retries--) {
+		lastsrv_broke();
+		goto retry;
+	    } else
+		throw runtime_error("Unsuccessful leave - " + lastsrv_broke());
 	}
     }
 
@@ -308,16 +296,8 @@ retry:
 		string admin;
 		r.admins.clear();
 		while (ss >> admin)
-		    r.admins.push_back(strtolower_nr(admin));
+		    r.admins.insert(strtolower_nr(admin));
 		continue;
-	    }
-
-	    if (tryagainplease(l)) {
-		if (retries--) {
-		    lastsrv_broke();
-		    goto retry;
-		} else
-		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
 	    }
 	}
 
@@ -570,9 +550,17 @@ retry:
 	}
 
 	string l;
-	while (s.getline(l))
-	    if (tryagainplease(l))
-		throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
+	while (s.getline(l)) {
+	    /*
+	     * Check for 'chvilku strpeni prosim'-like error.
+	     * If we're alone, we can't check :/
+	     */
+	    static string pat = ">zaslat všem (0)";
+	    if (l.find(pat) != string::npos)
+		if (r.nicklist.size() > 1)
+		    throw runtime_error("Message was likely not posted, trying again - "
+			    + lastsrv_broke());
+	}
 
 	/*
 	 * Update last_sent, if
@@ -609,6 +597,9 @@ retry:
 		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
 	
+	/*
+	 * TODO: detect it somehow, cos it's probably not tryagainplease...
+	 */
 	string l;
 	while (s.getline(l)) {
 	    if (tryagainplease(l)) {
