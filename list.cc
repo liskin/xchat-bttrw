@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <sstream>
+#include <cstring>
+#include <algorithm>
 #include "xchat.h"
 #include "TomiTCP/http.h"
 #include "TomiTCP/str.h"
@@ -8,6 +10,12 @@
 using namespace net;
 
 namespace xchat {
+    static bool stringcmp(const pair<string,string> &a,
+	    const pair<string,string> &b)
+    {
+	return strcoll(a.second.c_str(), b.second.c_str()) < 0;
+    }
+
     /*
      * Get a list of available rooms
      */
@@ -49,12 +57,16 @@ retry:
 		    pos = c + pat3.length();
 
 		    striphtmlent(name);
-		    listout.push_back(pair<string,string>(rid, recode_to_client(name)));
+		    listout.push_back(pair<string,string>(rid, name));
 		} else {
 		    pos = a + 1;
 		}
 	    }
 	}
 	s.close();
+
+	sort(listout.begin(), listout.end(), stringcmp);
+	for (listout_t::iterator i = listout.begin(); i != listout.end(); i++)
+	    i->second = recode_to_client(i->second);
     }
 }

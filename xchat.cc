@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <iostream>
 #include <set>
+#include <clocale>
 #include "xchat.h"
 #include "smiles.h"
 #include "idle.h"
@@ -23,6 +24,11 @@ namespace xchat {
     void xchat_init()
     {
 	init_recode();
+#ifdef WIN32
+	setlocale(LC_ALL, "Czech.UTF-8");
+#else
+	setlocale(LC_ALL, "cs_CZ.UTF-8");
+#endif
     }
 
     /*
