@@ -93,13 +93,15 @@ namespace xchat {
 	    bool br = 0;
 
 	    {
-		static string pat = "<img src=\"http://img.centrum.cz/",
-		    pat2 = ".gif\"";
-		unsigned int b;
+		static string pat = "<img src=\"http://img.",
+		    pat2 = ".gif\"", pat3 = "/sm/";
+		unsigned int c, d;
 		if (!s.compare(a, pat.length(), pat) &&
-			(b = s.find(pat2, a)) != string::npos) {
-		    while (--b > a + pat.length() && isdigit(s[b])); b++;
-		    smile = atol(string(s, b).c_str());
+			(c = s.find(pat2, a)) != string::npos &&
+			(d = s.find(pat3, a)) != string::npos &&
+			c < a + b && d < c) {
+		    while (--c > a + pat.length() && isdigit(s[c])); c++;
+		    smile = atol(string(s, c).c_str());
 		}
 	    }
 	    
