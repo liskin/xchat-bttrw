@@ -18,6 +18,7 @@ void goon(int a, int b);
 TomiTCP out, srv;
 auto_ptr<TomiTCP> in;
 
+bool remov = true;
 char *lasthost = 0;
 
 /*
@@ -39,7 +40,7 @@ void httpconnect(TomiTCP &c, char *host, bool last)
 	 * The proxy wasn't able to connect to the host we wanted
 	 * within a specified time.
 	 */
-	if (!last) {
+	if (!last && remov) {
 	    cerr << "Removing " << host << endl;
 	    *host = 0;
 	}
@@ -55,7 +56,7 @@ void httpconnect(TomiTCP &c, char *host, bool last)
 	    /*
 	     * The proxy replied with some unknown garbage.
 	     */
-	    if (mylasthost) {
+	    if (mylasthost && remov) {
 		cerr << "Removing " << mylasthost << endl;
 		*mylasthost = 0;
 	    }
@@ -66,7 +67,7 @@ void httpconnect(TomiTCP &c, char *host, bool last)
 	     * The proxy wasn't able to connect to host we wanted.
 	     */
 	    if (code >= 500) {
-		if (!last) {
+		if (!last && remov) {
 		    cerr << "Removing " << host << endl;
 		    *host = 0;
 		}
@@ -74,7 +75,7 @@ void httpconnect(TomiTCP &c, char *host, bool last)
 	    /*
 	     * The proxy didn't want to connect.
 	     */
-	    else if (code >= 400 && mylasthost) {
+	    else if (code >= 400 && mylasthost && remov) {
 		cerr << "Removing " << mylasthost << endl;
 		*mylasthost = 0;
 	    }
@@ -86,7 +87,7 @@ void httpconnect(TomiTCP &c, char *host, bool last)
 	/*
 	 * The proxy didn't want to talk.
 	 */
-	if (mylasthost) {
+	if (mylasthost && remov) {
 	    cerr << "Removing " << mylasthost << endl;
 	    *mylasthost = 0;
 	}
@@ -144,7 +145,7 @@ void socks(TomiTCP &c, char *host, bool last)
 	 * The proxy wasn't able to connect to the host we wanted
 	 * within a specified time.
 	 */
-	if (!last) {
+	if (!last && remov) {
 	    cerr << "Removing " << host << endl;
 	    *host = 0;
 	}
@@ -156,7 +157,7 @@ void socks(TomiTCP &c, char *host, bool last)
 	/*
 	 * The proxy didn't want to talk.
 	 */
-	if (mylasthost) {
+	if (mylasthost && remov) {
 	    cerr << "Removing " << mylasthost << endl;
 	    *mylasthost = 0;
 	}
@@ -177,8 +178,9 @@ int main(int argc, char *argv[])
     signal(SIGPIPE, SIG_IGN);
 
     if (argc < 3) {
-	cerr << "Usage: proxyhopper <port> [proxy:port] [-sh] [proxy:port...] [-sh] <host>:<port>"
+	cerr << "Usage: proxyhopper [-p] <port> [proxy:port] [-sh] [proxy:port...] [-sh] <host>:<port>"
 	    << endl << " port -1 - single mode" << endl
+	    << " -p - permanent mode, don't remove proxys on error" << endl
 	    << " -s - SOCKS v4, -h - HTTP CONNECT" << endl
 	    << " (yes, you specify the proxy type AFTER the address and it" << endl
 	    << "  takes effect on all following proxys)" << endl;
@@ -189,9 +191,26 @@ int main(int argc, char *argv[])
 
     int arg = 1;
 
-    int port = atol(argv[arg++]);
-    if (port == -1)
-	single = true;
+    char *a1 = argv[arg++];
+    if (a1[0] == '-') {
+	for (char *c = a1 + 1; *c; c++)
+	    switch (*c) {
+		case 'p':
+		    remov = false;
+		    break;
+		case '1':
+		    single = true;
+		    break;
+		default:
+		    cerr << "Unknown option" << endl;
+		    return -1;
+	    }
+
+	if (!single)
+	    a1 = argv[arg++];
+    }
+
+    int port = atol(a1);
 
     if (!single) {
 	try {
@@ -238,7 +257,8 @@ int main(int argc, char *argv[])
 	    try {
 		out.connect(firsthost, firstport);
 	    } catch (...) {
-		*lasthost = 0;
+		if (remov)
+		    *lasthost = 0;
 		throw;
 	    }
 
