@@ -15,6 +15,12 @@ endif
 ifeq ($(TARGET),i386-mingw32msvc)
  LDLIBS += -lws2_32
  ICONV=external
+ ifeq ($(WIN32_COMPAT),win2k)
+  CFLAGS += -DWINVER=0x0500
+ endif
+ ifndef WIN32_COMPAT
+  CFLAGS += -DWINVER=0x0501
+ endif
 endif
 
 ifeq ($(ICONV),external)

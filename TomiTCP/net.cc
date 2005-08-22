@@ -46,6 +46,17 @@ int winsock_init() {
     return 0;
 }
 int winsock_init_tmp = winsock_init();
+# if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0500)
+#  define USE_FIXED_OSFHANDLE
+#  define _open_osfhandle my_open_osfhandle
+# else
+#  define my_close(a) while(0){}
+# endif
+#endif
+
+#ifdef USE_FIXED_OSFHANDLE
+static int my_open_osfhandle(intptr_t osfhandle, int flags);
+static int my_close(int fd);
 #endif
 
 namespace net {
@@ -90,7 +101,7 @@ namespace net {
                 
                 sock = ::socket(PF_INET, SOCK_STREAM, 0);
         } else if (sock < 0) {
-	    throw runtime_error(string(strerror(sock_errno)));
+	    throw runtime_error("socket: " + string(strerror(sock_errno)));
 	}
 
 	int set_opt = 1;
@@ -101,14 +112,14 @@ namespace net {
 	    int er = sock_errno;
 	    ::close(sock);
 	    sock = -1;
-	    throw runtime_error(string(strerror(er)));
+	    throw runtime_error("bind: " + string(strerror(er)));
 	}
 
 	if (::listen(sock,5)) {
 	    int er = sock_errno;
 	    ::close(sock);
 	    sock = -1;
-	    throw runtime_error(string(strerror(er)));
+	    throw runtime_error("listen: " + string(strerror(er)));
 	}
 
 #ifdef WIN32
@@ -147,7 +158,7 @@ namespace net {
 
 	    sock = ::socket(rname.sa.sa_family, SOCK_STREAM, 0);
 	    if (socket < 0) {
-		err = strerror(sock_errno);
+		err = "socket: " + string(strerror(sock_errno));
 	    } else {
 		for (vector<sockaddr_uni>::iterator j = bindaddrs.begin();
 			j != bindaddrs.end(); j++)
@@ -159,7 +170,7 @@ namespace net {
 				(const sockaddr*)&rname, SIZEOF_SOCKADDR(rname)))) {
 		    int er = sock_errno;
 		    close();
-		    err = strerror(er);
+		    err = "connect: " + string(strerror(er));
 		} else {
 		    break;
 		}
@@ -171,19 +182,24 @@ namespace net {
 
 	socklen_t len = SIZEOF_SOCKADDR(lname);
 	if (getsockname(sock,(sockaddr*)&lname,&len)) {
-	    throw runtime_error(string(strerror(sock_errno)));
+	    throw runtime_error("getsockname: " + string(strerror(sock_errno)));
 	}
 
 #ifdef WIN32
 	w32socket = sock;
 	sock = _open_osfhandle(sock, _O_RDWR | _O_BINARY);
+	if (sock < 0) {
+	    int er = errno;
+	    close();
+	    throw runtime_error("_open_osfhandle: " + string(strerror(er)));
+	}
 #endif
 
 	stream = fdopen(sock, "rb+");
 	if (!stream) {
 	    int er = errno;
 	    close();
-	    throw runtime_error(string(strerror(er)));
+	    throw runtime_error("fdopen: " + string(strerror(er)));
 	}
 	setvbuf(stream,NULL,_IONBF,0); // no buffering
     }
@@ -200,7 +216,7 @@ namespace net {
 	ret = getaddrinfo(hostname.length()?hostname.c_str():0,
 		service.length()?service.c_str():0, &hints, &ai);
 	if (ret) {
-	    throw runtime_error(string(gai_strerror(ret)));
+	    throw runtime_error("getaddrinfo: " + string(gai_strerror(ret)));
 	}
 	aip = ai;
 
@@ -221,12 +237,12 @@ namespace net {
 	PORT_SOCKADDR(addr) = htons(113);
 	int s = ::socket(addr.sa.sa_family, SOCK_STREAM, 0);
 	if (s < 0) {
-	    throw runtime_error(string("Ident: ")+strerror(sock_errno));
+	    throw runtime_error("Ident: socket: " + string(strerror(sock_errno)));
 	}
 	if (::connect(s,(const sockaddr*)&addr,SIZEOF_SOCKADDR(addr))) {
 	    int er = sock_errno;
 	    ::close(s);
-	    throw runtime_error(string("Ident: ")+strerror(er));
+	    throw runtime_error("Ident: connect: " + string(strerror(er)));
 	}
 
 	char query[64];
@@ -236,7 +252,7 @@ namespace net {
 	if (retval < 0) {
 	    int er = sock_errno;
 	    ::close(s);
-	    throw runtime_error(string("Ident: ")+string(strerror(er)));
+	    throw runtime_error("Ident: send: " + string(strerror(er)));
 	}
 
 	char buffer[513];
@@ -248,7 +264,7 @@ namespace net {
 		int er = sock_errno;
 		::close(s);
 		if (retval < 0)
-		    throw runtime_error(string("Ident: ")+string(strerror(er)));
+		    throw runtime_error("Ident: recv: " + string(strerror(er)));
 		return "";
 	    }
 	    buffer[retval] = 0;
@@ -281,13 +297,13 @@ namespace net {
     {
 	sock = dup(filedes);
 	if (sock < 0)
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error("dup: " + string(strerror(errno)));
 
 	stream = fdopen(sock,"rb+");
 	if (!stream) {
 	    int er = errno;
 	    close();
-	    throw runtime_error(string(strerror(er)));
+	    throw runtime_error("fdopen: " + string(strerror(er)));
 	}
 
 	// fill lname & rname !!!
@@ -303,8 +319,12 @@ namespace net {
     void TomiTCP::close()
     {
 	if (stream) {
+#ifdef WIN32
+	    if (sock >= 0)
+		my_close(sock);
+#endif
 	    if (fclose(stream))
-		throw runtime_error(string(strerror(errno)));
+		throw runtime_error("fclose: " + string(strerror(errno)));
 	    stream = 0;
 	    sock = -1;
 	} else if (sock >= 0) {
@@ -342,18 +362,23 @@ namespace net {
 	socklen_t len = SIZEOF_SOCKADDR(ret->rname);
 	ret->sock = TEMP_FAILURE_RETRY(::accept(sock,&ret->rname.sa,&len));
 	if (ret->sock < 0)
-	    throw runtime_error(string(strerror(sock_errno)));
+	    throw runtime_error("accept: " + string(strerror(sock_errno)));
 
 #ifdef WIN32
 	ret->w32socket = ret->sock;
 	ret->sock = _open_osfhandle(ret->sock, _O_RDWR | _O_BINARY);
+	if (ret->sock < 0) {
+	    int er = errno;
+	    delete ret;
+	    throw runtime_error("_open_osfhandle: " + string(strerror(er)));
+	}
 #endif
 
 	ret->stream = fdopen(ret->sock,"rb+");
 	if (!ret->stream) {
 	    int er = errno;
 	    delete ret;
-	    throw runtime_error(string(strerror(er)));
+	    throw runtime_error("fdopen: " + string(strerror(er)));
 	}
 	setvbuf(ret->stream,NULL,_IONBF,0); // no buffering
 	
@@ -557,4 +582,154 @@ const char * wsock_strerror(int err) {
 
     return error;
 }
+
+/*
+ * Compatibility code to make open_osfhandle work on non-NT Windows versions.
+ * Taken from Perl, many thanks.
+ */
+#ifdef USE_FIXED_OSFHANDLE
+#undef _open_osfhandle
+
+#if defined(__MINGW32__) && (__MINGW32_MAJOR_VERSION>=3)
+#undef _CRTIMP
+#endif
+#ifndef _CRTIMP
+#define _CRTIMP __declspec(dllimport)
+#endif
+
+/*
+ * Control structure for lowio file handles
+ */
+typedef struct {
+    intptr_t osfhnd;/* underlying OS file HANDLE */
+    char osfile;    /* attributes of file (e.g., open in text mode?) */
+    char pipech;    /* one char buffer for handles opened on pipes */
+    int lockinitflag;
+    CRITICAL_SECTION lock;
+} ioinfo;
+
+
+/*
+ * Array of arrays of control structures for lowio files.
+ */
+EXTERN_C _CRTIMP ioinfo* __pioinfo[];
+
+/*
+ * Definition of IOINFO_L2E, the log base 2 of the number of elements in each
+ * array of ioinfo structs.
+ */
+#define IOINFO_L2E	    5
+
+/*
+ * Definition of IOINFO_ARRAY_ELTS, the number of elements in ioinfo array
+ */
+#define IOINFO_ARRAY_ELTS   (1 << IOINFO_L2E)
+
+/*
+ * Access macros for getting at an ioinfo struct and its fields from a
+ * file handle
+ */
+#define _pioinfo(i) (__pioinfo[(i) >> IOINFO_L2E] + ((i) & (IOINFO_ARRAY_ELTS - 1)))
+#define _osfhnd(i)  (_pioinfo(i)->osfhnd)
+#define _osfile(i)  (_pioinfo(i)->osfile)
+#define _pipech(i)  (_pioinfo(i)->pipech)
+
+/* since we are not doing a dup2(), this works fine */
+#define _set_osfhnd(fh, osfh) (void)(_osfhnd(fh) = (intptr_t)osfh)
+
+#define FOPEN			0x01	/* file handle open */
+#define FNOINHERIT		0x10	/* file handle opened O_NOINHERIT */
+#define FAPPEND			0x20	/* file handle opened O_APPEND */
+#define FDEV			0x40	/* file handle refers to device */
+#define FTEXT			0x80	/* file handle is in text mode */
+
+/***
+*int my_open_osfhandle(intptr_t osfhandle, int flags) - open C Runtime file handle
+*
+*Purpose:
+*       This function allocates a free C Runtime file handle and associates
+*       it with the Win32 HANDLE specified by the first parameter. This is a
+*	temperary fix for WIN95's brain damage GetFileType() error on socket
+*	we just bypass that call for socket
+*
+*	This works with MSVC++ 4.0+ or GCC/Mingw32
+*
+*Entry:
+*       intptr_t osfhandle - Win32 HANDLE to associate with C Runtime file handle.
+*       int flags      - flags to associate with C Runtime file handle.
+*
+*Exit:
+*       returns index of entry in fh, if successful
+*       return -1, if no free entry is found
+*
+*Exceptions:
+*
+*******************************************************************************/
+
+/*
+ * we fake up some parts of the CRT that aren't exported by MSVCRT.dll
+ * this lets sockets work on Win9X with GCC and should fix the problems
+ * with perl95.exe
+ *	-- BKS, 1-23-2000
+*/
+
+/* create an ioinfo entry, kill its handle, and steal the entry */
+
+static int
+_alloc_osfhnd(void)
+{
+    HANDLE hF = CreateFile("NUL", 0, 0, NULL, OPEN_ALWAYS, 0, NULL);
+    int fh = _open_osfhandle((intptr_t)hF, 0);
+    CloseHandle(hF);
+    if (fh == -1)
+        return fh;
+    EnterCriticalSection(&(_pioinfo(fh)->lock));
+    return fh;
+}
+
+static int
+my_open_osfhandle(intptr_t osfhandle, int flags)
+{
+    int fh;
+    char fileflags;		/* _osfile flags */
+
+    /* copy relevant flags from second parameter */
+    fileflags = FDEV;
+
+    if (flags & O_APPEND)
+	fileflags |= FAPPEND;
+
+    if (flags & O_TEXT)
+	fileflags |= FTEXT;
+
+    if (flags & O_NOINHERIT)
+	fileflags |= FNOINHERIT;
+
+    /* attempt to allocate a C Runtime file handle */
+    if ((fh = _alloc_osfhnd()) == -1) {
+	errno = EMFILE;		/* too many open files */
+	_doserrno = 0L;		/* not an OS error */
+	return -1;		/* return error to caller */
+    }
+
+    /* the file is open. now, set the info in _osfhnd array */
+    _set_osfhnd(fh, osfhandle);
+
+    fileflags |= FOPEN;		/* mark as open */
+
+    _osfile(fh) = fileflags;	/* set osfile entry */
+    LeaveCriticalSection(&_pioinfo(fh)->lock);
+
+    return fh;			/* return handle */
+}
+
+static int
+my_close(int fd)
+{
+    _set_osfhnd(fd, INVALID_HANDLE_VALUE);
+    return 0;
+}
+
+#endif	/* USE_FIXED_OSFHANDLE */
+
 #endif
