@@ -203,9 +203,29 @@ int main(int argc, char *argv[])
 #endif
 
     int port = 6669;
-    if (argc == 2 && atol(argv[1]))
-	port = atol(argv[1]);
+#ifdef WIN32
+    bool detach = true;
+#endif
 
+    for (int arg = 1; arg < argc; arg++)
+	if (argv[arg][0] == '-')
+	    for (char *c = argv[arg] + 1; *c; c++)
+		switch (*c) {
+#ifdef WIN32
+		    case 'f':
+			detach = false;
+			break;
+#endif
+		    default:
+			cerr << "Unknown option " << *c << endl;
+		}
+	else
+	    port = atol(argv[arg]);
+
+#ifdef WIN32
+    if (detach)
+	FreeConsole();
+#endif
 
     compat_init_setproctitle(argc, argv);
 
