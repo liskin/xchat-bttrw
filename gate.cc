@@ -184,7 +184,19 @@ void welcome()
     cout << "Coded by Tomas Janousek <tomi@nomi.cz> and others" << endl;
     cout << "Homepage: http://nomi.cz/projects.shtml?id=xchat-bttrw" << endl;
 #ifdef WIN32
-    cout << "This is a Win32 build. Should work on Windows Xp SP 1 and up." << endl;
+    cout << "This is a Win32 build. ";
+# ifdef WIN32_COMPAT
+    if (WIN32_COMPAT == string("winxp"))
+	cout << "Should work on Windows Xp SP 1 and up." << endl;
+    else if (WIN32_COMPAT == string("win2k"))
+	cout << "Should work on Windows 2000 and up,"
+	    " but not recommended for Xp SP 1 and up." << endl;
+    else if (WIN32_COMPAT == string("winnt"))
+	cout << "Should work on Windows 98, NT 4 and up,"
+	    " but not recommended for 2000 and up." << endl;
+# else
+    cout << endl;
+# endif
 #endif
     cout << endl;
     cout << "This is free software; see COPYRIGHT for copying conditions.  There is NO" << endl;

@@ -26,6 +26,10 @@ ifeq ($(TARGET),i386-mingw32msvc)
  ICONV=external
 endif
 
+ifdef WIN32_COMPAT
+ CFLAGS += -DWIN32_COMPAT=\"$(WIN32_COMPAT)\"
+endif
+
 ifeq ($(ICONV),external)
  LDLIBS += -liconv
 endif

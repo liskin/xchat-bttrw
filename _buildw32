@@ -1,0 +1,19 @@
+#!/bin/bash
+touch gate.cc
+cross-make.sh -C TomiTCP clean dep
+cross-make.sh dep
+cross-make.sh WIN32_COMPAT=winxp
+cp -L gate.exe ~/public_html/xchat-bttrw-win32/gate.exe
+
+touch gate.cc
+cross-make.sh -C TomiTCP clean
+cross-make.sh WIN32_COMPAT=winnt
+cp -L gate.exe ~/public_html/xchat-bttrw-win32/gate-win98.exe
+
+touch gate.cc
+cross-make.sh -C TomiTCP clean
+cross-make.sh WIN32_COMPAT=win2k
+cp -L gate.exe ~/public_html/xchat-bttrw-win32/gate-win2k.exe
+
+cp -L COPYRIGHT ~/public_html/xchat-bttrw-win32/
+cp -L README ~/public_html/xchat-bttrw-win32/

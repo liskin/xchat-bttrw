@@ -1,16 +1,16 @@
     xchat-bttrw (back to the real world)
-    Copyright (C) 2004  Tomas Janousek <tomi@nomi.cz>
+    Copyright (C) 2004-2005  Tomas Janousek <tomi@nomi.cz>
+    Copyright (C) 2005  Ondrej Novy <onovy@nomi.cz>
 
-    Win32 package maintainer - Ondrej Novy <onovy@nomi.cz>
+    Win32 porting
+    Copyright (C) 2004-2005  Tomas Janousek <tomi@nomi.cz>
 
-    Thanks to people who helped a lot with development and testing:
-	Ondrej Novy, aka onovy
-	Jan Votava, aka cyner
-	Martin Filip, aka NextSux
-	Jakub Lansky, aka Lenny_
-	David Toman, aka idavid
-	Lukas Novy, aka krtek.net
-	Marek Salava, aka DonBruce
+    Win32 installers and tarballs
+    Copyright (C) 2004-2005  Ondrej Novy <onovy@nomi.cz>
+
+    Win32 my_open_osfhandle code
+    Taken from Perl.
+    Copyright (C) 1995 Microsoft Corporation. All rights reserved.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
