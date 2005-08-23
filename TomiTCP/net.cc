@@ -318,11 +318,12 @@ namespace net {
 
     void TomiTCP::close()
     {
-	if (stream) {
 #ifdef WIN32
-	    if (sock >= 0)
-		my_close(sock);
+	if (sock >= 0 && w32socket != sock)
+	    my_close(sock);
 #endif
+
+	if (stream) {
 	    if (fclose(stream))
 		throw runtime_error("fclose: " + string(strerror(errno)));
 	    stream = 0;
@@ -331,6 +332,7 @@ namespace net {
 	    ::close(sock);
 	    sock = -1;
 	}
+
 #ifdef WIN32
 	if (w32socket >= 0)
 	    closesocket(w32socket);
