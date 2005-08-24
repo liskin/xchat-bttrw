@@ -5,7 +5,6 @@
 #include <vector>
 #include <map>
 #include <ctime>
-#include <queue>
 #include <deque>
 #include <memory>
 #include <set>
@@ -124,7 +123,7 @@ namespace xchat {
 	    rooms_t rooms;
 
 	    time_t last_sent, last_recv;
-	    queue<send_item> sendq;
+	    deque<send_item> sendq;
 	    deque<recv_item> recvq, old_recvq;
 
 	    void do_sendq();
@@ -203,28 +202,28 @@ namespace xchat {
     }
     
     inline void XChat::msg(const string &room, const string &msg) {
-	sendq.push(send_item(room, "~", recode_from_client(msg)));
+	sendq.push_back(send_item(room, "~", recode_from_client(msg)));
     }
 
     inline void XChat::whisper(const string &room, const string &target, const string &msg) {
-	sendq.push(send_item(room, target, recode_from_client(msg)));
+	sendq.push_back(send_item(room, target, recode_from_client(msg)));
     }
     
     inline void XChat::whisper(const string &target, const string &msg) {
 	/*
 	 * final decision on target room will be made in do_sendq
 	 */
-	sendq.push(send_item("", target, recode_from_client(msg)));
+	sendq.push_back(send_item("", target, recode_from_client(msg)));
     }
 
     inline void XChat::kick(const string &room, const string &target, const string &reason) {
-	sendq.push(send_item(room, "~", "/kick " + target + " " +
+	sendq.push_front(send_item(room, "~", "/kick " + target + " " +
 		    recode_from_client(reason)));
     }
 
     inline void XChat::kill(const string &target, const string &reason) {
 	if (rooms.size()) {
-	    sendq.push(send_item(rooms.begin()->first, "~", "/kill " + target +
+	    sendq.push_front(send_item(rooms.begin()->first, "~", "/kill " + target +
 			" " + recode_from_client(reason)));
 	} else {
 	    throw runtime_error("Can't do KILL without channel joined");
@@ -232,15 +231,15 @@ namespace xchat {
     }
 
     inline void XChat::admin(const string &room, const string &newadmin) {
-	sendq.push(send_item(room, "~", "/admin " + newadmin));
+	sendq.push_front(send_item(room, "~", "/admin " + newadmin));
     }
     
     inline void XChat::lock(const string &room) {
-	sendq.push(send_item(room, "~", "/lock"));
+	sendq.push_front(send_item(room, "~", "/lock"));
     }
     
     inline void XChat::unlock(const string &room) {
-	sendq.push(send_item(room, "~", "/unlock"));
+	sendq.push_front(send_item(room, "~", "/unlock"));
     }
 }
 

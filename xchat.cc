@@ -144,7 +144,7 @@ namespace xchat {
 	     */
 	    if (ref.room.empty()) {
 		if (!rooms.size()) {
-		    sendq.pop();
+		    sendq.pop_front();
 		    throw runtime_error("Can't send PRIVMSG's without channel joined");
 		}
 
@@ -174,7 +174,7 @@ namespace xchat {
 		    recvq_push(ev);
 		} else {
 		    if (u8strlen(prepend.c_str()) >= max_msg_length) {
-			sendq.pop();
+			sendq.pop_front();
 			throw runtime_error("Fuck... this should have never happened!");
 		    }
 
@@ -209,14 +209,14 @@ namespace xchat {
 	    if (left.msg.length())
 		ref.msg = left.msg;
 	    else
-		sendq.pop();
+		sendq.pop_front();
 	}
 
 	// f00king idler
-	if (idle_interval && sendq.empty())
+	if (idle_interval)
 	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
 		if (time(0) - i->second.last_sent >= idle_interval) {
-		    sendq.push(send_item(i->first, me.nick, genidle()));
+		    sendq.push_front(send_item(i->first, me.nick, genidle()));
 		}
 	    }
     }
