@@ -27,14 +27,14 @@ ifeq ($(TARGET),i386-mingw32msvc)
 endif
 
 ifdef WIN32_COMPAT
- CFLAGS += -DWIN32_COMPAT=\"$(WIN32_COMPAT)\"
+ GATE_WIN32_COMPAT=-DWIN32_COMPAT=\"$(WIN32_COMPAT)\"
 endif
 
 ifeq ($(ICONV),external)
  LDLIBS += -liconv
 endif
 
-.PHONY: all clean dep dummy
+.PHONY: all clean dep dummy buildw32
 
 all: libxchat-bttrw.a gate README
 
@@ -57,7 +57,7 @@ ifeq ($(TARGET),i386-mingw32msvc)
 endif
 
 gate.o: gate.cc
-	$(COMPILE.cc) $(REVISIONS) $(OUTPUT_OPTION) $<
+	$(COMPILE.cc) $(REVISIONS) $(GATE_WIN32_COMPAT) $(OUTPUT_OPTION) $<
 
 clean:
 	$(RM) libxchat-bttrw.a gate *.o
@@ -69,3 +69,37 @@ TomiTCP/libTomiTCP.a: dummy
 # docs
 README: gate.cc
 	./mkreadme
+
+# Win32 building
+DESTDIR=xchat-bttrw-win32
+buildw32:
+	$(MAKE) clean dep
+	$(MAKE) -C TomiTCP clean dep
+	@echo
+	@echo -e '\033[1m' Building for WinXP and up... '\033[m'
+	@echo
+	$(MAKE) WIN32_COMPAT=winxp
+	cp -L gate $(DESTDIR)/gate.exe
+	@echo
+	
+	touch gate.cc
+	$(MAKE) -C TomiTCP clean dep
+	@echo
+	@echo -e '\033[1m' Building for Win2000 and up... '\033[m'
+	@echo
+	$(MAKE) WIN32_COMPAT=win2k
+	cp -L gate $(DESTDIR)/gate-win2k.exe
+	@echo
+	
+	touch gate.cc
+	$(MAKE) -C TomiTCP clean dep
+	@echo
+	@echo -e '\033[1m' Building for Win98, WinNT4 and up... '\033[m'
+	@echo
+	$(MAKE) WIN32_COMPAT=winnt
+	cp -L gate $(DESTDIR)/gate-win98.exe
+	@echo
+	
+	cp -L COPYRIGHT $(DESTDIR)/
+	cp -L README $(DESTDIR)/
+	cp -L $(shell which libiconv-2.dll) $(DESTDIR)/
