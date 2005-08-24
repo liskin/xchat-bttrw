@@ -3,7 +3,6 @@
 
 #pragma interface
 #include <cstdio>
-#include <stdint.h>
 #include <string>
 #include <vector>
 #include <exception>
