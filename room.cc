@@ -536,7 +536,7 @@ retry:
     /*
      * Send a message.
      */
-    void XChat::putmsg(room &r, const string& target, const string& msg)
+    bool XChat::putmsg(room &r, const string& target, const string& msg)
     {
 	TomiHTTP s;
 	try {
@@ -549,6 +549,8 @@ retry:
 	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
 
+	bool posted = true;
+
 	string l;
 	while (s.getline(l)) {
 	    /*
@@ -560,6 +562,15 @@ retry:
 		if (r.nicklist.size() > 1)
 		    throw runtime_error("Message was likely not posted, trying again - "
 			    + lastsrv_broke());
+
+	    /*
+	     * Check, if the message was posted by looking if they have left
+	     * something in textarea.
+	     */
+	    static string pat2 = " name=\"textarea\" value=\"";
+	    unsigned int a;
+	    if ((a = l.find(pat2)) != string::npos && l[a + pat2.length()] != '\"')
+		posted = false;
 	}
 
 	/*
@@ -573,6 +584,8 @@ retry:
 	if (msg.length() && msg[0] != '/' && isprint(msg[0])) {
 	    r.last_sent = last_sent;
 	}
+
+	return !posted;
     }
 
     /*

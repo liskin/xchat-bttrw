@@ -63,14 +63,15 @@ namespace xchat {
 
 namespace xchat {
     /*
-     * Flood protection, refresh rate, max msg length, idle protection
-     * and roominfo refresh rate
+     * Flood protection, refresh rate, max msg length, idle protection,
+     * maximum msg send retries and roominfo refresh rate
      * 720 is optimal for flood protection
      */
     const int send_interval = 5;
     const unsigned int max_msg_length = 200;
     extern int idle_interval, recv_interval;
     const int roominfo_interval = 15 * 60;
+    const int putmsg_retries = 5;
 
     /*
      * Load balancing consts
@@ -98,8 +99,9 @@ namespace xchat {
     class send_item {
 	public:
 	    string room, target, msg;
+	    int retries;
 	    send_item(const string& r, const string& t, const string& m) :
-		room(r), target(t), msg(m) { }
+		room(r), target(t), msg(m), retries(putmsg_retries) { }
     };
 
     class server {
@@ -143,7 +145,7 @@ namespace xchat {
 	    void leave(string rid);
 	    void getroominfo(room& r);
 	    void getmsg(room& r);
-	    void putmsg(room& r, const string& target, const string& msg);
+	    bool putmsg(room& r, const string& target, const string& msg);
 	    void setdesc(const string& rid, const string& desc);
 
 	    int lastsrv;

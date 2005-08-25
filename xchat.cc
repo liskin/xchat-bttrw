@@ -197,7 +197,22 @@ namespace xchat {
 	     * Post it
 	     */
 	    if (rooms.find(msg.room) != rooms.end()) {
-		putmsg(rooms[msg.room], msg.target, prepend + msg.msg);
+		if (putmsg(rooms[msg.room], msg.target, prepend + msg.msg)) {
+		    if (!ref.retries--) {
+			EvRoomError *ev = new EvRoomError;
+			ev->s = "Message lost, xchat is not willing to let it go";
+			ev->rid = msg.room;
+			ev->fatal = false;
+			recvq_push(ev);
+		    } else {
+			EvRoomError *ev = new EvRoomError;
+			ev->s = "Reposting msg, xchat refused it";
+			ev->rid = msg.room;
+			ev->fatal = false;
+			recvq_push(ev);
+			return;
+		    }
+		}
 	    } else {
 		EvRoomError *ev = new EvRoomError;
 		ev->s = "Message lost, room is not available";
