@@ -960,34 +960,48 @@ main_accept:
 		} else if (dynamic_cast<EvRoomAdminChange*>(e.get())) {
 		    auto_ptr<EvRoomAdminChange> f((EvRoomAdminChange*)e.release());
 
+		    /*
+		     * Get the right case for nicks, avoids mirc setting nick
+		     * to lowercase in nicklist.
+		     */
+		    x_nick before = { f->getbefore(), 2 },
+			   now = { f->getnow(), 2 },
+			   *tmp;
+		    if (before.nick.length() && (tmp = x->findnick(before.nick, 0)))
+			before = *tmp;
+		    if (now.nick.length() && (tmp = x->findnick(now.nick, 0)))
+			now = *tmp;
+
 		    if (f->getbefore().empty() ||
 			    x->ispermadmin(f->getrid(), f->getbefore()))
 			fprintf(*c, ":%s MODE #%s +o %s\n", me,
-				f->getrid().c_str(), f->getnow().c_str());
+				f->getrid().c_str(), now.nick.c_str());
 		    else if (f->getnow().empty())
 			fprintf(*c, ":%s MODE #%s -o %s\n", me,
-				f->getrid().c_str(), f->getbefore().c_str());
+				f->getrid().c_str(), before.nick.c_str());
 		    else
 			fprintf(*c, ":%s MODE #%s -o+o %s %s\n", me,
-				f->getrid().c_str(), f->getbefore().c_str(),
-				f->getnow().c_str());
+				f->getrid().c_str(), before.nick.c_str(),
+				now.nick.c_str());
 		} else if (dynamic_cast<EvRoomAdminsChange*>(e.get())) {
 		    auto_ptr<EvRoomAdminsChange> f((EvRoomAdminsChange*)e.release());
 
 		    map<string, room>::iterator r = x->rooms.find(f->getrid());
 		    if (r != x->rooms.end()) {
+			nicklist_t::iterator n;
+
 			for (vector<string>::const_iterator i = f->getadded().begin();
 				i != f->getadded().end(); i++)
-			    if (r->second.nicklist.find(*i) != r->second.nicklist.end())
+			    if ((n = r->second.nicklist.find(*i)) != r->second.nicklist.end())
 				fprintf(*c, ":%s MODE #%s +o %s\n", me,
-					f->getrid().c_str(), i->c_str());
+					f->getrid().c_str(), n->second.nick.c_str());
 
 			for (vector<string>::const_iterator i = f->getremoved().begin();
 				i != f->getremoved().end(); i++)
-			    if (r->second.nicklist.find(*i) != r->second.nicklist.end()
+			    if ((n = r->second.nicklist.find(*i)) != r->second.nicklist.end()
 				    && !x->isadmin(f->getrid(), *i))
 				fprintf(*c, ":%s MODE #%s -o %s\n", me,
-					f->getrid().c_str(), i->c_str());
+					f->getrid().c_str(), n->second.nick.c_str());
 		    }
 		} else if (dynamic_cast<EvRoomLockChange*>(e.get())) {
 		    auto_ptr<EvRoomLockChange> f((EvRoomLockChange*)e.release());
