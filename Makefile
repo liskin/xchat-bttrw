@@ -73,6 +73,7 @@ README: gate.cc
 # Win32 building
 DESTDIR=xchat-bttrw-win32
 buildw32:
+	$(RM) $(DESTDIR)/*
 	$(MAKE) clean dep
 	$(MAKE) -C TomiTCP clean dep
 	@echo
@@ -101,5 +102,6 @@ buildw32:
 	@echo
 	
 	cp -L COPYRIGHT $(DESTDIR)/
-	cp -L README $(DESTDIR)/
+	cp -L COPYING $(DESTDIR)/
+	cp -L README $(DESTDIR)/README.txt
 	cp -L $(shell which libiconv-2.dll) $(DESTDIR)/
