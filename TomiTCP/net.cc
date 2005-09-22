@@ -91,7 +91,12 @@ namespace net {
 
 	memset(&lname,0,sizeof(lname));
 	lname.sa.sa_family = AF_INET6;
-	tomi_pton(addr,lname);
+	try { tomi_pton(addr,lname); } catch (runtime_error e) {
+	    if (addr == "::")
+		tomi_pton("0.0.0.0",lname);
+	    else
+		throw;
+	}
 	PORT_SOCKADDR(lname) = htons(port);
 
 	sock = ::socket(lname.sa.sa_family, SOCK_STREAM, 0);
@@ -395,11 +400,11 @@ namespace net {
     {
 	int s = dup(sock);
 	if (s < 0)
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error("dup: " + string(strerror(errno)));
 
 	FILE *f = fdopen(s,"rb+");
 	if (!f)
-	    throw runtime_error(string(strerror(errno)));
+	    throw runtime_error("fdopen: " + string(strerror(errno)));
 	setvbuf(f,NULL,_IONBF,0); // no buffering
 
 	return f;
@@ -416,7 +421,7 @@ namespace net {
 	}
 
 	if (ret == -1)
-	    throw runtime_error(strerror(errno));
+	    throw runtime_error("read: " + string(strerror(errno)));
 
 	return (ret != 0) || (s.length() > 0);
     }
@@ -430,13 +435,13 @@ namespace net {
 	sockaddr_uni name2 = name;
 	PORT_SOCKADDR(name2) = 0;
 	if (WSAAddressToString((struct sockaddr*)&name2.sa,SIZEOF_SOCKADDR(name2),0,tmp,&len))
-	    throw runtime_error(string(strerror(sock_errno)));
+	    throw runtime_error("WSAAddressToString: " + string(strerror(sock_errno)));
 	tmp[len] = 0;
 #else
 	if (!inet_ntop(name.sa.sa_family,(name.sa.sa_family == AF_INET)?
 		    ((const void *)&name.sin.sin_addr):
 		    ((const void *)&name.sin6.sin6_addr),tmp,128))
-	    throw runtime_error(string(strerror(sock_errno)));
+	    throw runtime_error("inet_ntop: " + string(strerror(sock_errno)));
 #endif
 
 	if (name.sa.sa_family == AF_INET6 && IN6_IS_ADDR_V4MAPPED(&name.sin6.sin6_addr))
@@ -454,13 +459,13 @@ namespace net {
 #ifdef WIN32
 	int sz = SIZEOF_SOCKADDR(name);
 	if (WSAStringToAddress((char*)p.c_str(),name.sa.sa_family,0,(struct sockaddr*)&name.sa,&sz))
-	    throw runtime_error(string(strerror(sock_errno)));
+	    throw runtime_error("WSAStringToAddress: " + string(strerror(sock_errno)));
 #else
 	int ret = inet_pton(name.sa.sa_family,p.c_str(),(name.sa.sa_family == AF_INET)?
 		((void *)&name.sin.sin_addr):
 		((void *)&name.sin6.sin6_addr));
 	if (ret < 0)
-	    throw runtime_error(string(strerror(sock_errno)));
+	    throw runtime_error("inet_pton: " + string(strerror(sock_errno)));
 	if (ret == 0)
 	    throw runtime_error("Not a valid address");
 #endif
