@@ -12,7 +12,7 @@ CXXFLAGS=$(CFLAGS)
 LDLIBS=
 LDFLAGS=
 REVISIONS=-DREVISION=\"$(shell svn info | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\" \
-	-DTOMITCP_REV=\"$(shell svn info TomiTCP | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\" \
+	-DTOMITCP_REV=\"$(shell svn info TomiTCP | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\"
 RSRC=
 
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
