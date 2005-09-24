@@ -6,12 +6,14 @@ else
  DEBUG=yes
 endif
 
+WINDRES=windres
 CFLAGS=-Wall -D_GNU_SOURCE
 CXXFLAGS=$(CFLAGS)
 LDLIBS=
 LDFLAGS=
 REVISIONS=-DREVISION=\"$(shell svn info | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\" \
 	-DTOMITCP_REV=\"$(shell svn info TomiTCP | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\" \
+RSRC=
 
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
@@ -24,6 +26,7 @@ endif
 ifeq ($(TARGET),i386-mingw32msvc)
  LDLIBS += -lws2_32
  ICONV=external
+ RSRC=rsrc.o
 endif
 
 ifdef WIN32_COMPAT
@@ -50,13 +53,13 @@ libxchat-bttrw.a: xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o \
                   charset.o list.o ison.o userinfo.o
 	$(AR) rsv $@ $?
 
-gate: gate.o md5.o setproctitle.o libxchat-bttrw.a TomiTCP/libTomiTCP.a
+gate: gate.o md5.o setproctitle.o libxchat-bttrw.a TomiTCP/libTomiTCP.a $(RSRC)
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 ifeq ($(TARGET),i386-mingw32msvc)
 	strip $@
 endif
 
-gate.o: gate.cc
+gate.o:
 	$(COMPILE.cc) $(REVISIONS) $(GATE_WIN32_COMPAT) $(OUTPUT_OPTION) $<
 
 clean:
@@ -65,6 +68,9 @@ clean:
 
 TomiTCP/libTomiTCP.a: dummy
 	$(MAKE) -C TomiTCP DEBUG=$(DEBUG)
+
+%.o: %.rc
+	$(WINDRES) -o $@ $^
 
 # docs
 README: gate.cc
