@@ -127,6 +127,7 @@ namespace xchat {
 	    time_t last_sent, last_recv;
 	    deque<send_item> sendq;
 	    deque<recv_item> recvq, old_recvq;
+	    int idle_delta;
 
 	    void do_sendq();
 	    void fill_recvq();

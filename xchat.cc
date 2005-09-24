@@ -230,8 +230,9 @@ namespace xchat {
 	// f00king idler
 	if (idle_interval && sendq.empty())
 	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
-		if (time(0) - i->second.last_sent >= idle_interval) {
+		if (time(0) - i->second.last_sent >= idle_interval - idle_delta) {
 		    sendq.push_back(send_item(i->first, me.nick, genidle()));
+		    idle_delta = rand() % (idle_interval / 5);
 		}
 	    }
     }

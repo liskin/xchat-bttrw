@@ -53,7 +53,7 @@ namespace xchat {
 
 	r.l = -1;
 	r.rid = rid;
-	r.last_sent = time(0) - idle_interval + 10;
+	r.last_sent = 0;
 	r.last_roominfo = time(0);
 
 	int ret, retries;
@@ -132,6 +132,10 @@ retry2:
 	}
 	s.close();
 
+	// didn't get the last_line
+	if (r.l == -1)
+	    throw runtime_error("Parse error");
+
 	retries = servers.size();
 retry3:
 	try {
@@ -187,12 +191,8 @@ retry3:
 
 	getroominfo(r);
 
-	if (r.l != -1) {
-	    rooms[rid] = r;
-	    return;
-	}
-
-	throw runtime_error("Parse error");
+	// insert it
+	rooms[rid] = r;
     }
 
     /*
