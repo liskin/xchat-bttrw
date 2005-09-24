@@ -73,7 +73,7 @@ README: gate.cc
 # Win32 building
 DESTDIR=xchat-bttrw-win32
 buildw32:
-	$(RM) $(DESTDIR)/*
+	$(RM) $(filter-out $(DESTDIR)/build.log, $(wildcard $(DESTDIR)/*))
 	$(MAKE) clean dep
 	$(MAKE) -C TomiTCP clean dep
 	@echo
