@@ -1,0 +1,215 @@
+object Form1: TForm1
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsSingle
+  Caption = 'Prihlaseni'
+  ClientHeight = 317
+  ClientWidth = 210
+  OnCreate = Form1Create
+  PixelsPerInch = 96
+  Position = poScreenCenter
+  HorzScrollBar.Page = 209
+  VertScrollBar.Page = 316
+  Left = 306
+  Height = 317
+  Top = 112
+  Width = 210
+  object GroupBox1: TGroupBox
+    Caption = 'Nastavení'
+    ClientHeight = 158
+    ClientWidth = 189
+    ParentColor = True
+    TabOrder = 1
+    Left = 8
+    Height = 176
+    Top = 104
+    Width = 193
+    object Label1: TLabel
+      Caption = 'Interval:'
+      Color = clNone
+      Layout = tlCenter
+      Left = 6
+      Height = 23
+      Top = 96
+      Width = 49
+    end
+    object Label2: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'sec.'
+      Color = clNone
+      Layout = tlCenter
+      Left = 166
+      Height = 23
+      Top = 96
+      Width = 24
+    end
+    object Label5: TLabel
+      Caption = 'Obnova skla:'
+      Color = clNone
+      Layout = tlCenter
+      Left = 6
+      Height = 23
+      Top = 123
+      Width = 65
+    end
+    object Label6: TLabel
+      Caption = 'sec.'
+      Color = clNone
+      Layout = tlCenter
+      Left = 165
+      Height = 23
+      Top = 123
+      Width = 24
+    end
+    object convert_smiles: TCheckBox
+      Caption = 'Prevadet smiliky'
+      Checked = True
+      Hint = 'Prevadi smiliky z jejich ciselne podoby (*cislo*) na textovou podobu'
+      ParentShowHint = False
+      ShowHint = True
+      State = cbChecked
+      TabOrder = 0
+      Left = 6
+      Height = 23
+      Hint = 'Prevadi smiliky z jejich ciselne podoby (*cislo*) na textovou podobu'
+      Width = 122
+    end
+    object show_advert: TCheckBox
+      Caption = 'Zobrazovat reklamu'
+      Hint = 'Zepne nebo vypne zobrazovani reklamy na skle'
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 1
+      Left = 6
+      Height = 23
+      Hint = 'Zepne nebo vypne zobrazovani reklamy na skle'
+      Top = 24
+      Width = 122
+    end
+    object voiced_girls: TCheckBox
+      Caption = 'Davat voice holkam'
+      Checked = True
+      Hint = 'Zvyrazni holky v seznamu uzivatelu v mistnosti'
+      ParentShowHint = False
+      ShowHint = True
+      State = cbChecked
+      TabOrder = 2
+      Left = 6
+      Height = 23
+      Hint = 'Zvyrazni holky v seznamu uzivatelu v mistnosti'
+      Top = 48
+      Width = 122
+    end
+    object idler: TCheckBox
+      Caption = 'Udržovac'
+      Hint = 'Udrzuje v mistnosti odesilanim zprav v intervalu uvedenym nize'
+      OnChange = idlerChange
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+      Left = 6
+      Height = 23
+      Hint = 'Udrzuje v mistnosti odesilanim zprav v intervalu uvedenym nize'
+      Top = 72
+      Width = 90
+    end
+    object idle_interval: TEdit
+      Color = clWhite
+      Enabled = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 5
+      Text = '720'
+      Left = 78
+      Height = 23
+      Hint = 'Jak casto odesilat udrzovaci zpravu'
+      Top = 96
+      Width = 80
+    end
+    object recv_interval: TComboBox
+      Items.Strings = (
+        '1'
+        '3'
+        '5'
+        '10'
+        '15'
+      )
+      ItemIndex = 2
+      MaxLength = 0
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 4
+      Text = '5'
+      Left = 78
+      Height = 21
+      Hint = 'Jak casto nacitat zpravy ze skla v mistnosti'
+      Top = 125
+      Width = 80
+    end
+  end
+  object GroupBox2: TGroupBox
+    Caption = 'Prihlaseni'
+    ClientHeight = 63
+    ClientWidth = 188
+    ParentColor = True
+    TabOrder = 0
+    Left = 8
+    Height = 81
+    Top = 8
+    Width = 192
+    object Label3: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Heslo:'
+      Color = clNone
+      Layout = tlCenter
+      Left = 6
+      Height = 23
+      Top = 32
+      Width = 65
+    end
+    object Label4: TLabel
+      BorderSpacing.OnChange = nil
+      Caption = 'Nick:'
+      Color = clNone
+      Layout = tlCenter
+      Left = 8
+      Height = 23
+      Width = 65
+    end
+    object password1: TEdit
+      BorderSpacing.OnChange = nil
+      EchoMode = emPassword
+      PasswordChar = '#'
+      TabOrder = 1
+      Left = 62
+      Height = 23
+      Top = 32
+      Width = 120
+    end
+    object nick1: TEdit
+      BorderSpacing.OnChange = nil
+      TabOrder = 0
+      Left = 61
+      Height = 23
+      Width = 120
+    end
+  end
+  object bCancel: TButton
+    Caption = 'Zrušit'
+    ModalResult = 2
+    OnClick = bCancelClick
+    TabOrder = 3
+    Left = 8
+    Height = 25
+    Top = 288
+    Width = 75
+  end
+  object bSave: TButton
+    Caption = 'Uložit'
+    OnClick = bSaveClick
+    TabOrder = 2
+    Left = 125
+    Height = 25
+    Top = 288
+    Width = 75
+  end
+end

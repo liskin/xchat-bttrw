@@ -1,0 +1,60 @@
+{ This is an automatically generated lazarus resource file }
+
+LazarusResources.Add('TForm1','FORMDATA',[
+  'TPF0'#6'TForm1'#5'Form1'#11'BorderIcons'#11#12'biSystemMenu'#10'biMinimize'#0
+  +#11'BorderStyle'#7#8'bsSingle'#7'Caption'#6#10'Prihlaseni'#12'ClientHeight'#3
+  +'='#1#11'ClientWidth'#3#210#0#8'OnCreate'#7#11'Form1Create'#13'PixelsPerInch'
+  +#2'`'#8'Position'#7#14'poScreenCenter'#18'HorzScrollBar.Page'#3#209#0#18'Ver'
+  +'tScrollBar.Page'#3'<'#1#4'Left'#3'2'#1#6'Height'#3'='#1#3'Top'#2'p'#5'Width'
+  +#3#210#0#0#9'TGroupBox'#9'GroupBox1'#7'Caption'#6#9'Nastaven'#237#12'ClientH'
+  +'eight'#3#158#0#11'ClientWidth'#3#189#0#11'ParentColor'#9#8'TabOrder'#2#1#4
+  +'Left'#2#8#6'Height'#3#176#0#3'Top'#2'h'#5'Width'#3#193#0#0#6'TLabel'#6'Labe'
+  +'l1'#7'Caption'#6#9'Interval:'#5'Color'#7#6'clNone'#6'Layout'#7#8'tlCenter'#4
+  +'Left'#2#6#6'Height'#2#23#3'Top'#2'`'#5'Width'#2'1'#0#0#6'TLabel'#6'Label2'
+  +#22'BorderSpacing.OnChange'#13#7'Caption'#6#4'sec.'#5'Color'#7#6'clNone'#6'L'
+  +'ayout'#7#8'tlCenter'#4'Left'#3#166#0#6'Height'#2#23#3'Top'#2'`'#5'Width'#2
+  +#24#0#0#6'TLabel'#6'Label5'#7'Caption'#6#12'Obnova skla:'#5'Color'#7#6'clNon'
+  +'e'#6'Layout'#7#8'tlCenter'#4'Left'#2#6#6'Height'#2#23#3'Top'#2'{'#5'Width'#2
+  +'A'#0#0#6'TLabel'#6'Label6'#7'Caption'#6#4'sec.'#5'Color'#7#6'clNone'#6'Layo'
+  +'ut'#7#8'tlCenter'#4'Left'#3#165#0#6'Height'#2#23#3'Top'#2'{'#5'Width'#2#24#0
+  +#0#9'TCheckBox'#14'convert_smiles'#7'Caption'#6#16'Prevadet smiliky'#7'Check'
+  +'ed'#9#4'Hint'#6'DPrevadi smiliky z jejich ciselne podoby (*cislo*) na texto'
+  +'vou podobu'#14'ParentShowHint'#8#8'ShowHint'#9#5'State'#7#9'cbChecked'#8'Ta'
+  +'bOrder'#2#0#4'Left'#2#6#6'Height'#2#23#4'Hint'#6'DPrevadi smiliky z jejich '
+  +'ciselne podoby (*cislo*) na textovou podobu'#5'Width'#2'z'#0#0#9'TCheckBox'
+  +#11'show_advert'#7'Caption'#6#18'Zobrazovat reklamu'#4'Hint'#6',Zepne nebo v'
+  +'ypne zobrazovani reklamy na skle'#14'ParentShowHint'#8#8'ShowHint'#9#8'TabO'
+  +'rder'#2#1#4'Left'#2#6#6'Height'#2#23#4'Hint'#6',Zepne nebo vypne zobrazovan'
+  +'i reklamy na skle'#3'Top'#2#24#5'Width'#2'z'#0#0#9'TCheckBox'#12'voiced_gir'
+  +'ls'#7'Caption'#6#18'Davat voice holkam'#7'Checked'#9#4'Hint'#6'.Zvyrazni ho'
+  +'lky v seznamu uzivatelu v mistnosti'#14'ParentShowHint'#8#8'ShowHint'#9#5'S'
+  +'tate'#7#9'cbChecked'#8'TabOrder'#2#2#4'Left'#2#6#6'Height'#2#23#4'Hint'#6'.'
+  +'Zvyrazni holky v seznamu uzivatelu v mistnosti'#3'Top'#2'0'#5'Width'#2'z'#0
+  +#0#9'TCheckBox'#5'idler'#7'Caption'#6#8'Udr'#158'ovac'#4'Hint'#6'>Udrzuje v '
+  +'mistnosti odesilanim zprav v intervalu uvedenym nize'#8'OnChange'#7#11'idle'
+  +'rChange'#14'ParentShowHint'#8#8'ShowHint'#9#8'TabOrder'#2#3#4'Left'#2#6#6'H'
+  +'eight'#2#23#4'Hint'#6'>Udrzuje v mistnosti odesilanim zprav v intervalu uve'
+  +'denym nize'#3'Top'#2'H'#5'Width'#2'Z'#0#0#5'TEdit'#13'idle_interval'#5'Colo'
+  +'r'#7#7'clWhite'#7'Enabled'#8#14'ParentShowHint'#8#8'ShowHint'#9#8'TabOrder'
+  +#2#5#4'Text'#6#3'720'#4'Left'#2'N'#6'Height'#2#23#4'Hint'#6'#Jak casto odesi'
+  +'lat udrzovaci zpravu'#3'Top'#2'`'#5'Width'#2'P'#0#0#9'TComboBox'#13'recv_in'
+  +'terval'#13'Items.Strings'#1#6#1'1'#6#1'3'#6#1'5'#6#2'10'#6#2'15'#0#9'ItemIn'
+  +'dex'#2#2#9'MaxLength'#2#0#14'ParentShowHint'#8#8'ShowHint'#9#8'TabOrder'#2#4
+  +#4'Text'#6#1'5'#4'Left'#2'N'#6'Height'#2#21#4'Hint'#6',Jak casto nacitat zpr'
+  +'avy ze skla v mistnosti'#3'Top'#2'}'#5'Width'#2'P'#0#0#0#9'TGroupBox'#9'Gro'
+  +'upBox2'#7'Caption'#6#10'Prihlaseni'#12'ClientHeight'#2'?'#11'ClientWidth'#3
+  +#188#0#11'ParentColor'#9#8'TabOrder'#2#0#4'Left'#2#8#6'Height'#2'Q'#3'Top'#2
+  +#8#5'Width'#3#192#0#0#6'TLabel'#6'Label3'#22'BorderSpacing.OnChange'#13#7'Ca'
+  +'ption'#6#6'Heslo:'#5'Color'#7#6'clNone'#6'Layout'#7#8'tlCenter'#4'Left'#2#6
+  +#6'Height'#2#23#3'Top'#2' '#5'Width'#2'A'#0#0#6'TLabel'#6'Label4'#22'BorderS'
+  +'pacing.OnChange'#13#7'Caption'#6#5'Nick:'#5'Color'#7#6'clNone'#6'Layout'#7#8
+  +'tlCenter'#4'Left'#2#8#6'Height'#2#23#5'Width'#2'A'#0#0#5'TEdit'#9'password1'
+  +#22'BorderSpacing.OnChange'#13#8'EchoMode'#7#10'emPassword'#12'PasswordChar'
+  +#6#1'#'#8'TabOrder'#2#1#4'Left'#2'>'#6'Height'#2#23#3'Top'#2' '#5'Width'#2'x'
+  +#0#0#5'TEdit'#5'nick1'#22'BorderSpacing.OnChange'#13#8'TabOrder'#2#0#4'Left'
+  +#2'='#6'Height'#2#23#5'Width'#2'x'#0#0#0#7'TButton'#7'bCancel'#7'Caption'#6#6
+  +'Zru'#154'it'#11'ModalResult'#2#2#7'OnClick'#7#12'bCancelClick'#8'TabOrder'#2
+  +#3#4'Left'#2#8#6'Height'#2#25#3'Top'#3' '#1#5'Width'#2'K'#0#0#7'TButton'#5'b'
+  +'Save'#7'Caption'#6#6'Ulo'#158'it'#7'OnClick'#7#10'bSaveClick'#8'TabOrder'#2
+  +#2#4'Left'#2'}'#6'Height'#2#25#3'Top'#3' '#1#5'Width'#2'K'#0#0#0
+]);
