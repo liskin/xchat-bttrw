@@ -34,11 +34,11 @@ retry1:
 	if (!s.getline(l))
 	    return out;
 	out.nick = nick;
-	out.name = recode_to_client(l);
+	out.name = recode_to_client(chomp(l));
 	
 	if (!s.getline(l))
 	    throw runtime_error("User info is not complete.");
-	out.surname = recode_to_client(l);
+	out.surname = recode_to_client(chomp(l));
 
 	if (!s.getline(l))
 	    throw runtime_error("User info is not complete.");
@@ -60,11 +60,11 @@ retry1:
 	
 	if (!s.getline(l))
 	    throw runtime_error("User info is not complete.");
-	out.email = recode_to_client(l);
+	out.email = recode_to_client(chomp(l));
 
 	if (!s.getline(l))
 	    throw runtime_error("User info is not complete.");
-	out.nick_created = recode_to_client(l);
+	out.nick_created = recode_to_client(chomp(l));
 
 	if (!s.getline(l))
 	    throw runtime_error("User info is not complete.");
@@ -72,11 +72,11 @@ retry1:
 
 	if (!s.getline(l))
 	    throw runtime_error("User info is not complete.");
-	out.last_online = recode_to_client(l);
+	out.last_online = recode_to_client(chomp(l));
 
 	if (!s.getline(l))
 	    throw runtime_error("User info is not complete.");
-	out.top_pos = recode_to_client(l);
+	out.top_pos = recode_to_client(chomp(l));
 
 	s.close();
 
@@ -117,7 +117,7 @@ retry2:
 	    l.erase(0, l.find(' '));
 	    l.erase(0, l.find_first_not_of(' '));
 
-	    room.name = recode_to_client(l);
+	    room.name = recode_to_client(chomp(l));
 
 	    out.rooms.push_back(room);
 	}

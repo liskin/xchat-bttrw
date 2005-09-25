@@ -680,11 +680,13 @@ main_accept:
 			
 			if (info != "")
 			    info += " ";
-			info += "created: " + us.nick_created + ", ";
+			info += "last: " + us.last_online + ", ";
 			
 			info += "wasted: " +
 			    tostr_float<double>(us.time_wasted / 3600.0, 2) +
 			    " h, ";
+
+			info += "created: " + us.nick_created + ", ";
 
 			info += "TOP: " + us.top_pos;
 
