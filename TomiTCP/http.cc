@@ -66,12 +66,12 @@ namespace net {
 	}
 
 	fprintf(stream,
-		"GET %s HTTP/1.0\n"
-		"User-Agent: TomiTCP/" PACKAGE_VERSION "\n"
-		"Host: %s\n"
-		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\n"
-		"Accept-Charset: utf-8;q=0.7,*;q=0.7\n"
-		"Connection: close\n",
+		"GET %s HTTP/1.0\r\n"
+		"User-Agent: TomiTCP/" PACKAGE_VERSION "\r\n"
+		"Host: %s\r\n"
+		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\r\n"
+		"Accept-Charset: utf-8;q=0.7,*;q=0.7\r\n"
+		"Connection: close\r\n",
 		(proxyhost && proxyhost)?("http://"+host+path).c_str():path.c_str(),
 		host.c_str() );
 	/* cookies... */
@@ -80,7 +80,7 @@ namespace net {
 	    cookies->http_getcookies(c);
 	    fprintf(stream,"%s",c.c_str());
 	}
-	fprintf(stream,"\n");
+	fprintf(stream,"\r\n");
 
 	int ret;
 
@@ -176,14 +176,14 @@ namespace net {
 	}
 
 	fprintf(stream,
-		"POST %s HTTP/1.0\n"
-		"User-Agent: TomiTCP/" PACKAGE_VERSION "\n"
-		"Host: %s\n"
-		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\n"
-		"Accept-Charset: utf-8;q=0.7,*;q=0.7\n"
-		"Connection: close\n"
-		"Content-type: application/x-www-form-urlencoded\n"
-		"Content-length: %i\n",
+		"POST %s HTTP/1.0\r\n"
+		"User-Agent: TomiTCP/" PACKAGE_VERSION "\r\n"
+		"Host: %s\r\n"
+		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\r\n"
+		"Accept-Charset: utf-8;q=0.7,*;q=0.7\r\n"
+		"Connection: close\r\n"
+		"Content-type: application/x-www-form-urlencoded\r\n"
+		"Content-length: %i\r\n",
 		(proxyhost && proxyhost)?("http://"+host+path).c_str():path.c_str(),
 		host.c_str(), (int)data.length() );
 	/* cookies... */
@@ -192,7 +192,7 @@ namespace net {
 	    cookies->http_getcookies(c);
 	    fprintf(stream,"%s",c.c_str());
 	}
-	fprintf(stream,"\n");
+	fprintf(stream,"\r\n");
 	fprintf(stream,"%s",data.c_str());
 
 	int ret;
