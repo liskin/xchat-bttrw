@@ -14,7 +14,6 @@ endif
 
 ifeq ($(TARGET),i386-mingw32msvc)
  LDLIBS += -lws2_32
- ICONV=external
  ifndef WIN32_COMPAT
   WIN32_COMPAT=winxp
  endif
@@ -29,14 +28,10 @@ ifeq ($(TARGET),i386-mingw32msvc)
  endif
 endif
 
-ifeq ($(ICONV),external)
- LDLIBS += -liconv
-endif
-
 COMPONENTS=net http cookies str
 OBJECTS=$(patsubst %,%.o,$(COMPONENTS))
 
-.PHONY: all clean dep
+.PHONY: all clean dep conf
 
 all: libTomiTCP.a pok .depend
 
@@ -47,6 +42,21 @@ dep:
 	$(MAKEDEP)
 	
 -include .depend
+
+MAKECONF=echo -n >.config; O=.conf-$$RANDOM; \
+	 if $(LD) -o $$O -liconv 2>/dev/null; then \
+	 echo ICONV=external >>.config; fi; $(RM) $$O
+conf:
+	$(MAKECONF)
+.config:
+	$(MAKECONF)
+
+-include .config
+
+ifeq ($(ICONV),external)
+ LDLIBS += -liconv
+endif
+
 
 clean:
 	$(RM) *.{o,so,a} pok
