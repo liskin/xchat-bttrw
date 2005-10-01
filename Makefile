@@ -25,7 +25,6 @@ endif
 
 ifeq ($(TARGET),i386-mingw32msvc)
  LDLIBS += -lws2_32
- ICONV=external
  RSRC=rsrc.o
 endif
 
@@ -33,11 +32,7 @@ ifdef WIN32_COMPAT
  GATE_WIN32_COMPAT=-DWIN32_COMPAT=\"$(WIN32_COMPAT)\"
 endif
 
-ifeq ($(ICONV),external)
- LDLIBS += -liconv
-endif
-
-.PHONY: all clean dep dummy buildw32
+.PHONY: all clean dep conf dummy buildw32
 
 all: libxchat-bttrw.a gate README
 
@@ -48,6 +43,21 @@ dep:
 	$(MAKEDEP)
 
 -include .depend
+
+MAKECONF=echo -n >.config; O=.conf-$$RANDOM; \
+	 if $(LD) -o $$O -liconv 2>/dev/null; then \
+	 echo ICONV=external >>.config; fi; $(RM) $$O
+conf:
+	$(MAKECONF)
+.config:
+	$(MAKECONF)
+
+-include .config
+
+ifeq ($(ICONV),external)
+ LDLIBS += -liconv
+endif
+
 
 libxchat-bttrw.a: xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o \
                   charset.o list.o ison.o userinfo.o
@@ -80,7 +90,7 @@ README: gate.cc
 DESTDIR=xchat-bttrw-win32
 buildw32:
 	$(RM) $(filter-out $(DESTDIR)/build.log, $(wildcard $(DESTDIR)/*))
-	$(MAKE) clean dep
+	$(MAKE) clean dep conf
 	$(MAKE) -C TomiTCP clean dep
 	@echo
 	@echo -e '\033[1m' Building for WinXP and up... '\033[m'
