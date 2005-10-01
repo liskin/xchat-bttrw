@@ -44,9 +44,10 @@ dep:
 
 -include .depend
 
-MAKECONF=echo -n >.config; O=.conf-$$RANDOM; \
-	 if $(LD) -o $$O -liconv 2>/dev/null; then \
-	 echo ICONV=external >>.config; fi; $(RM) $$O
+MAKECONF=I=.conf-$$RANDOM.c; echo "main(){}" >$$I; \
+	 echo -n >.config; O=.conf-$$RANDOM; \
+	 if $(CC) -o $$O $$I -liconv 2>/dev/null; then \
+	 echo ICONV=external >>.config; fi; $(RM) $$O $$I
 conf:
 	$(MAKECONF)
 .config:
