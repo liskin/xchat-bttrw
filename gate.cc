@@ -411,13 +411,13 @@ main_accept:
 			 * Note: You're violating the XChat rules by using
 			 * this.
 			 */
-			idle_interval = atol(cmd[2].c_str());
+			x->idle_interval = atol(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :idle_interval set to %i\n",
-				me, nick.c_str(), idle_interval);
+				me, nick.c_str(), x->idle_interval);
 		    } else if (cmd[1] == "CHARSET" && cmd.size() == 3) {
-			client_charset = cmd[2];
+			x->client_charset = cmd[2];
 			fprintf(*c, ":%s NOTICE %s :client_charset set to %s\n",
-				me, nick.c_str(), client_charset.c_str());
+				me, nick.c_str(), x->client_charset.c_str());
 		    } else if (cmd[1] == "VOICED_GIRLS" && cmd.size() == 3) {
 			/*
 			 * Please don't turn this on later than at the
@@ -435,17 +435,17 @@ main_accept:
 			fprintf(*c, ":%s NOTICE %s :show_advert set to %i\n",
 				me, nick.c_str(), show_advert);
 		    } else if (cmd[1] == "RECV_INTERVAL" && cmd.size() == 3) {
-			recv_interval = atol(cmd[2].c_str());
+			x->recv_interval = atol(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :recv_interval set to %i\n",
-				me, nick.c_str(), recv_interval);
+				me, nick.c_str(), x->recv_interval);
 		    } else if (cmd[1] == "SHOW_DATE" && cmd.size() == 3) {
 			show_date = atol(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :show_date set to %i\n",
 				me, nick.c_str(), show_date);
 		    } else if (cmd[1] == "CONVERT_SMILES" && cmd.size() == 3) {
-			convert_smiles = atol(cmd[2].c_str());
+			x->convert_smiles = atol(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :convert_smiles set to %i\n",
-				me, nick.c_str(), convert_smiles);
+				me, nick.c_str(), x->convert_smiles);
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
 				" count\n", me, nick.c_str());

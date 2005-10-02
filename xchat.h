@@ -63,13 +63,11 @@ namespace xchat {
 
 namespace xchat {
     /*
-     * Flood protection, refresh rate, max msg length, idle protection,
+     * Flood protection, max msg length,
      * maximum msg send retries and roominfo refresh rate
-     * 720 is optimal for flood protection
      */
     const int send_interval = 5;
     const unsigned int max_msg_length = 200;
-    extern int idle_interval, recv_interval;
     const int roominfo_interval = 15 * 60;
     const int putmsg_retries = 5;
 
@@ -77,17 +75,7 @@ namespace xchat {
      * Load balancing consts
      */
     const int tries_to_rest = 3, rest_duration = 7200,
-	  nextchance_interval = 30;
-
-    /*
-     * Bools
-     */
-    extern bool convert_smiles;
-
-    /*
-     * Recoding
-     */
-    extern string client_charset;
+		 nextchance_interval = 30;
 
     class recv_item {
 	public:
@@ -155,11 +143,11 @@ namespace xchat {
 	    string makeurl(const string& url);
 	    string makeurl2(const string& url);
 
-	    static void stripjsescapes(string &s);
-	    static void striphtml(string &s);
-	    static void getdate(string &m, string &date);
-	    static void getnick(string &m, string &src, string &target);
-	    static void unsmilize(string &s);
+	    void stripjsescapes(string &s);
+	    void striphtml(string &s);
+	    void getdate(string &m, string &date);
+	    void getnick(string &m, string &src, string &target);
+	    void unsmilize(string &s);
 	    bool isjoin(room& r, string &m, string &src, int &sex);
 	    bool isleave(room& r, string &m, string &src, int &sex);
 	    bool iskick(room& r, string &m, string &src, string &reason, string &who, int &sex);
@@ -183,6 +171,19 @@ namespace xchat {
 	    void list(listout_t &listout);
 	    bool ison(const string& nick);
 	    userinfo_t userinfo(const string& nick);
+
+	    /*
+	     * Runtime configuration:
+	     */
+
+	    // Idler and refresh rate. 2400 is recommended for idler.
+	    int idle_interval, recv_interval;
+
+	    // Smile conversion.
+	    bool convert_smiles;
+
+	    // Client charset for automatic conversion.
+	    string client_charset;
     };
 
     inline void XChat::recvq_push(Event *e) {

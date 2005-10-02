@@ -11,14 +11,6 @@
 
 namespace xchat {
     /*
-     * Variable definitions
-     */
-    int idle_interval = 0;
-    int recv_interval = 3;
-    bool convert_smiles = true;
-    string client_charset;
-
-    /*
      * Init rng and recode.
      */
     void xchat_init()
