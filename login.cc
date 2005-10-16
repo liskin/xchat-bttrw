@@ -108,7 +108,7 @@ retry:
 	int i;
 	
 	for (char *c = "sp"; *c; c++) {
-	    for (i = 1; i <= 10 /* xchat motofoko */; i++) {
+	    for (i = 1; i <= 100 /* limit for check */; i++) {
 		vector<sockaddr_uni> sockaddrs;
 	        try {
 		    resolve(*c + string("x") + tostr<int>(i) + ".xchat.cz", "", sockaddrs);
@@ -119,11 +119,16 @@ retry:
 
 		for (vector<sockaddr_uni>::iterator i = sockaddrs.begin();
 			i != sockaddrs.end(); i++)
-		    servers.push_back(server(*i));
+		    servers.push_back(server(tomi_ntop(*i)));
 	    }
 	}
 
-	if (i == 1)
-	    throw runtime_error("Could not get xchat server list from DNS.");
+	if (servers.empty()) {
+	    servers.push_back(server("xchat.centrum.cz"));
+
+	    EvError *e = new EvError;
+	    e->s = "Could not get xchat server list from DNS. Using xchat.centrum.cz as host.";
+	    recvq_push(e);
+	}
     }
 }

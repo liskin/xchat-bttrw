@@ -28,16 +28,18 @@ namespace xchat {
      */
     string XChat::lastsrv_broke()
     {
-	servers[lastsrv].last_break = time(0);
-	servers[lastsrv].break_count++;
+	if (servers.size() > 1) {
+	    servers[lastsrv].last_break = time(0);
+	    servers[lastsrv].break_count++;
 
-	if (servers[lastsrv].break_count >= tries_to_rest) {
-	    EvError *e = new EvError;
-	    e->s = "Server " + tomi_ntop(servers[lastsrv].sa) + " is having a rest.";
-	    recvq_push(e);
+	    if (servers[lastsrv].break_count >= tries_to_rest) {
+		EvError *e = new EvError;
+		e->s = "Server " + servers[lastsrv].host + " is having a rest.";
+		recvq_push(e);
+	    }
 	}
 
-	return tomi_ntop(servers[lastsrv].sa);
+	return servers[lastsrv].host;
     }
 	    
     /*
@@ -50,7 +52,7 @@ namespace xchat {
 	    if (i->break_count >= tries_to_rest &&
 		    (i->last_break + rest_duration) < time(0)) {
 		EvError *e = new EvError;
-		e->s = "Server " + tomi_ntop(i->sa)
+		e->s = "Server " + i->host
 		    + " is no longer having a rest.";
 		recvq_push(e);
 
@@ -83,7 +85,7 @@ namespace xchat {
      */
     string XChat::makeurl(const string& path)
     {
-	return "http://" + tomi_ntop(servers[lastsrv = makesrv()].sa) + "/" + path;
+	return "http://" + servers[lastsrv = makesrv()].host + "/" + path;
     }
 
     /*
@@ -91,7 +93,7 @@ namespace xchat {
      */
     string XChat::makeurl2(const string& path)
     {
-	return "http://" + tomi_ntop(servers[lastsrv = makesrv()].sa) + "/~$" +
+	return "http://" + servers[lastsrv = makesrv()].host + "/~$" +
 	    uid + "~" + sid + "/" + path;
     }
 

@@ -94,12 +94,12 @@ namespace xchat {
 
     class server {
 	public:
-	    net::sockaddr_uni sa;
+	    string host;
 	    time_t last_break;
 	    int break_count;
 
-	    server(const net::sockaddr_uni &a) : sa(a), last_break(0),
-						 break_count(0)
+	    server(const string &a) : host(a), last_break(0),
+				      break_count(0)
 	    { }
     };
 
