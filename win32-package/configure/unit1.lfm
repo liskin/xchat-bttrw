@@ -9,11 +9,12 @@ object Form1: TForm1
   Position = poScreenCenter
   HorzScrollBar.Page = 209
   VertScrollBar.Page = 316
-  Left = 306
+  Left = 244
   Height = 317
-  Top = 112
+  Top = 103
   Width = 210
   object GroupBox1: TGroupBox
+    BorderSpacing.OnChange = nil
     Caption = 'Nastavení'
     ClientHeight = 158
     ClientWidth = 189
@@ -24,6 +25,7 @@ object Form1: TForm1
     Top = 104
     Width = 193
     object Label1: TLabel
+      BorderSpacing.OnChange = nil
       Caption = 'Interval:'
       Color = clNone
       Layout = tlCenter
@@ -33,7 +35,6 @@ object Form1: TForm1
       Width = 49
     end
     object Label2: TLabel
-      BorderSpacing.OnChange = nil
       Caption = 'sec.'
       Color = clNone
       Layout = tlCenter
@@ -43,6 +44,7 @@ object Form1: TForm1
       Width = 24
     end
     object Label5: TLabel
+      BorderSpacing.OnChange = nil
       Caption = 'Obnova skla:'
       Color = clNone
       Layout = tlCenter
@@ -52,6 +54,7 @@ object Form1: TForm1
       Width = 65
     end
     object Label6: TLabel
+      BorderSpacing.OnChange = nil
       Caption = 'sec.'
       Color = clNone
       Layout = tlCenter
@@ -61,6 +64,7 @@ object Form1: TForm1
       Width = 24
     end
     object convert_smiles: TCheckBox
+      BorderSpacing.OnChange = nil
       Caption = 'Prevadet smiliky'
       Checked = True
       Hint = 'Prevadi smiliky z jejich ciselne podoby (*cislo*) na textovou podobu'
@@ -74,6 +78,7 @@ object Form1: TForm1
       Width = 122
     end
     object show_advert: TCheckBox
+      BorderSpacing.OnChange = nil
       Caption = 'Zobrazovat reklamu'
       Hint = 'Zepne nebo vypne zobrazovani reklamy na skle'
       ParentShowHint = False
@@ -86,6 +91,7 @@ object Form1: TForm1
       Width = 122
     end
     object voiced_girls: TCheckBox
+      BorderSpacing.OnChange = nil
       Caption = 'Davat voice holkam'
       Checked = True
       Hint = 'Zvyrazni holky v seznamu uzivatelu v mistnosti'
@@ -100,6 +106,7 @@ object Form1: TForm1
       Width = 122
     end
     object idler: TCheckBox
+      BorderSpacing.OnChange = nil
       Caption = 'Udržovac'
       Hint = 'Udrzuje v mistnosti odesilanim zprav v intervalu uvedenym nize'
       OnChange = idlerChange
@@ -113,6 +120,7 @@ object Form1: TForm1
       Width = 90
     end
     object idle_interval: TEdit
+      BorderSpacing.OnChange = nil
       Color = clWhite
       Enabled = False
       ParentShowHint = False
@@ -126,6 +134,7 @@ object Form1: TForm1
       Width = 80
     end
     object recv_interval: TComboBox
+      BorderSpacing.OnChange = nil
       Items.Strings = (
         '1'
         '3'
@@ -147,6 +156,7 @@ object Form1: TForm1
     end
   end
   object GroupBox2: TGroupBox
+    BorderSpacing.OnChange = nil
     Caption = 'Prihlaseni'
     ClientHeight = 63
     ClientWidth = 188
@@ -157,7 +167,6 @@ object Form1: TForm1
     Top = 8
     Width = 192
     object Label3: TLabel
-      BorderSpacing.OnChange = nil
       Caption = 'Heslo:'
       Color = clNone
       Layout = tlCenter
@@ -167,7 +176,6 @@ object Form1: TForm1
       Width = 65
     end
     object Label4: TLabel
-      BorderSpacing.OnChange = nil
       Caption = 'Nick:'
       Color = clNone
       Layout = tlCenter
@@ -176,7 +184,6 @@ object Form1: TForm1
       Width = 65
     end
     object password1: TEdit
-      BorderSpacing.OnChange = nil
       EchoMode = emPassword
       PasswordChar = '#'
       TabOrder = 1
@@ -186,7 +193,6 @@ object Form1: TForm1
       Width = 120
     end
     object nick1: TEdit
-      BorderSpacing.OnChange = nil
       TabOrder = 0
       Left = 61
       Height = 23
@@ -194,6 +200,8 @@ object Form1: TForm1
     end
   end
   object bCancel: TButton
+    BorderSpacing.OnChange = nil
+    BorderSpacing.InnerBorder = 2
     Caption = 'Zrušit'
     ModalResult = 2
     OnClick = bCancelClick
@@ -204,6 +212,8 @@ object Form1: TForm1
     Width = 75
   end
   object bSave: TButton
+    BorderSpacing.OnChange = nil
+    BorderSpacing.InnerBorder = 2
     Caption = 'Uložit'
     OnClick = bSaveClick
     TabOrder = 2

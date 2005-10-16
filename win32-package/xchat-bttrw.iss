@@ -1,7 +1,7 @@
 [Setup]
 AppName=xchat-bttrw
-AppVerName=xchat-bttrw r. 423
-OutputBaseFilename=xchat-bttrw-423
+AppVerName=xchat-bttrw r. 434
+OutputBaseFilename=xchat-bttrw-434
 AppPublisher=NOMI team
 AppPublisherURL=http://www.nomi.cz/
 AppSupportURL=http://nomi.cz/projects.shtml?id=xchat-bttrw
@@ -27,17 +27,18 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "data\gate-win98.exe"; DestName: "gate.exe"; DestDir: "{app}"; Flags: ignoreversion; MinVersion: 4.1,4.0; OnlyBelowVersion: 0,5.0
-Source: "data\gate-win2k.exe"; DestName: "gate.exe"; DestDir: "{app}"; Flags: ignoreversion; MinVersion: 0,5.0; OnlyBelowVersion: 0,5.01
-Source: "data\gate.exe"; DestName: "gate.exe"; DestDir: "{app}"; Flags: ignoreversion; MinVersion: 0,5.01
+Source: "data\gate-win98.exe"; DestName: "gate.exe"; DestDir: "{app}"; Flags: ignoreversion; MinVersion: 4.1,4.0; OnlyBelowVersion: 0,5.0; BeforeInstall: KillAll('gate.exe');
+Source: "data\gate-win2k.exe"; DestName: "gate.exe"; DestDir: "{app}"; Flags: ignoreversion; MinVersion: 0,5.0; OnlyBelowVersion: 0,5.01; BeforeInstall: KillAll('gate.exe');
+Source: "data\gate.exe"; DestName: "gate.exe"; DestDir: "{app}"; Flags: ignoreversion; MinVersion: 0,5.01; BeforeInstall: KillAll('gate.exe');
 Source: "data\COPYING.txt";    DestDir: "{app}"; Flags: ignoreversion
 Source: "data\COPYRIGHT";  DestDir: "{app}"; Flags: ignoreversion
 Source: "data\config.exe";  DestDir: "{app}"; Flags: ignoreversion
-Source: "data\run.bat";  DestDir: "{app}"; Flags: ignoreversion
-Source: "data\xchat\*";  DestDir: "{app}\xchat"; Flags: ignoreversion recursesubdirs
+Source: "data\run.bat";  DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist
+Source: "data\killall.exe";  DestDir: "{app}"; Flags: ignoreversion
+Source: "data\xchat\*";  DestDir: "{app}\xchat"; Flags: ignoreversion recursesubdirs; BeforeInstall: KillAll('xchat.exe');
 Source: "data\ico\all.ico";  DestName: "gate.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "data\xchat-appdata\*";  DestDir: "{userappdata}\X-Chat 2"; Flags: onlyifdoesntexist uninsneveruninstall
-Source: "data\libiconv-2.dll"; DestDir: "{sys}"
+Source: "data\libiconv-2.dll"; DestDir: "{sys}"; BeforeInstall: KillAll('gate.exe');
 
 ;Knihovna Visual C++
 Source: "data\msvcr71.dll"; DestDir: "{sys}"; Flags: restartreplace uninsneveruninstall sharedfile
@@ -65,3 +66,13 @@ Type: files; Name: "{app}\gate.url"
 Type: files; Name: "{app}\gate-help.url"
 Type: files; Name: "{app}\xchat.url"
 
+[UninstallRun]
+Filename: "{app}\killall.exe"; Parameters: "xchat.exe"; Flags: runhidden
+Filename: "{app}\killall.exe"; Parameters: "gate.exe"; Flags: runhidden
+
+[Code]
+procedure KillAll(s: string);
+var ResultCode: Integer;
+begin
+  Exec(ExpandConstant('{app}\killall.exe'), s, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+end;
