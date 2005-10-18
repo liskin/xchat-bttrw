@@ -11,7 +11,7 @@ static void parse_updateinfo(string s, string &admin, bool &locked)
 {
     s.erase(0, s.find(',') + 1);
     string slocked(s, 0, s.find(','));
-    locked = atol(slocked.c_str());
+    locked = atoi(slocked.c_str());
     s.erase(0, slocked.length() + 1);
     s.erase(0, s.find(',') + 1);
     s.erase(0, s.find(',') + 1);
@@ -113,7 +113,7 @@ retry2:
 	    if ((a = l.find(pat1)) != string::npos &&
 		    (b = l.find('"', a + pat1.length())) != string::npos) {
 		lastline = true;
-		r.l = atol(string(l, a + pat1.length(), b - a - pat1.length()).c_str());
+		r.l = atoi(string(l, a + pat1.length(), b - a - pat1.length()).c_str());
 		continue;
 	    }
 
@@ -347,7 +347,7 @@ retry:
 		unsigned int a, b;
 		if ((a = l.find(pat1)) != string::npos &&
 			(b = l.find('"', a + pat1.length())) != string::npos) {
-		    r.l = atol(string(l, a + pat1.length(), b - a - pat1.length()).c_str());
+		    r.l = atoi(string(l, a + pat1.length(), b - a - pat1.length()).c_str());
 		}
 	    }
 

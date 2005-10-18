@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
 			cerr << "Unknown option " << *c << endl;
 		}
 	else
-	    port = atol(argv[arg]);
+	    port = atoi(argv[arg]);
 
 #ifdef WIN32
     if (detach)
@@ -411,7 +411,7 @@ main_accept:
 			 * Note: You're violating the XChat rules by using
 			 * this.
 			 */
-			x->idle_interval = atol(cmd[2].c_str());
+			x->idle_interval = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :idle_interval set to %i\n",
 				me, nick.c_str(), x->idle_interval);
 		    } else if (cmd[1] == "CHARSET" && cmd.size() == 3) {
@@ -423,7 +423,7 @@ main_accept:
 			 * Please don't turn this on later than at the
 			 * beginning
 			 */
-			voiced_girls = atol(cmd[2].c_str());
+			voiced_girls = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :voiced_girls set to %i\n",
 				me, nick.c_str(), voiced_girls);
 		    } else if (cmd[1] == "SHOW_ADVERT" && cmd.size() == 3) {
@@ -431,19 +431,19 @@ main_accept:
 			 * Note that you're probably not behaving fair while
 			 * having this turned off.
 			 */
-			show_advert = atol(cmd[2].c_str());
+			show_advert = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :show_advert set to %i\n",
 				me, nick.c_str(), show_advert);
 		    } else if (cmd[1] == "RECV_INTERVAL" && cmd.size() == 3) {
-			x->recv_interval = atol(cmd[2].c_str());
+			x->recv_interval = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :recv_interval set to %i\n",
 				me, nick.c_str(), x->recv_interval);
 		    } else if (cmd[1] == "SHOW_DATE" && cmd.size() == 3) {
-			show_date = atol(cmd[2].c_str());
+			show_date = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :show_date set to %i\n",
 				me, nick.c_str(), show_date);
 		    } else if (cmd[1] == "CONVERT_SMILES" && cmd.size() == 3) {
-			x->convert_smiles = atol(cmd[2].c_str());
+			x->convert_smiles = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :convert_smiles set to %i\n",
 				me, nick.c_str(), x->convert_smiles);
 		    } else {

@@ -101,7 +101,7 @@ namespace xchat {
 			(d = s.find(pat3, a)) != string::npos &&
 			c < a + b && d < c) {
 		    while (--c > a + pat.length() && isdigit(s[c])); c++;
-		    smile = atol(string(s, c).c_str());
+		    smile = atoi(string(s, c).c_str());
 		}
 	    }
 	    
@@ -204,8 +204,8 @@ namespace xchat {
 		fail |= !isdigit(*i);
 
 	    if (!fail) {
-		int smile = atol(string(s.begin() + a + 1, s.begin() + b).c_str());
-		if (smile < smiles_count && smiles[smile]) {
+		int smile = atoi(string(s.begin() + a + 1, s.begin() + b).c_str());
+		if (smile < smiles_count && smile >= 0 && smiles[smile]) {
 		    s.replace(a, b - a + 1, string("\002") + smiles[smile] + "\002");
 
 		    int add = 2;
