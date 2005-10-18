@@ -22,7 +22,7 @@ void m_say_timer()
 	    net::TomiTCP *cl = m_say_s.accept();
 
 	    /* Fuck. */
-	    if (net::input_timeout(m_say_s.sock,1000) <= 0) {
+	    if (net::input_timeout(cl->sock,1000) <= 0) {
 		delete cl;
 		continue;
 	    }
