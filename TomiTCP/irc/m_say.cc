@@ -18,8 +18,14 @@ void m_say_timer()
 	if (!m_say_s.ok()) {
 	    m_say_s.listen(m_say_port);
 	}
-	if (m_say_s.ok() && net::input_timeout(m_say_s.sock,0) > 0) {
+	while (m_say_s.ok() && net::input_timeout(m_say_s.sock,0) > 0) {
 	    net::TomiTCP *cl = m_say_s.accept();
+
+	    /* Fuck. */
+	    if (net::input_timeout(m_say_s.sock,1000) <= 0) {
+		delete cl;
+		continue;
+	    }
 
 	    string channel, msg;
 	    cl->getline(channel);
