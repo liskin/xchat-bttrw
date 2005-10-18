@@ -46,7 +46,7 @@ namespace net {
 	delim = address.find(':');
 	if (delim != string::npos) {
 	    host.assign(address,0,delim);
-	    port = atol(address.c_str() + delim + 1);
+	    port = atoi(address.c_str() + delim + 1);
 	}
 	if (port < 1)
 	    port = 80;
@@ -97,7 +97,7 @@ namespace net {
 		space = line.length();
 	    }
 	    string rets(line,0,space);
-	    ret = atol(rets.c_str());
+	    ret = atoi(rets.c_str());
 	    if (!ret)
 		throw runtime_error("parse error on HTTP response");
 	} else {
@@ -156,7 +156,7 @@ namespace net {
 	delim = address.find(':');
 	if (delim != string::npos) {
 	    host.assign(address,0,delim);
-	    port = atol(address.c_str() + delim + 1);
+	    port = atoi(address.c_str() + delim + 1);
 	}
 	if (port < 1)
 	    port = 80;
@@ -210,7 +210,7 @@ namespace net {
 		space = line.length();
 	    }
 	    string rets(line,0,space);
-	    ret = atol(rets.c_str());
+	    ret = atoi(rets.c_str());
 	    if (!ret)
 		throw runtime_error("parse error on HTTP response");
 	} else {
