@@ -270,6 +270,8 @@ main_accept:
 	log(tomi_ntop(c->rname) + " - Connected");
 #endif
 
+	last_ping = 0;
+	last_ping_sent = 0;
 	connect_time = time(0);
 	setproctitle(("gate: " + tomi_ntop(c->rname)).c_str());
 
