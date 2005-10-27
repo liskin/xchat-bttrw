@@ -448,6 +448,16 @@ void docmd(string &snick, string &cmd)
 	}
 	return;
     }
+    
+    if (cl[0] == ".unloadmodule") {
+	if (cl.size() != 2) {
+	    S(f,"PRIVMSG %s :Need 1 parameters\n",snick.c_str());
+	} else {
+	    unloadmodule(cl[1]);
+	    S(f,"PRIVMSG %s :Unloaded.\n",snick.c_str());
+	}
+	return;
+    }
 
     // .addslave host port pass
     if (cl[0] == ".addslave") {
