@@ -5,6 +5,7 @@ port	6667
 nick	B4gr
 #password	nomi-team
 master	Liskni_s?!pytt_l@bigcomp.home.nomi.cz
+master	Liskni_s?!pytt_l@lisk.in
 #oname	Liskni_si
 #opassword	xxx
 max_modes	4

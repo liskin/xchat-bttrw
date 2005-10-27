@@ -339,9 +339,10 @@ void restart()
     S(sock, "QUIT :restarting\n");
     sock.close();
     slave_s.close();
-    for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++) {
+    for (slavec_t::iterator i = slavec.begin(); i != slavec.end(); i++)
 	delete i->s;
-    }
+    for (modules_t::iterator i = modules.begin(); i != modules.end(); i++)
+	dlclose(i->second.lib);
     sleep(1);
 
     execv(my_argv[0],my_argv);
