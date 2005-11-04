@@ -189,7 +189,14 @@ retry3:
 	s.close();
 	r.nicklist[strtolower_nr(me.nick)] = me;
 
-	getroominfo(r);
+	try { getroominfo(r); }
+	catch (runtime_error e) {
+	    EvRoomError *f = new EvRoomError;
+	    f->s = e.what();
+	    f->rid = r.rid;
+	    f->fatal = false;
+	    recvq_push(f);
+	}
 
 	// insert it
 	rooms[rid] = r;
@@ -262,7 +269,7 @@ retry:
 	while (s.getline(l)) {
 	    chomp(l);
 
-	    static string pat1 = "název místnosti:</td>";
+	    static string pat1 = "název:</td>";
 	    unsigned int pos;
 	    if ((pos = l.find(pat1)) != string::npos) {
 		string st(l, pos + pat1.length());
@@ -273,7 +280,7 @@ retry:
 		continue;
 	    }
 	    
-	    static string pat2 = "popis místnosti:</td>";
+	    static string pat2 = "popis:</td>";
 	    if ((pos = l.find(pat2)) != string::npos) {
 		string st(l, pos + pat2.length());
 		striphtml(st);
