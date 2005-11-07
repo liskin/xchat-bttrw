@@ -269,7 +269,7 @@ retry:
 	while (s.getline(l)) {
 	    chomp(l);
 
-	    static string pat1 = "název:</td>";
+	    static string pat1 = "název místnosti:</td>";
 	    unsigned int pos;
 	    if ((pos = l.find(pat1)) != string::npos) {
 		string st(l, pos + pat1.length());
@@ -280,7 +280,7 @@ retry:
 		continue;
 	    }
 	    
-	    static string pat2 = "popis:</td>";
+	    static string pat2 = "popis místnosti:</td>";
 	    if ((pos = l.find(pat2)) != string::npos) {
 		string st(l, pos + pat2.length());
 		striphtml(st);

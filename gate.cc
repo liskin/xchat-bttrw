@@ -381,7 +381,7 @@ main_accept:
 			fprintf(*c, ":%s 005 %s MODES=1 MAXTARGETS=1 NICKLEN=20 SAFELIST"
 				" :are supported by this server\n",
 				me, nick.c_str());
-			fprintf(*c, ":%s 005 %s CHANTYPES=# PREFIX=(ov)@+ CHANMODES=,,,i"
+			fprintf(*c, ":%s 005 %s CHANTYPES=# PREFIX=(ohv)@%%+ CHANMODES=,,,i"
 				" NETWORK=xchat.cz CASEMAPPING=ascii"
 				" :are supported by this server\n", me, nick.c_str());
 
@@ -486,7 +486,8 @@ main_accept:
 			    for (i = 1, j = x->rooms[chan].nicklist.begin();
 				    j != x->rooms[chan].nicklist.end(); j++, i++) {
 				tmp += string("") +
-				    ((x->isadmin(chan, j->first))?"@":"") +
+				    ((x->ispermadmin(chan, j->first))?"@":"") +
+				    ((x->isadmin(chan, j->first))?"%":"") +
 				    ((j->second.sex == 0 && voiced_girls)?"+":"") +
 				    j->second.nick + " ";
 				if (i % 5 == 0) {
@@ -592,7 +593,7 @@ main_accept:
 		    cmd[1].erase(cmd[1].begin());
 
 		    // we don't want to set admin more than once
-		    bool admin = 1; /* x->isadmin(cmd[1], nick); */
+		    bool admin = 1;
 
 		    for (vector<pair<string, string> >::iterator i = modes.begin();
 			    i != modes.end(); i++) {
@@ -626,7 +627,8 @@ main_accept:
 					username(i->second).c_str(),
 					host(i->second).c_str(),
 					me, i->second.nick.c_str(),
-					(x->isadmin(cmd[1], i->first))?"@":"",
+					(x->ispermadmin(cmd[1], i->first))?"@":"",
+					(x->isadmin(cmd[1], i->first))?"%":"",
 					(i->second.sex == 0 && voiced_girls)?"+":"",
 					0, "xchat.cz user");
 			    }
@@ -781,7 +783,8 @@ main_accept:
 			for (i = 1, j = x->rooms[cmd[1]].nicklist.begin();
 				j != x->rooms[cmd[1]].nicklist.end(); j++, i++) {
 			    tmp += string("") +
-				((x->isadmin(cmd[1], j->first))?"@":"") +
+				((x->ispermadmin(cmd[1], j->first))?"@":"") +
+				((x->isadmin(cmd[1], j->first))?"%":"") +
 				((j->second.sex == 0 && voiced_girls)?"+":"") +
 				j->second.nick + " ";
 			    if (i % 5 == 0) {
@@ -978,13 +981,14 @@ main_accept:
 
 		    if (f->getbefore().empty() ||
 			    x->ispermadmin(f->getrid(), f->getbefore()))
-			fprintf(*c, ":%s MODE #%s +o %s\n", me,
+			fprintf(*c, ":%s MODE #%s +h %s\n", me,
 				f->getrid().c_str(), now.nick.c_str());
-		    else if (f->getnow().empty())
-			fprintf(*c, ":%s MODE #%s -o %s\n", me,
+		    else if (f->getnow().empty() ||
+			    x->ispermadmin(f->getrid(), f->getnow()))
+			fprintf(*c, ":%s MODE #%s -h %s\n", me,
 				f->getrid().c_str(), before.nick.c_str());
 		    else
-			fprintf(*c, ":%s MODE #%s -o+o %s %s\n", me,
+			fprintf(*c, ":%s MODE #%s -h+h %s %s\n", me,
 				f->getrid().c_str(), before.nick.c_str(),
 				now.nick.c_str());
 		} else if (dynamic_cast<EvRoomAdminsChange*>(e.get())) {

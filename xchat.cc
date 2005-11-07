@@ -313,9 +313,6 @@ namespace xchat {
 	if (rooms[rid].admin == nick)
 	    return true;
 
-	if (rooms[rid].admins.find(nick) != rooms[rid].admins.end())
-	    return true;
-
 	return false;
     }
     
