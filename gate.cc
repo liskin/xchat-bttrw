@@ -601,7 +601,9 @@ main_accept:
 			    // just to make client's `channel synchronizing' happy
 			    fprintf(*c, ":%s 368 %s #%s :End of Channel Ban List\n", me,
 				    nick.c_str(), cmd[1].c_str());
-			} else if (i->first == "+o") {
+			} else if (i->first == "+o" || i->first == "+h") {
+			    // +o just to maintain backward compatibility and
+			    // ease of use
 			    if (admin) {
 				x->admin(cmd[1], i->second);
 				admin = 0;
