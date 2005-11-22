@@ -624,7 +624,7 @@ main_accept:
 			     */
 			    for (nicklist_t::iterator i = x->rooms[cmd[1]].nicklist.begin();
 				    i != x->rooms[cmd[1]].nicklist.end(); i++) {
-				fprintf(*c, ":%s 352 %s #%s %s %s %s %s H%s%s :%d %s\n", me,
+				fprintf(*c, ":%s 352 %s #%s %s %s %s %s H%s%s%s :%d %s\n", me,
 					nick.c_str(), cmd[1].c_str(),
 					username(i->second).c_str(),
 					host(i->second).c_str(),
