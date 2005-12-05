@@ -13,7 +13,7 @@ namespace xchat {
      * \param pass Password.
      */
     XChat::XChat(const string& user, const string& pass)
-	: last_sent(0), last_recv(0), idle_delta(0), lastsrv(0),
+	: lastsrv(0), last_sent(0), last_recv(0), idle_delta(0),
 	idle_interval(0), recv_interval(3), convert_smiles(true)
     {
 	/*
