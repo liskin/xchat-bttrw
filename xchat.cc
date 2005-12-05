@@ -10,8 +10,9 @@
 #include "TomiTCP/str.h"
 
 namespace xchat {
-    /*
-     * Init rng and recode.
+    /**
+     * Call all initializations needed for libxchat-bttrw.
+     * That involves HTML recoder init and setlocale.
      */
     void xchat_init()
     {
@@ -23,8 +24,9 @@ namespace xchat {
 #endif
     }
 
-    /*
+    /**
      * Last server broke, count it.
+     * \return A string representation of the server to let the user know.
      */
     string XChat::lastsrv_broke()
     {
@@ -42,8 +44,10 @@ namespace xchat {
 	return servers[lastsrv].host;
     }
 	    
-    /*
-     * Get some good server
+    /**
+     * Get a random working server. Unrest servers when the time comes or when
+     * no server is available.
+     * \return Index in the #servers array.
      */
     int XChat::makesrv()
     {
@@ -80,16 +84,16 @@ namespace xchat {
 	}
     }
 
-    /*
-     * Prepare URL with given full path.
+    /**
+     * Prepare URL with given path. (without login information)
      */
     string XChat::makeurl(const string& path)
     {
 	return "http://" + servers[lastsrv = makesrv()].host + "/" + path;
     }
 
-    /*
-     * Prepare URL with given the path which should be appended to uid and sid
+    /**
+     * Prepare URL with given path. (with login information)
      */
     string XChat::makeurl2(const string& path)
     {
@@ -97,8 +101,11 @@ namespace xchat {
 	    uid + "~" + sid + "/" + path;
     }
 
-    /*
-     * Find a nick structure in rooms we are
+    /**
+     * Find a nick structure in rooms we are in.
+     * \param src Searched nick.
+     * \param r The room in which we found it is returned here, if non-NULL.
+     * \return Pointer to x_nick or NULL if not found.
      */
     x_nick* XChat::findnick(string src, room **r)
     {
@@ -123,8 +130,8 @@ namespace xchat {
 	return 0;
     }
 
-    /*
-     * Go through sendq and send messages, take flood protection into account.
+    /**
+     * Go through #sendq and send messages, take flood protection into account.
      * Then, send anti-idle messages if necessary.
      */
     void XChat::do_sendq()
@@ -231,8 +238,8 @@ namespace xchat {
 	    }
     }
 
-    /*
-     * Get new messages if it should be done yet.
+    /**
+     * Get new messages and/or reload room info, if it's the time.
      */
     void XChat::fill_recvq()
     {
@@ -302,8 +309,12 @@ namespace xchat {
 	}
     }
 
-    /*
-     * Check if given user is admin
+    /**
+     * Check if given user is admin in a specified room.
+     * (but not permanent admin or xchat admin)
+     * \param rid Room id.
+     * \param nick User's nick.
+     * \return True if he is.
      */
     bool XChat::isadmin(const string &rid, string nick) {
 	if (rooms.find(rid) == rooms.end())
@@ -316,6 +327,13 @@ namespace xchat {
 	return false;
     }
     
+    /**
+     * Check if given user is permanent admin in a specified room.
+     * (but not permanent admin or xchat admin)
+     * \param rid Room id.
+     * \param nick User's nick.
+     * \return True if he is.
+     */
     bool XChat::ispermadmin(const string &rid, string nick) {
 	if (rooms.find(rid) == rooms.end())
 	    return false;

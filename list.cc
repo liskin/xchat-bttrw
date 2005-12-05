@@ -16,8 +16,9 @@ namespace xchat {
 	return strcoll(a.second.c_str(), b.second.c_str()) < 0;
     }
 
-    /*
+    /**
      * Get a list of available rooms
+     * \param listout Output array.
      */
     void XChat::list(listout_t &listout)
     {

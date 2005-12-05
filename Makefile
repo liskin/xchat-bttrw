@@ -32,7 +32,7 @@ ifdef WIN32_COMPAT
  GATE_WIN32_COMPAT=-DWIN32_COMPAT=\"$(WIN32_COMPAT)\"
 endif
 
-.PHONY: all clean dep conf dummy buildw32
+.PHONY: all clean dep conf dummy buildw32 docs
 
 all: libxchat-bttrw.a gate README
 
@@ -122,3 +122,35 @@ buildw32:
 	cp -L COPYING $(DESTDIR)/
 	cp -L README $(DESTDIR)/README.txt
 	cp -L $(shell which libiconv-2.dll) $(DESTDIR)/
+
+# Documentation
+docs:
+	$(RM) -r docs/
+	doxygen docs.cfg
+	perl -i -pe ' \
+		s/^\\usepackage(\[.*?\])?\{(textcomp|alltt)\}//g; \
+		s/\\setcounter\{tocdepth\}\{1\}/\\setcounter{tocdepth}{2}/; \
+		s/(\\section)/\\clearemptydoublepage$$1/g; \
+		s/(\\tableofcontents)/$$1\\clearemptydoublepage/; \
+		s/(\\end\{titlepage\})/$$1\\clearemptydoublepage/; \
+		s/(\\printindex)/\\clearemptydoublepage\\pagestyle{plain}$$1/; \
+		s/(\\documentclass\[a4paper)(\]\{article\})/$$1,titlepage,twoside$$2/; \
+	' docs/latex/refman.tex
+	perl -i -e ' \
+		open(my $$f, "docs_header.tex") or die $$!; \
+		my $$titlepage = join("", <$$f>); \
+		close($$f); \
+		while (<>) { \
+			if (/\\begin\{titlepage\}/) { \
+				print; \
+				print $$titlepage; \
+				while ($$_ = <> and not /\\end\{titlepage\}/) {} \
+				print; \
+			} else { print; } \
+		} \
+	' docs/latex/refman.tex
+	perl -i -pe ' \
+		s/^\\usepackage(\[.*?\])?\{(fontenc)\}//g; \
+		s/\\leftmark/\\rightmark/g; \
+	' docs/latex/doxygen.sty
+	$(MAKE) -C docs/latex

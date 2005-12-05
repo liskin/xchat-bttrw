@@ -4,10 +4,13 @@
 #include "TomiTCP/str.h"
 
 namespace xchat {
+    /**
+     * \brief HTML entities to UCS-2 translation map.
+     */
     map<string, unsigned short> trans;
 
-    /*
-     * Fill in the translation hashtable
+    /**
+     * Fill in the translation map #trans.
      */
     void init_recode()
     {
@@ -327,8 +330,10 @@ namespace xchat {
 #undef ENTRY
     }
 
-    /*
+    /**
      * Convert UCS-2 to UTF-8
+     * \param c UCS-2 character.
+     * \return UTF-8 string.
      */
     string ucs2_to_utf8(unsigned short c)
     {
@@ -355,8 +360,11 @@ namespace xchat {
 	return ret;
     }
     
-    /*
+    /**
      * Parse and convert _one_ HTML entity
+     * \param input Pointer to the start of possible entity. It points to the
+     * next character after the entity when the function returns.
+     * \return Pointer to the recoded char in UTF-8 or 0 on error.
      */
     char *striphtmlent_recode(const char * &input)
     {
@@ -432,8 +440,9 @@ namespace xchat {
 	return strdup(ucs2_to_utf8(value).c_str());
     }
 
-    /*
-     * Convert HTML entities to plain 7-bit ascii
+    /**
+     * Convert HTML entities to UTF-8. The conversion is done in-place.
+     * \param m The input/output string.
      */
     void striphtmlent(string &m)
     {

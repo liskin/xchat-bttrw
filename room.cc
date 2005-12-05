@@ -7,6 +7,12 @@
 
 using namespace net;
 
+/**
+ * Parse the arguments to JavaScript function update_info.
+ * \param s Arguments as one string.
+ * \param admin Admin is stored here.
+ * \param locked Locked state is stored here.
+ */
 static void parse_updateinfo(string s, string &admin, bool &locked)
 {
     s.erase(0, s.find(',') + 1);
@@ -33,6 +39,10 @@ static void parse_updateinfo(string s, string &admin, bool &locked)
 	admin = "";
 }
 
+/**
+ * Check, if the 'chvilku strpeni prosim' msg is present in the input.
+ * \param l Input line.
+ */
 static bool tryagainplease(const string &l)
 {
     static string pat = "chvilku strpení prosím</body></html>";
@@ -42,8 +52,10 @@ static bool tryagainplease(const string &l)
 }
 
 namespace xchat {
-    /*
-     * Join room and get all needed info about it
+    /**
+     * Join room and get all needed info about it. The room is then saved into
+     * the #rooms array.
+     * \param rid Room id.
      */
     void XChat::join(const string& rid)
     {
@@ -202,8 +214,9 @@ retry3:
 	rooms[rid] = r;
     }
 
-    /*
+    /**
      * Leave room.
+     * \param rid Room id.
      */
     void XChat::leave(string rid)
     {
@@ -242,8 +255,10 @@ retry:
 	}
     }
 
-    /*
+    /**
      * Get room info.
+     * \param r Reference to room structure which we want to fill with room
+     * info.
      */
     void XChat::getroominfo(room& r)
     {
@@ -317,8 +332,9 @@ retry:
 	}
     }
 
-    /*
-     * Get new messages.
+    /**
+     * Get new messages from room.
+     * \param r Reference to the room.
      */
     void XChat::getmsg(room& r)
     {
@@ -540,8 +556,13 @@ retry:
 	}
     }
 
-    /*
+    /**
      * Send a message.
+     * \param r Reference to the room.
+     * \param target The message target or "~".
+     * \param msg The message.
+     * \return True if the message was posted, false if xchat rejected it. In
+     * case of network/HTTP/cluster error, exception is thrown.
      */
     bool XChat::putmsg(room &r, const string& target, const string& msg)
     {
@@ -595,8 +616,10 @@ retry:
 	return !posted;
     }
 
-    /*
-     * Set room description
+    /**
+     * Set room description.
+     * \param rid Room id.
+     * \param desc The description to be set.
      */
     void XChat::setdesc(const string& rid, const string& desc)
     {

@@ -2,8 +2,11 @@
 #include "TomiTCP/str.h"
 
 namespace std {
-    /*
+    /**
      * Parse IRC input line into source, command and parameters
+     * \param buf IRC input line.
+     * \param prefix Source mask is stored there.
+     * \param cmd Command is stored at cmd[0], parameters at cmd[1..].
      */
     void parsein(const string &buf, string& prefix, vector<string>& cmd)
     {
@@ -50,8 +53,10 @@ namespace std {
 	}
     }
 
-    /*
-     * Parse mode into array of mode with its parameter, if any
+    /**
+     * Parse IRC mode into array of modes with their parameters, if any.
+     * \param cmd Array of mode parameters.
+     * \param mode Output array.
      */
     void parsemode(const vector<string>& cmd, vector<pair<string,string> >& mode)
     {

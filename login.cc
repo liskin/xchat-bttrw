@@ -7,13 +7,19 @@
 using namespace net;
 
 namespace xchat {
-    /*
+    /**
      * Init variables, connect to the xchat.cz network.
+     * \param user Nick name.
+     * \param pass Password.
      */
     XChat::XChat(const string& user, const string& pass)
 	: last_sent(0), last_recv(0), idle_delta(0), lastsrv(0),
 	idle_interval(0), recv_interval(3), convert_smiles(true)
     {
+	/*
+	 * This is here, because otherwise every forked child would have the
+	 * same RNG state.
+	 */
 	srand(time(0) ^ getpid());
 	makeservers();
 
@@ -29,6 +35,11 @@ namespace xchat {
 	} catch (...) {	}
     }
 
+    /**
+     * Log in to xchat.cz.
+     * \param user Nick name.
+     * \param pass Password.
+     */
     void XChat::login(const string& user, const string& pass)
     {
 	TomiHTTP s;
@@ -63,6 +74,9 @@ retry:
 	    throw runtime_error("Parse error while logging in: " + l);
     }
 
+    /**
+     * Relogin using saved nick and password.
+     */
     void XChat::relogin()
     {
 	try {
@@ -74,8 +88,8 @@ retry:
 	}
     }
 
-    /*
-     * Part all channels and quit xchat.cz
+    /**
+     * Leave all rooms and log out of xchat.cz.
      */
     XChat::~XChat()
     {
@@ -100,15 +114,17 @@ retry:
 	}
     }
 
-    /*
-     * Prepare list of available servers
+    /**
+     * Get the list of available servers from DNS.
+     * If not possible (in proxy environments for example), add
+     * "xchat.centrum.cz" (clustering and failure tracking won't work).
      */
     void XChat::makeservers()
     {
 	int i;
 	
 	for (char *c = "sp"; *c; c++) {
-	    for (i = 1; i <= 100 /* limit for check */; i++) {
+	    for (i = 1; i <= 100 /* safety limit */; i++) {
 		vector<sockaddr_uni> sockaddrs;
 	        try {
 		    resolve(*c + string("x") + tostr<int>(i) + ".xchat.cz", "", sockaddrs);

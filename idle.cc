@@ -1,15 +1,17 @@
 #include "idle.h"
 
-/*
- * Just a simple random string that can be recognized (and that I hope noone
- * normally writes :)
- */
-
 namespace xchat {
     using namespace std;
 
+    /**
+     * \brief Xor base for idle string generator.
+     */
     static const char xor_base = 12;
 
+    /**
+     * Generates just a simple random string that can be recognized (and that
+     * I hope noone normally writes)
+     */
     string genidle()
     {
 	char a[31] = { 0 };
@@ -23,6 +25,11 @@ namespace xchat {
 	return a;
     }
 
+    /**
+     * Check, if the given string is the one we generated in #genidle.
+     * \param s The string.
+     * \return true if it is.
+     */
     bool checkidle(string s)
     {
 	if (s.length() != 30)

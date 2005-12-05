@@ -1,9 +1,8 @@
 #include "smiles.h"
 
-/*
- * Mapping of xchat smile numbers to human readable smiles.
+/**
+ * \brief Mapping of xchat smile numbers to human readable smiles.
  */
-
 const char *smiles[] = {
     [1] ":D",
     [2] ":))",
@@ -109,4 +108,7 @@ const char *smiles[] = {
     [102] "*bu bu bu*"
 };
 
+/**
+ * \brief Number of smiles in #smiles array.
+ */
 const int smiles_count = sizeof(smiles)/sizeof(*smiles);

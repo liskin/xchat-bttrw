@@ -6,8 +6,10 @@
 using namespace net;
 
 namespace xchat {
-    /*
+    /**
      * Check, if a nick is online.
+     * \param nick Nick of the user we want to check.
+     * \return True if the user is online, false if not.
      */
     bool XChat::ison(const string& nick)
     {
