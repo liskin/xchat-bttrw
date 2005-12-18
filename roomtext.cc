@@ -68,16 +68,6 @@ namespace xchat {
 	    } else
 		break;
 	}
-
-	/*
-	 * Second run - strip xchat double-escaped backslashes...
-	 * (!!! this should be removed as soon as they fix that !!!)
-	 */
-	pos = 0;
-	while ((a = s.find("\\\\", pos)) != string::npos) {
-	    s.replace(a, 2, "\\");
-	    pos = a + 1;
-	}
     }
 
     /*
