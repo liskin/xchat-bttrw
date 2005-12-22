@@ -92,7 +92,7 @@ DESTDIR=xchat-bttrw-win32
 buildw32:
 	$(RM) $(filter-out $(DESTDIR)/build.log, $(wildcard $(DESTDIR)/*))
 	$(MAKE) clean dep conf
-	$(MAKE) -C TomiTCP clean dep
+	$(MAKE) -C TomiTCP clean dep conf
 	@echo
 	@echo -e '\033[1m' Building for WinXP and up... '\033[m'
 	@echo
