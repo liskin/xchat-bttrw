@@ -297,7 +297,7 @@ namespace net {
 	string out;
 
 	for (string::const_iterator i = s.begin(); i != s.end(); i++) {
-	    char a, b;
+	    char a = 0, b = 0;
 	    if (*i == '%' && (i + 2) < s.end() && isxdigit(a = *(i + 1)) &&
 		    isxdigit(b = *(i + 2))) {
 		if (a <= '9')
