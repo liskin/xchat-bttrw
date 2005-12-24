@@ -128,7 +128,7 @@ namespace std {
 	    int tab, bool firstlinealone, int maxspaces, string indent)
     {
 	// get indentation
-	int indentw, indentlen;
+	int indentw = 0, indentlen = 0;
 	if (indent == INDENT_DETECT) {
 	    indentw = ins.find_first_not_of(" \f\n\r\t\v");
 	    indent = string(ins,0,indentw);
