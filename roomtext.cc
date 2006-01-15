@@ -8,8 +8,10 @@
 #include "TomiTCP/str.h"
 
 namespace xchat {
-    /*
-     * Recode from UTF-8 to client_charset
+    /**
+     * Recode from UTF-8 to #client_charset
+     * \param s Input string.
+     * \return Recoded string if ok, original string if an error has occured.
      */
     string XChat::recode_to_client(string s) {
 	if (!client_charset.length())
@@ -37,8 +39,10 @@ namespace xchat {
 	}
     }
 
-    /*
-     * Recode from client_charset to UTF-8
+    /**
+     * Recode from #client_charset to UTF-8
+     * \param s Input string.
+     * \return Recoded string if ok, original string if an error has occured.
      */
     string XChat::recode_from_client(string s) {
 	if (!client_charset.length())
@@ -54,8 +58,9 @@ namespace xchat {
 	}
     }
 
-    /*
-     * Strip JavaScript escapes
+    /**
+     * Strip JavaScript escapes. This is done in-place.
+     * \param s Input/output string.
      */
     void XChat::stripjsescapes(string &s)
     {
@@ -70,8 +75,10 @@ namespace xchat {
 	}
     }
 
-    /*
-     * Strip HTML tags
+    /**
+     * Strip HTML tags. Convert graphical smiles to text format, convert br
+     * tags to "|" to separate lines. This is done in-place.
+     * \param s Input/output string.
      */
     void XChat::striphtml(string &s)
     {
@@ -123,8 +130,10 @@ namespace xchat {
 	    s.erase(lastbr);
     }
 
-    /*
-     * Strip and get date, if it is there.
+    /**
+     * Strip and get date from the message, if it is there.
+     * \param m Input/output string.
+     * \param date Output string for date.
      */
     void XChat::getdate(string &m, string &date)
     {
@@ -145,8 +154,12 @@ namespace xchat {
 	    date = "";
     }
 
-    /*
-     * Get nick (source) and, if given, target nick
+    /**
+     * Get nick (source) and, if given, target nick. Strip [room], if
+     * necessary.
+     * \param m Input/output string.
+     * \param src Output string for nick/source.
+     * \param target Output string for target.
      */
     void XChat::getnick(string &m, string &src, string &target)
     {
@@ -176,8 +189,10 @@ namespace xchat {
 	}
     }
 
-    /*
-     * Convert xchat smilies to human readable ones
+    /**
+     * Convert xchat smilies to human readable ones using the #smiles table.
+     * This is done in-place.
+     * \param s Input/output string.
      */
     void XChat::unsmilize(string &s)
     {
@@ -218,8 +233,14 @@ namespace xchat {
 	}
     }
 
-    /*
-     * Check for user joining a room
+    /**
+     * Check for user joining a room. Store its nick and sex. Add it to the
+     * nicklist.
+     * \param r The room the message belongs to.
+     * \param m The message.
+     * \param src Output string for nick.
+     * \param sex Output string for sex.
+     * \return True if it was a join.
      */
     bool XChat::isjoin(room& r, string &m, string &src, int &sex)
     {
@@ -244,8 +265,14 @@ namespace xchat {
 	return 0;
     }
 
-    /*
-     * Check for user leaving a room
+    /**
+     * Check for user leaving a room. Store its nick and sex. Delete if from
+     * the nicklist.
+     * \param r The room the message belongs to.
+     * \param m The message.
+     * \param src Output string for nick.
+     * \param sex Output string for sex.
+     * \return True if it was a leave.
      */
     bool XChat::isleave(room& r, string &m, string &src, int &sex)
     {
@@ -272,8 +299,16 @@ namespace xchat {
 	return 0;
     }
 
-    /*
-     * Check for user being kicked from room
+    /**
+     * Check for user being kicked from a room. Store its nick, kicker's nick
+     * and kicker's sex. Delete it from the nicklist.
+     * \param r The room the message belongs to.
+     * \param m The message.
+     * \param src Output string for nick.
+     * \param reason Output string for kick reason.
+     * \param who Output string for kicker's nick.
+     * \param sex Output string for kicker's sex.
+     * \return True if it was a kick.
      */
     bool XChat::iskick(room& r, string &m, string &src, string &reason, string &who, int &sex)
     {
@@ -318,8 +353,12 @@ namespace xchat {
 	return 0;
     }
 
-    /*
-     * Check for advertisement messages
+    /**
+     * Check for advertisement messages. Extract the link. This has to be
+     * called prior to all stripping.
+     * \param m The message.
+     * \param link Output string for link.
+     * \return True if it was an advert.
      */
     bool XChat::isadvert(string &m, string &link)
     {
@@ -335,18 +374,19 @@ namespace xchat {
 	return 0;
     }
 
-    /*
-     * Should go as EvSysMsg instead of EvRoomSysMsg?
+    /**
+     * Check, if the given system message has a global meaning and should
+     * therefore go as EvSysMsg instead of EvRoomSysMsg.
+     * \param m The message.
+     * \return True if it was an advert.
      */
     bool XChat::sysnoroom(string &m)
     {
-	// Info
 	static string pat1 = "INFO: ";
 	if (!m.compare(0, pat1.length(), pat1)) {
 	    return true;
 	}
 
-	// Info2
 	static string pat2 = "Info2: ";
 	if (!m.compare(0, pat2.length(), pat2)) {
 	    return true;
@@ -365,9 +405,12 @@ namespace xchat {
 	return false;
     }
 
-    /*
-     * Check if this whisper is already in queue or in the secondary queue
+    /**
+     * Check if this whisper is already in the queue or in the secondary queue
      * with EvWhispers from previous refresh.
+     * \param m The message.
+     * \param src Source nick.
+     * \return True if it is.
      */
     bool XChat::whisper_in_queue(string &m, string &src)
     {
@@ -390,8 +433,10 @@ namespace xchat {
 	return false;
     }
 
-    /*
-     * Parse a line from xchat and push appropiate events to the recvq.
+    /**
+     * Parse a line from xchat and push appropiate Events to the #recvq.
+     * \param m The line.
+     * \param r The room the line belongs to.
      */
     void XChat::recvq_parse_push(string m, room& r)
     {

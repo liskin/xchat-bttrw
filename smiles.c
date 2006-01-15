@@ -1,3 +1,7 @@
+/**
+ * \file smiles.c
+ * This file contains the #smiles table.
+ */
 #include "smiles.h"
 
 /**

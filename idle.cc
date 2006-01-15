@@ -28,7 +28,7 @@ namespace xchat {
     /**
      * Check, if the given string is the one we generated in #genidle.
      * \param s The string.
-     * \return true if it is.
+     * \return True if it is.
      */
     bool checkidle(string s)
     {

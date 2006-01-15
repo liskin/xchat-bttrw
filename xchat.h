@@ -294,10 +294,19 @@ namespace xchat {
 	    string client_charset;
     };
 
+    /**
+     * Push Event to the #recvq. The auto_ptr takes control of the pointer.
+     * \param e Event to be pushed.
+     */
     inline void XChat::recvq_push(Event *e) {
 	recvq.push_back(recv_item(e));
     }
 
+    /**
+     * Pop Event from #recvq. The auto_ptr releases the pointer and it's up to
+     * the caller to free it.
+     * \return The released pointer.
+     */
     inline Event * XChat::recvq_pop() {
 	auto_ptr<Event> e = recvq.front().e; recvq.pop_front();
 
@@ -313,14 +322,31 @@ namespace xchat {
 	return e.release();
     }
     
+    /**
+     * Shorthand for pushing a room message to the #sendq.
+     * \param room Target room.
+     * \param msg Message.
+     */
     inline void XChat::msg(const string &room, const string &msg) {
 	sendq.push_back(send_item(room, "~", recode_from_client(msg)));
     }
 
+    /**
+     * Shorthand for pushing a room whisper message to the #sendq.
+     * \param room Target room.
+     * \param target Target nick.
+     * \param msg Message.
+     */
     inline void XChat::whisper(const string &room, const string &target, const string &msg) {
 	sendq.push_back(send_item(room, target, recode_from_client(msg)));
     }
     
+    /**
+     * Shorthand for pushing a whisper message to the #sendq. The target room
+     * will be determined in #do_sendq.
+     * \param target Target nick.
+     * \param msg Message.
+     */
     inline void XChat::whisper(const string &target, const string &msg) {
 	/*
 	 * final decision on target room will be made in do_sendq
@@ -328,11 +354,24 @@ namespace xchat {
 	sendq.push_back(send_item("", target, recode_from_client(msg)));
     }
 
+    /**
+     * Shorthand for pushing a room kick to the #sendq.
+     * \param room Target room.
+     * \param target Target nick.
+     * \param reason Kick reason.
+     */
     inline void XChat::kick(const string &room, const string &target, const string &reason) {
 	sendq.push_front(send_item(room, "~", "/kick " + target + " " +
 		    recode_from_client(reason)));
     }
 
+    /**
+     * Shorthand for pushing a kill to the #sendq. It will be delivered using
+     * the first room you have joined and will not work without having joined
+     * at least one room.
+     * \param target Target nick.
+     * \param reason Kill reason.
+     */
     inline void XChat::kill(const string &target, const string &reason) {
 	if (rooms.size()) {
 	    sendq.push_front(send_item(rooms.begin()->first, "~", "/kill " + target +
@@ -342,14 +381,27 @@ namespace xchat {
 	}
     }
 
+    /**
+     * Shorthand for pushing an admin change message to the #sendq.
+     * \param room Target room.
+     * \param newadmin Nick of the new admin.
+     */
     inline void XChat::admin(const string &room, const string &newadmin) {
 	sendq.push_front(send_item(room, "~", "/admin " + newadmin));
     }
-    
+
+    /**
+     * Shorthand for pushing a room lock message to the #sendq.
+     * \param room Target room.
+     */
     inline void XChat::lock(const string &room) {
 	sendq.push_front(send_item(room, "~", "/lock"));
     }
-    
+
+    /**
+     * Shorthand for pushing a room unlock message to the #sendq.
+     * \param room Target room.
+     */
     inline void XChat::unlock(const string &room) {
 	sendq.push_front(send_item(room, "~", "/unlock"));
     }

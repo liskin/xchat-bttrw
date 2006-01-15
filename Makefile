@@ -134,7 +134,7 @@ docs:
 		s/(\\tableofcontents)/$$1\\clearemptydoublepage/; \
 		s/(\\end\{titlepage\})/$$1\\clearemptydoublepage/; \
 		s/(\\printindex)/\\clearemptydoublepage\\pagestyle{plain}$$1/; \
-		s/(\\documentclass\[a4paper)(\]\{article\})/$$1,titlepage,twoside$$2/; \
+		s/(\\documentclass\[a4paper)(\]\{article\})/$$1,12pt,titlepage$$2/; \
 	' docs/latex/refman.tex
 	perl -i -e ' \
 		open(my $$f, "docs_header.tex") or die $$!; \
