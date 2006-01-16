@@ -10,7 +10,7 @@ namespace xchat {
      * Get user info from Xchat.
      * \param nick Nick of the user we want info about.
      * \return Filled in userinfo_t structure. If the nick does not exist,
-     * returns "" in the name member.
+     * returns empty string in the name member.
      */
     userinfo_t XChat::userinfo(const string& nick)
     {

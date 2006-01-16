@@ -10,7 +10,8 @@ namespace xchat {
 
     /**
      * Generates just a simple random string that can be recognized (and that
-     * I hope noone normally writes)
+     * I hope noone normally writes).
+     * \return The generated string.
      */
     string genidle()
     {
@@ -27,7 +28,7 @@ namespace xchat {
 
     /**
      * Check, if the given string is the one we generated in #genidle.
-     * \param s The string.
+     * \param s The input string.
      * \return True if it is.
      */
     bool checkidle(string s)

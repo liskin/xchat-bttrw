@@ -17,7 +17,7 @@ namespace xchat {
     }
 
     /**
-     * Get a list of available rooms
+     * Get a list of available rooms.
      * \param listout Output array.
      */
     void XChat::list(listout_t &listout)

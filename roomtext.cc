@@ -9,7 +9,7 @@
 
 namespace xchat {
     /**
-     * Recode from UTF-8 to #client_charset
+     * Recode from UTF-8 to #client_charset.
      * \param s Input string.
      * \return Recoded string if ok, original string if an error has occured.
      */
@@ -40,7 +40,7 @@ namespace xchat {
     }
 
     /**
-     * Recode from #client_charset to UTF-8
+     * Recode from #client_charset to UTF-8.
      * \param s Input string.
      * \return Recoded string if ok, original string if an error has occured.
      */
@@ -406,8 +406,7 @@ namespace xchat {
     }
 
     /**
-     * Check if this whisper is already in the queue or in the secondary queue
-     * with EvWhispers from previous refresh.
+     * Check if this whisper is already in the primary or secondary queue.
      * \param m The message.
      * \param src Source nick.
      * \return True if it is.
@@ -434,7 +433,7 @@ namespace xchat {
     }
 
     /**
-     * Parse a line from xchat and push appropiate Events to the #recvq.
+     * Parse a line from xchat and push appropiate Event to the #recvq.
      * \param m The line.
      * \param r The room the line belongs to.
      */

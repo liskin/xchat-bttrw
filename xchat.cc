@@ -85,7 +85,8 @@ namespace xchat {
     }
 
     /**
-     * Prepare URL with given path. (without login information)
+     * Prepare URL with given path, without login information.
+     * \return The URL.
      */
     string XChat::makeurl(const string& path)
     {
@@ -93,7 +94,8 @@ namespace xchat {
     }
 
     /**
-     * Prepare URL with given path. (with login information)
+     * Prepare URL with given path, with login information.
+     * \return The URL.
      */
     string XChat::makeurl2(const string& path)
     {
@@ -131,8 +133,9 @@ namespace xchat {
     }
 
     /**
-     * Go through #sendq and send messages, take flood protection into account.
-     * Then, send anti-idle messages if necessary.
+     * Go through #sendq and send messages, take flood protection and
+     * #max_msg_length into account.  Then, send anti-idle messages if
+     * necessary.
      */
     void XChat::do_sendq()
     {
@@ -311,7 +314,7 @@ namespace xchat {
 
     /**
      * Check if given user is admin in a specified room.
-     * (but not permanent admin or xchat admin)
+     * (but not permanent admin nor xchat admin)
      * \param rid Room id.
      * \param nick User's nick.
      * \return True if he is.
@@ -329,7 +332,7 @@ namespace xchat {
     
     /**
      * Check if given user is permanent admin in a specified room.
-     * (but not permanent admin or xchat admin)
+     * (but not admin nor xchat admin)
      * \param rid Room id.
      * \param nick User's nick.
      * \return True if he is.

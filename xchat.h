@@ -24,7 +24,7 @@ namespace xchat {
      * \brief A structure representing a nick on xchat.
      */
     struct x_nick {
-	string nick; ///< Nickname in the right case.
+	string nick; ///< Nickname in the right case (hopefully).
 	int sex; ///< Sex. 0 for women, 1 for men, 2 for unknown.
     };
 
@@ -59,7 +59,7 @@ namespace xchat {
 
     /**
      * \brief Type definition for the XChat::list output. It's an array of
-     * room id => room name pairs.
+     * room id to room name pairs.
      */
     typedef vector<pair<string, string> > listout_t;
     
@@ -67,9 +67,9 @@ namespace xchat {
      * \brief Structure definition for a room in userinfo_t::rooms.
      */
     struct userinfo_room {
-	string rid;
-	string idle;
-	string name;
+	string rid; ///< Room id.
+	string idle; ///< Idle time in unspecified format.
+	string name; ///< Room name.
     };
 
     /**
@@ -77,7 +77,7 @@ namespace xchat {
      * XChat::userinfo function.
      */
     struct userinfo_t {
-	string nick; ///< Nickname. Not in the right case!
+	string nick; ///< Nickname. Not necessarily in the right case.
 	string name; ///< A first name as filled in the user profile.
 	string surname; ///< A surname as filled in the user profile.
 	int age; ///< An age as filled in the user profile.
@@ -161,9 +161,9 @@ namespace xchat {
      */
     class send_item {
 	public:
-	    string room;
-	    string target; ///< Target or "~".
-	    string msg;
+	    string room; ///< Target room.
+	    string target; ///< Target nick or "~".
+	    string msg; ///< The message.
 	    int retries; ///< Number of retries left.
 	    /**
 	     * Construct a send_item.
@@ -181,9 +181,9 @@ namespace xchat {
      */
     class server {
 	public:
-	    string host;
-	    time_t last_break;
-	    int break_count;
+	    string host; ///< Hostname or address.
+	    time_t last_break; ///< Timestamp of last failure.
+	    int break_count; ///< Number of failures so far.
 
 	    /**
 	     * Construct a server from its hostname.
@@ -208,8 +208,8 @@ namespace xchat {
 	    string makeurl2(const string& url);
 	    string lastsrv_broke();
 
-	    string uid; ///< User id, set by #login.
-	    string sid; ///< Session id, set by #login.
+	    string uid; ///< User id, set by #login. Used for queries.
+	    string sid; ///< Session id, set by #login. Used for queries.
 	    string pass; ///< Password, saved for future #relogin.
 	    x_nick me; ///< Me... Own nick and sex, if known.
 	    rooms_t rooms; ///< Array of rooms we are in.
@@ -220,12 +220,12 @@ namespace xchat {
 	    deque<recv_item> recvq; ///< Queue of new Event objects.
 	    /**
 	     * \brief Queue of EvWhisper objects from previous run, filled by
-	     * recvq_pop.
+	     * #recvq_pop. Needed to avoid duplicate whisper message.
 	     */
 	    deque<recv_item> old_recvq;
 	    /**
 	     * \brief Random variable subtracted from #idle_interval to achieve
-	     * some #idle_interval variation.
+	     * some variation.
 	     */
 	    int idle_delta;
 

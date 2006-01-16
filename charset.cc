@@ -361,7 +361,7 @@ namespace xchat {
     }
     
     /**
-     * Parse and convert _one_ HTML entity
+     * Parse and convert one HTML entity.
      * \param input Pointer to the start of possible entity. It points to the
      * next character after the entity when the function returns.
      * \return Pointer to the recoded char in UTF-8 or 0 on error.
