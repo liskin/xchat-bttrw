@@ -124,9 +124,9 @@ buildw32:
 	cp -L $(shell which libiconv-2.dll) $(DESTDIR)/
 
 # Documentation
-docs:
+docs_zmp:
 	$(RM) -r docs/
-	doxygen docs.cfg
+	doxygen docs_zmp.cfg
 	perl -i -pe ' \
 		s/^\\usepackage(\[.*?\])?\{(textcomp|alltt)\}//g; \
 		s/\\setcounter\{tocdepth\}\{1\}/\\setcounter{tocdepth}{2}/; \
@@ -134,10 +134,10 @@ docs:
 		s/(\\tableofcontents)/$$1\\clearemptydoublepage/; \
 		s/(\\end\{titlepage\})/$$1\\clearemptydoublepage/; \
 		s/(\\printindex)/\\clearemptydoublepage\\pagestyle{plain}$$1/; \
-		s/(\\documentclass\[a4paper)(\]\{article\})/$$1,12pt,titlepage$$2/; \
+		s/(\\documentclass\[a4paper)(\]\{article\})/$$1,12pt,titlepage,twoside$$2/; \
 	' docs/latex/refman.tex
 	perl -i -e ' \
-		open(my $$f, "docs_header.tex") or die $$!; \
+		open(my $$f, "docs_zmp_header.tex") or die $$!; \
 		my $$titlepage = join("", <$$f>); \
 		close($$f); \
 		while (<>) { \
