@@ -53,6 +53,19 @@ retry:
 		    TomiHTTP::URLencode(pass),0);
 	    if (ret != 302)
 		throw runtime_error("Not HTTP 302 Found while logging in");
+
+    	    string l = s.headers["location"];
+
+	    unsigned int pos = l.find("xchat.centrum.cz/~$");
+	    if (pos == string::npos)
+		throw runtime_error("Parse error while logging in: " + l);
+
+	    stringstream ss(string(l,pos+19));
+	    getline(ss,uid,'~');
+	    getline(ss,sid,'/');
+
+	    if (!uid.length() || !sid.length())
+		throw runtime_error("Parse error while logging in: " + l);
 	} catch (runtime_error e) {
 	    if (retries--) {
 		lastsrv_broke();
@@ -61,18 +74,6 @@ retry:
 		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
 
-	string l = s.headers["location"];
-
-	unsigned int pos = l.find("xchat.centrum.cz/~$");
-	if (pos == string::npos)
-	    throw runtime_error("Parse error while logging in: " + l);
-
-	stringstream ss(string(l,pos+19));
-	getline(ss,uid,'~');
-	getline(ss,sid,'/');
-
-	if (!uid.length() || !sid.length())
-	    throw runtime_error("Parse error while logging in: " + l);
     }
 
     /**
