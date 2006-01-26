@@ -448,6 +448,10 @@ main_accept:
 			x->convert_smiles = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :convert_smiles set to %i\n",
 				me, nick.c_str(), x->convert_smiles);
+		    } else if (cmd[1] == "REALLY_LOGOUT" && cmd.size() == 3) {
+			x->really_logout = atoi(cmd[2].c_str());
+			fprintf(*c, ":%s NOTICE %s :really_logout set to %i\n",
+				me, nick.c_str(), x->really_logout);
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
 				" count\n", me, nick.c_str());

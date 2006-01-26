@@ -285,7 +285,16 @@ namespace xchat {
 	    int idle_interval, ///< Idler rate. Use 2400 (40 min) if in doubt.
 		recv_interval; ///< New messages retrieval rate.
 
-	    bool convert_smiles; ///< Whether to convert smiles.
+	    /**
+	     * \brief Whether to convert smiles and how. 1 is for normal
+	     * conversion, 2 prints the smile number too.
+	     */
+	    int convert_smiles;
+
+	    /**
+	     * \brief Whether to really leave rooms and logout from xchat.
+	     */
+	    bool really_logout;
 
 	    /**
 	     * \brief Local (or client) charset, useful with clients that

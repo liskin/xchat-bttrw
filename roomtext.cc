@@ -209,13 +209,24 @@ namespace xchat {
 		fail |= !isdigit(*i);
 
 	    if (!fail) {
-		int smile = atoi(string(s.begin() + a + 1, s.begin() + b).c_str());
+		string smile_s = string(s.begin() + a + 1, s.begin() + b);
+		int smile = atoi(smile_s.c_str());
 		if (smile < smiles_count && smile >= 0 && smiles[smile]) {
-		    s.replace(a, b - a + 1, string("\002") + smiles[smile] + "\002");
-
-		    int add = 2;
-		    if (s[a + strlen(smiles[smile]) + 2] != ' ') {
-			s.insert(a + strlen(smiles[smile]) + 2, " ");
+		    int add;
+		    
+		    if (convert_smiles == 2) {
+			string repl = string("\002") + smiles[smile] + "(" +
+			    smile_s + ")\002";
+	    		s.replace(a, b - a + 1, repl);
+			add = repl.length();
+		    } else {
+			string repl = string("\002") + smiles[smile] + "\002";
+	    		s.replace(a, b - a + 1, repl);
+			add = repl.length();
+		    }
+		    
+		    if (s[a + add] != ' ') {
+			s.insert(a + add, " ");
 			add++;
 		    }
 		    if (a > 0 && s[a - 1] != ' ') {
@@ -223,7 +234,7 @@ namespace xchat {
 			add++;
 		    }
 
-		    pos = a + strlen(smiles[smile]) + add;
+		    pos = a + add;
 		} else {
 		    pos = a + 1;
 		}

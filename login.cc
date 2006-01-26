@@ -14,7 +14,8 @@ namespace xchat {
      */
     XChat::XChat(const string& user, const string& pass)
 	: lastsrv(0), last_sent(0), last_recv(0), idle_delta(0),
-	idle_interval(0), recv_interval(3), convert_smiles(true)
+	idle_interval(0), recv_interval(3), convert_smiles(1),
+	really_logout(true)
     {
 	/*
 	 * This is here, because otherwise every forked child would have the
@@ -93,6 +94,9 @@ retry:
      */
     XChat::~XChat()
     {
+	if (!really_logout)
+	    return;
+    
 	while (rooms.begin() != rooms.end()) {
 	    try { leave(rooms.begin()->first); } catch (...) { }
 	}
