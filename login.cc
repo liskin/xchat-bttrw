@@ -58,7 +58,7 @@ retry:
 
 	    unsigned int pos = l.find("xchat.centrum.cz/~$");
 	    if (pos == string::npos)
-		throw runtime_error("Parse error while logging in: " + l);
+		throw runtime_error("Parse error while logging in (probably bad username or password): " + l);
 
 	    stringstream ss(string(l,pos+19));
 	    getline(ss,uid,'~');
