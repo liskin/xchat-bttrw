@@ -48,7 +48,7 @@ namespace xchat {
 retry:
 	try {
 	    int ret = s.POST(makeurl("~guest~/login/"),
-		    "js=1&hp=1&skin=2&u_name="+TomiHTTP::URLencode(user)+"&u_pass="+
+		    "js=1&hp=1&usehash=3&skin=2&u_name="+TomiHTTP::URLencode(user)+"&u_pass="+
 		    TomiHTTP::URLencode(pass),0);
 	    if (ret != 302)
 		throw runtime_error("Not HTTP 302 Found while logging in");
