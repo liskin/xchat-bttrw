@@ -151,7 +151,8 @@ const char * const me = "xchat.cz";
 
 time_t last_ping = 0, last_ping_sent = 0, connect_time = 0;
 
-bool voiced_girls = false, show_advert = true, show_date = false;
+bool voiced_girls = false, show_advert = true, show_date = false,
+    show_idler = true;
 
 #ifndef WIN32
 void sigchld(int) {
@@ -452,6 +453,10 @@ main_accept:
 			x->really_logout = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :really_logout set to %i\n",
 				me, nick.c_str(), x->really_logout);
+		    } else if (cmd[1] == "SHOW_IDLER" && cmd.size() == 3) {
+			show_idler = atoi(cmd[2].c_str());
+			fprintf(*c, ":%s NOTICE %s :show_idler set to %i\n",
+				me, nick.c_str(), show_idler);
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
 				" count\n", me, nick.c_str());
@@ -968,8 +973,11 @@ main_accept:
 		} else if (dynamic_cast<EvRoomSysText*>(e.get())) {
 		    auto_ptr<EvRoomSysText> f((EvRoomSysText*)e.release());
 
-		    fprintf(*c, ":%s NOTICE #%s :%s%s\n", me,
-			    f->getrid().c_str(), date.c_str(), f->str().c_str());
+		    if (show_idler) {
+			fprintf(*c, ":%s NOTICE #%s :%s%s\n", me,
+				f->getrid().c_str(), date.c_str(),
+				f->str().c_str());
+		    }
 		} else if (dynamic_cast<EvRoomAdminChange*>(e.get())) {
 		    auto_ptr<EvRoomAdminChange> f((EvRoomAdminChange*)e.release());
 
