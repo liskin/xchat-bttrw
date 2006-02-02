@@ -228,7 +228,7 @@ retry3:
 retry:
 	try {
 	    int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&js=1&menuaction=leave"
-			"&leftroom=" + rid),0);
+			"&leftroom=" + rid), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while parting channel");
 	} catch (runtime_error e) {
@@ -270,9 +270,9 @@ retry:
 	retries = servers.size();
 retry:
 	try {
-	    ret = s.GET(makeurl2("modchat?op=roominfo&skin=2&rid=" + r.rid),0);
+	    ret = s.GET(makeurl("scripts/room.php?rid=" + r.rid), 0);
 	    if (ret != 200)
-		throw runtime_error("Not HTTP 200 Ok while joining channel");
+		throw runtime_error("Not HTTP 200 Ok while getting roominfo");
 	} catch (runtime_error e) {
 	    if (retries--) {
 		lastsrv_broke();
@@ -281,48 +281,53 @@ retry:
 		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
 
-	while (s.getline(l)) {
-	    chomp(l);
+	if (!s.getline(l)) /* Status code */
+	    throw runtime_error("Getting room info error.");
 
-	    static string pat1 = "název místnosti:</td>";
-	    unsigned int pos;
-	    if ((pos = l.find(pat1)) != string::npos) {
-		string st(l, pos + pat1.length());
-		striphtml(st);
-		striphtmlent(st);
-		wstrip(st);
-		r.name = recode_to_client(st);
-		continue;
-	    }
-	    
-	    static string pat2 = "popis místnosti:</td>";
-	    if ((pos = l.find(pat2)) != string::npos) {
-		string st(l, pos + pat2.length());
-		striphtml(st);
-		striphtmlent(st);
-		wstrip(st);
-		unsmilize(st);
-		r.desc = recode_to_client(st);
-		continue;
-	    }
-	    
-	    static string pat3 = "stálý správce:</td>", pat4 = "</td>";
-	    if ((pos = l.find(pat3)) != string::npos) {
-		s.getline(l);
-		if ((pos = l.find(pat4)) != string::npos)
-		    l.erase(pos);
-		striphtml(l);
-		striphtmlent(l);
-		wstrip(l);
-		stringstream ss(l);
-		string admin;
-		r.admins.clear();
-		while (ss >> admin)
-		    r.admins.insert(strtolower_nr(admin));
-		continue;
-	    }
+	if(wstrip(l) != "1") {
+	    if (!s.getline(l)) /* Status message */
+		throw runtime_error("Getting room info error.");
+	    throw runtime_error("Getting room info error - " + wstrip(l));
 	}
 
+	if (!s.getline(l)) /* Status message */
+	    throw runtime_error("Getting room info error.");
+
+	if (!s.getline(l)) /* Room ID */
+	    throw runtime_error("Getting room info error.");
+	if(wstrip(l) != r.rid)
+	    throw runtime_error("Getting room info error - RID mismatch.");
+
+	if (!s.getline(l)) /* Room Name */
+	    throw runtime_error("Getting room info error.");
+	wstrip(l);
+	r.name = recode_to_client(l);
+
+	if (!s.getline(l)) /* Room description */
+	     throw runtime_error("Getting room info error.");
+	wstrip(l);
+	unsmilize(l);
+	r.desc = recode_to_client(l);
+
+	if (!s.getline(l)) /* Creating date */
+	     throw runtime_error("Getting room info error.");
+
+	if (!s.getline(l)) /* Number of users */
+	     throw runtime_error("Getting room info error.");
+
+	if (!s.getline(l)) /* Admin */
+	     throw runtime_error("Getting room info error.");
+
+	if (!s.getline(l)) /* Perm Admins */
+	     throw runtime_error("Getting room info error.");
+	
+	wstrip(l);
+	stringstream ss(l);
+	string admin;
+	r.admins.clear();
+	while (ss >> admin)
+	    r.admins.insert(strtolower_nr(admin));
+	
 	if (!r.name.length() && !r.desc.length() && !r.admins.size()) {
 	    if (retries--) {
 		lastsrv_broke();
@@ -342,7 +347,7 @@ retry:
 	int ret;
 	try {
 	    ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid=" + r.rid +
-			"&inc=1&last_line=" + ((r.l>=0)?inttostr(r.l):"")),0);
+			"&inc=1&last_line=" + ((r.l>=0)?inttostr(r.l):"")), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
 	} catch (runtime_error e) {
