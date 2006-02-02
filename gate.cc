@@ -968,16 +968,16 @@ main_accept:
 		} else if (dynamic_cast<EvRoomIdlerMsg*>(e.get())) {
 		    auto_ptr<EvRoomIdlerMsg> f((EvRoomIdlerMsg*)e.release());
 
-		    fprintf(*c, ":%s NOTICE #%s :%sSystem: %s [IDLER]\n", me,
-			    f->getrid().c_str(), date.c_str(), f->str().c_str());
-		} else if (dynamic_cast<EvRoomSysText*>(e.get())) {
-		    auto_ptr<EvRoomSysText> f((EvRoomSysText*)e.release());
-
 		    if (show_idler) {
-			fprintf(*c, ":%s NOTICE #%s :%s%s\n", me,
+			fprintf(*c, ":%s NOTICE #%s :%sSystem: %s [IDLER]\n", me,
 				f->getrid().c_str(), date.c_str(),
 				f->str().c_str());
 		    }
+		} else if (dynamic_cast<EvRoomSysText*>(e.get())) {
+		    auto_ptr<EvRoomSysText> f((EvRoomSysText*)e.release());
+
+		    fprintf(*c, ":%s NOTICE #%s :%s%s\n", me,
+		    	f->getrid().c_str(), date.c_str(), f->str().c_str());
 		} else if (dynamic_cast<EvRoomAdminChange*>(e.get())) {
 		    auto_ptr<EvRoomAdminChange> f((EvRoomAdminChange*)e.release());
 
