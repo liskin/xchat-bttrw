@@ -301,6 +301,11 @@ namespace xchat {
 	     * don't support UTF-8.
 	     */
 	    string client_charset;
+
+	    /**
+	     * \brief Has been information about new errand already emitted?
+	     */
+	    bool errand_emitted;
     };
 
     /**

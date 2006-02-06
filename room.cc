@@ -604,6 +604,24 @@ retry:
 	    unsigned int a;
 	    if ((a = l.find(pat2)) != string::npos && l[a + pat2.length()] != '\"')
 		posted = false;
+
+	    /**
+	     * Detect envelope blinking and emit event
+	     */
+	    static string pat3 = "<img src=\"http://img.centrum.cz/chat3/message";
+	    unsigned int pos;
+	    if ((pos = l.find(pat3)) != string::npos) {
+		if (l[pos + pat3.length()] == '_') { // Envelope is blinking
+		    if (!errand_emitted) {
+			EvErrand *e = new EvErrand;
+			e->s = "New errand received";
+			recvq_push(e);
+			errand_emitted = true;
+		    }
+		} else {
+		    errand_emitted = false;
+		}
+	    }
 	}
 
 	/*

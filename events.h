@@ -198,6 +198,12 @@ namespace xchat {
 	    virtual const x_nick & gettarget() { return target; }
 	    virtual ~EvWhisper() {}
     };
+
+    class EvErrand : public Event {
+	    friend class XChat;
+	public:
+	    virtual ~EvErrand() {}
+    };
 }
 
 #include "xchat.h"

@@ -1061,6 +1061,20 @@ main_accept:
 
 		    fprintf(*c, ":%s NOTICE %s :%sSystem: %s\n", me,
 			    nick.c_str(), date.c_str(), f->str().c_str());
+		} else if (dynamic_cast<EvErrand*>(e.get())) {
+		    auto_ptr<EvErrand> f((EvErrand*)e.release());
+    
+                    if (x->rooms.size()) {
+			for (rooms_t::iterator i = x->rooms.begin();
+			    i != x->rooms.end(); i++)
+			    fprintf(*c, ":%s NOTICE #%s :%s\002Mas novy vzkaz!\002 "
+				"[ http://xchat.centrum.cz/offline ]\n",
+				me, i->first.c_str(), date.c_str());
+		    } else {
+			fprintf(*c, ":%s NOTICE %s :%s\002Mas novy vzkaz!\002 "
+			    "[ http://xchat.centrum.cz/offline ]\n",
+			    me, nick.c_str(), date.c_str());
+		    }
 		} else {
 		    fprintf(*c, ":%s NOTICE %s :%sOther: %s - %s\n", me,
 			    nick.c_str(), date.c_str(),

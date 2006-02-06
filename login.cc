@@ -15,7 +15,7 @@ namespace xchat {
     XChat::XChat(const string& user, const string& pass)
 	: lastsrv(0), last_sent(0), last_recv(0), idle_delta(0),
 	idle_interval(0), recv_interval(3), convert_smiles(1),
-	really_logout(true)
+	really_logout(true), errand_emitted(false)
     {
 	/*
 	 * This is here, because otherwise every forked child would have the
