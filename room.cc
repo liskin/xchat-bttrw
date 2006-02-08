@@ -573,9 +573,9 @@ retry:
     {
 	TomiHTTP s;
 	try {
-	    int ret = s.POST(makeurl2("modchat"),"op=textpage&skin=2&rid=" + r.rid +
-		    "&aid=0" + "&target=" + TomiHTTP::URLencode(target) +
-		    "&textarea=" + TomiHTTP::URLencode(msg), 0);
+	    int ret = s.POST(makeurl2("modchat"),"op=textpageng&js=1&skin=2&rid=" + r.rid +
+		    "&textarea=" + TomiHTTP::URLencode(msg) +
+		    "&target=" + TomiHTTP::URLencode(target), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while posting msg");
 	} catch (runtime_error e) {
@@ -608,7 +608,7 @@ retry:
 	    /**
 	     * Detect envelope blinking and emit event
 	     */
-	    static string pat3 = "<img src=\"http://img.centrum.cz/chat3/message";
+	    static string pat3 = "<img src=\"http://img.centrum.cz/x4/rm/msg";
 	    unsigned int pos;
 	    if ((pos = l.find(pat3)) != string::npos) {
 		if (l[pos + pat3.length()] == '_') { // Envelope is blinking
