@@ -159,14 +159,15 @@ namespace xchat {
     class EvRoomTopicChange : public EvRoomOther {
 	    friend class XChat;
 	protected:
-	    string name, desc, s2;
+	    string name, desc, web, s2;
 	public:
 	    virtual const string & str() {
-		s2 = string("Topic change: ") + name + " " + desc;
+		s2 = string("Topic change: ") + name + " " + desc + " " + web;
 		return s2;
 	    }
 	    virtual const string & getname() { return name; }
 	    virtual const string & getdesc() { return desc; }
+	    virtual const string & getweb() { return web; }
 	    virtual ~EvRoomTopicChange() {}
     };
     

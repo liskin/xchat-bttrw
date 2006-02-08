@@ -327,7 +327,12 @@ retry:
 	r.admins.clear();
 	while (ss >> admin)
 	    r.admins.insert(strtolower_nr(admin));
-	
+
+	if (!s.getline(l)) /* Room web */
+	     throw runtime_error("Getting room info error.");
+	wstrip(l);
+	r.web = recode_to_client(l);
+
 	if (!r.name.length() && !r.desc.length() && !r.admins.size()) {
 	    if (retries--) {
 		lastsrv_broke();

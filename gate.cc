@@ -492,7 +492,9 @@ main_accept:
 				    mask(x->me).c_str(),
 				    chan.c_str());
 			    fprintf(*c, ":%s 332 %s #%s :%s\n", me, nick.c_str(), chan.c_str(),
-				    (x->rooms[chan].name + " - " + x->rooms[chan].desc).c_str());
+				    (x->rooms[chan].name + " | " +
+				     x->rooms[chan].desc + " | " +
+				     x->rooms[chan].web).c_str());
 			    // output userlist (NAMES)
 			    string tmp; int i; nicklist_t::iterator j;
 			    for (i = 1, j = x->rooms[chan].nicklist.begin();
@@ -769,7 +771,9 @@ main_accept:
 				cmd[1].c_str());
 		    else
 			fprintf(*c, ":%s 332 %s #%s :%s\n", me, nick.c_str(), cmd[1].c_str(),
-				(x->rooms[cmd[1]].name + " - " + x->rooms[cmd[1]].desc).c_str());
+				(x->rooms[cmd[1]].name + " | " + 
+				 x->rooms[cmd[1]].desc + " | " +
+				 x->rooms[cmd[1]].web).c_str());
 		} else if (cmd[0] == "TOPIC" && cmd.size() >= 3) {
 		    /*
 		     * Set topic
@@ -1044,7 +1048,8 @@ main_accept:
 		    auto_ptr<EvRoomTopicChange> f((EvRoomTopicChange*)e.release());
 		
 		    fprintf(*c, ":%s TOPIC #%s :%s\n", me, f->getrid().c_str(),
-    			(f->getname() + " - " + f->getdesc()).c_str());
+    			(f->getname() + " | " + f->getdesc() + " | " + 
+			 f->getweb()).c_str());
 		} else if (dynamic_cast<EvRoomOther*>(e.get())) {
 		    auto_ptr<EvRoomOther> f((EvRoomOther*)e.release());
 

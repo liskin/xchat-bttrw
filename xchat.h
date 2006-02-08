@@ -47,7 +47,8 @@ namespace xchat {
 	string admin; ///< Lowercase nick of current admin of the room.
 	bool locked; ///< Locked status.
 	string name, ///< Room name.
-	       desc; ///< Room description.
+	       desc, ///< Room description.
+	       web;  ///< Room web.
 	set<string> admins; ///< List of permanent admins.
     };
 

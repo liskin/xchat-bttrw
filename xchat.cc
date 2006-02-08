@@ -281,11 +281,13 @@ namespace xchat {
 		 * Check for room name and description change (resulting in
 		 * one EvRoomTopicChange event)
 		 */
-		if (old.name != i->second.name || old.desc != i->second.desc) {
+		if (old.name != i->second.name || old.desc != i->second.desc ||
+		    old.web != i->second.web) {
 		    EvRoomTopicChange *e = new EvRoomTopicChange;
 		    e->rid = i->first;
 		    e->name = i->second.name;
 		    e->desc = i->second.desc;
+		    e->web = i->second.web;
 		    recvq_push(e);
 		}
 
