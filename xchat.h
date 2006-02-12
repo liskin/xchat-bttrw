@@ -304,9 +304,9 @@ namespace xchat {
 	    string client_charset;
 
 	    /**
-	     * \brief Has been information about new errand already emitted?
+	     * \brief Has the information about new note been already emitted?
 	     */
-	    bool errand_emitted;
+	    bool note_emitted;
     };
 
     /**

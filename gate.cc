@@ -1069,8 +1069,8 @@ main_accept:
 
 		    fprintf(*c, ":%s NOTICE %s :%sSystem: %s\n", me,
 			    nick.c_str(), date.c_str(), f->str().c_str());
-		} else if (dynamic_cast<EvErrand*>(e.get())) {
-		    auto_ptr<EvErrand> f((EvErrand*)e.release());
+		} else if (dynamic_cast<EvNote*>(e.get())) {
+		    auto_ptr<EvNote> f((EvNote*)e.release());
     
                     if (x->rooms.size()) {
 			for (rooms_t::iterator i = x->rooms.begin();

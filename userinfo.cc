@@ -53,7 +53,7 @@ retry1:
 
 	if (!s.getline(l))
 	    throw runtime_error("User info is not complete.");
-	out.sex = (l == "0");
+	out.sex = (l == "0") ? 1 : 0;
 	
 	if (!s.getline(l))
 	    throw runtime_error("User info is not complete.");

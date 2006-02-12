@@ -617,14 +617,14 @@ retry:
 	    unsigned int pos;
 	    if ((pos = l.find(pat3)) != string::npos) {
 		if (l[pos + pat3.length()] == '_') { // Envelope is blinking
-		    if (!errand_emitted) {
-			EvErrand *e = new EvErrand;
-			e->s = "New errand received";
+		    if (!note_emitted) {
+			EvNote *e = new EvNote;
+			e->s = "New note received";
 			recvq_push(e);
-			errand_emitted = true;
+			note_emitted = true;
 		    }
 		} else {
-		    errand_emitted = false;
+		    note_emitted = false;
 		}
 	    }
 	}

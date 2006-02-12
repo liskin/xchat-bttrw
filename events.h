@@ -200,10 +200,10 @@ namespace xchat {
 	    virtual ~EvWhisper() {}
     };
 
-    class EvErrand : public Event {
+    class EvNote : public Event {
 	    friend class XChat;
 	public:
-	    virtual ~EvErrand() {}
+	    virtual ~EvNote() {}
     };
 }
 
