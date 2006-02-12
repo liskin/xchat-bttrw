@@ -33,6 +33,8 @@ namespace xchat {
 	    userinfo_t ui = userinfo(user);
 	    if (ui.nick.length())
 		me.sex = ui.sex;
+
+	    loadsuperadmins();
 	} catch (...) {	}
     }
 

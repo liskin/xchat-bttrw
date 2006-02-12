@@ -382,7 +382,7 @@ main_accept:
 			fprintf(*c, ":%s 005 %s MODES=1 MAXTARGETS=1 NICKLEN=20 SAFELIST"
 				" :are supported by this server\n",
 				me, nick.c_str());
-			fprintf(*c, ":%s 005 %s CHANTYPES=# PREFIX=(ohv)@%%+ CHANMODES=,,,i"
+			fprintf(*c, ":%s 005 %s CHANTYPES=# PREFIX=(aohv)!@%%+ CHANMODES=,,,i"
 				" NETWORK=xchat.cz CASEMAPPING=ascii"
 				" :are supported by this server\n", me, nick.c_str());
 
@@ -500,6 +500,7 @@ main_accept:
 			    for (i = 1, j = x->rooms[chan].nicklist.begin();
 				    j != x->rooms[chan].nicklist.end(); j++, i++) {
 				tmp += string("") +
+				    ((x->issuperadmin(j->first))?"!":"") +
 				    ((x->ispermadmin(chan, j->first))?"@":"") +
 				    ((x->isadmin(chan, j->first))?"%":"") +
 				    ((j->second.sex == 0 && voiced_girls)?"+":"") +
@@ -638,11 +639,12 @@ main_accept:
 			     */
 			    for (nicklist_t::iterator i = x->rooms[cmd[1]].nicklist.begin();
 				    i != x->rooms[cmd[1]].nicklist.end(); i++) {
-				fprintf(*c, ":%s 352 %s #%s %s %s %s %s H%s%s%s :%d %s\n", me,
+				fprintf(*c, ":%s 352 %s #%s %s %s %s %s H%s%s%s%s :%d %s\n", me,
 					nick.c_str(), cmd[1].c_str(),
 					username(i->second).c_str(),
 					host(i->second).c_str(),
 					me, i->second.nick.c_str(),
+					(x->issuperadmin(i->first))?"!*":"",
 					(x->ispermadmin(cmd[1], i->first))?"@":"",
 					(x->isadmin(cmd[1], i->first))?"%":"",
 					(i->second.sex == 0 && voiced_girls)?"+":"",
@@ -656,9 +658,11 @@ main_accept:
 			 */
 			x_nick *n = x->findnick(cmd[1], 0);
 			if (n)
-			    fprintf(*c, ":%s 352 %s %s %s %s %s %s %s :%d %s\n", me,
+			    fprintf(*c, ":%s 352 %s %s %s %s %s %s %s%s :%d %s\n", me,
 				    nick.c_str(), "*", username(*n).c_str(),
-				    host(*n).c_str(), me, n->nick.c_str(), "H", 0,
+				    host(*n).c_str(), me, n->nick.c_str(), "H",
+				    (x->issuperadmin(n->nick))?"*":"",
+				    0,
 				    "xchat.cz user");
 		    }
 		    fprintf(*c, ":%s 315 %s %s :End of /WHO list.\n", me,
@@ -801,6 +805,7 @@ main_accept:
 			for (i = 1, j = x->rooms[cmd[1]].nicklist.begin();
 				j != x->rooms[cmd[1]].nicklist.end(); j++, i++) {
 			    tmp += string("") +
+				((x->issuperadmin(j->first))?"!":"") +
 				((x->ispermadmin(cmd[1], j->first))?"@":"") +
 				((x->isadmin(cmd[1], j->first))?"%":"") +
 				((j->second.sex == 0 && voiced_girls)?"+":"") +
@@ -943,6 +948,8 @@ main_accept:
 			    f->getrid().c_str());
 
 		    string mode;
+		    if (x->issuperadmin(f->getsrc().nick))
+			mode += "a";
 		    if (x->ispermadmin(f->getrid(), f->getsrc().nick))
 			mode += "o";
 		    if (f->getsrc().sex == 0 && voiced_girls)

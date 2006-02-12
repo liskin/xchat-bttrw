@@ -215,6 +215,8 @@ namespace xchat {
 	    x_nick me; ///< Me... Own nick and sex, if known.
 	    rooms_t rooms; ///< Array of rooms we are in.
 
+	    set<string> superadmins; ///< Array of superadmins (xchat admins).
+
 	    time_t last_sent, ///< Time of last sent message.
 		   last_recv; ///< Time of last new messages retrieval.
 	    deque<send_item> sendq; ///< Queue of messages to send.
@@ -274,9 +276,11 @@ namespace xchat {
 	    x_nick* findnick(string src, room **r);
 	    bool isadmin(const string &rid, string nick);
 	    bool ispermadmin(const string &rid, string nick);
+	    bool issuperadmin(const string nick);
 
 	    void list(listout_t &listout);
 	    bool ison(const string& nick);
+	    void loadsuperadmins();
 	    userinfo_t userinfo(const string& nick);
 
 	    /*

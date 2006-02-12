@@ -349,4 +349,18 @@ namespace xchat {
 
 	return false;
     }
+
+    /**
+     * Check if given user is xchat admin.
+     * \param nick User's nick.
+     * \return True if he is.
+     */
+    bool XChat::issuperadmin(string nick) {
+	strtolower(nick);
+
+	if(superadmins.find(nick) != superadmins.end())
+	    return true;
+
+	return false;
+    }
 }
