@@ -605,7 +605,7 @@ retry:
 	     * Check, if the message was posted by looking if they have left
 	     * something in textarea.
 	     */
-	    static string pat2 = " name=\"textarea\" value=\"";
+	    static string pat2 = " id=\"msg\" value=\"";
 	    unsigned int a;
 	    if ((a = l.find(pat2)) != string::npos && l[a + pat2.length()] != '\"')
 		posted = false;
