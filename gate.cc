@@ -867,6 +867,36 @@ main_accept:
 				rpl += n + " ";
 		    }
 		    fprintf(*c, ":%s 303 %s :%s\n", me, nick.c_str(), rpl.c_str());
+		} else if (cmd[0] == "STATS" && cmd.size() >= 2) {
+		    switch (cmd[1][0]) {
+			case 'o':
+			case 'O':
+			    x->reloadsuperadmins();
+			    for (superadmins_t::iterator i = x->superadmins.begin();
+				i != x->superadmins.end(); i++) {
+				fprintf(*c, ":%s 243 %s %c * * %s\n", me, nick.c_str(),
+				    cmd[1][0], i->second.nick.c_str());
+			    }
+			    fprintf(*c, ":%s 219 %s %c :End of STATS report\n", me,
+				nick.c_str(), cmd[1][0]);
+			    break;
+			case 'p':
+			    x->reloadsuperadmins();
+			    for (superadmins_t::iterator i = x->superadmins.begin();
+				i != x->superadmins.end(); i++) {
+				if (i->second.online) {
+				    fprintf(*c, ":%s 249 %s p %s\n", me, nick.c_str(),
+					i->second.nick.c_str());
+				}
+			    }
+			    fprintf(*c, ":%s 219 %s p :End of STATS report\n", me,
+				nick.c_str());
+			    break;
+			default:
+			    fprintf(*c, ":%s NOTICE %s :Bad parameter\n", me,
+				nick.c_str());
+			    break;
+		    }
 		} else if (cmd[0] == "AWAY") {
 		    fprintf(*c, ":%s 305 %s :You are no longer marked as being away\n",
 			    me, nick.c_str());
@@ -1089,6 +1119,26 @@ main_accept:
 			fprintf(*c, ":%s NOTICE %s :%s\002Mas novy vzkaz!\002 "
 			    "[ http://xchat.centrum.cz/offline ]\n",
 			    me, nick.c_str(), date.c_str());
+		    }
+		} else if (dynamic_cast<EvSuperAdminsChange*>(e.get())) {
+		    auto_ptr<EvSuperAdminsChange> f((EvSuperAdminsChange*)e.release());
+
+                    if (x->rooms.size()) {
+    			for (vector<string>::const_iterator i = f->getadded().begin();
+			    i != f->getadded().end(); i++)
+			    for (rooms_t::iterator j = x->rooms.begin();
+				j != x->rooms.end(); j++)
+				if (j->second.nicklist.find(*i) != j->second.nicklist.end())
+				    fprintf(*c, ":%s MODE #%s +a %s\n", me,
+					j->first.c_str(), i->c_str());
+
+    			for (vector<string>::const_iterator i = f->getremoved().begin();
+			    i != f->getremoved().end(); i++)
+			    for (rooms_t::iterator j = x->rooms.begin();
+				j != x->rooms.end(); j++)
+				if (j->second.nicklist.find(*i) != j->second.nicklist.end())
+				    fprintf(*c, ":%s MODE #%s -a %s\n", me,
+					j->first.c_str(), i->c_str());
 		    }
 		} else {
 		    fprintf(*c, ":%s NOTICE %s :%sOther: %s - %s\n", me,

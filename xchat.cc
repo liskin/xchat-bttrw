@@ -292,7 +292,7 @@ namespace xchat {
 		}
 
 		/*
-		 * Check for permanent admins change
+		 * Check for permanent admins changes
 		 */
 		vector<string> added, removed;
 		set_difference(i->second.admins.begin(), i->second.admins.end(),

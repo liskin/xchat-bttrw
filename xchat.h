@@ -101,6 +101,27 @@ namespace xchat {
 	string top_pos; ///< A position in the TOP chart.
 	vector<userinfo_room> rooms; ///< Array of rooms a user is in.
     };
+
+    /**
+     * \brief Structure definition for a superadmin info.
+     */
+    struct superadmin_t {
+	string nick; ///< Nickname in the right case (hopefully).
+	int sex; ///< Sex. Values are the same as in x_nick.
+	/**
+	 * \brief Star (privilege level).
+	 * 0 stands for blue, 1 for green, 2 for yellow, 3 for red, 4 for
+	 * black.
+	 */
+	int star;
+	bool online; ///< Is admin online?
+    };
+
+    /**
+     * \brief Type definition for the XChat::superadmins array. It's a map of
+     * nicks to superadmin_t structure.
+     */
+    typedef map<string, superadmin_t> superadmins_t;
 }
 
 #include "events.h"
@@ -215,7 +236,7 @@ namespace xchat {
 	    x_nick me; ///< Me... Own nick and sex, if known.
 	    rooms_t rooms; ///< Array of rooms we are in.
 
-	    set<string> superadmins; ///< Array of superadmins (xchat admins).
+	    superadmins_t superadmins; ///< Array of superadmins (xchat admins).
 
 	    time_t last_sent, ///< Time of last sent message.
 		   last_recv; ///< Time of last new messages retrieval.
@@ -281,6 +302,7 @@ namespace xchat {
 	    void list(listout_t &listout);
 	    bool ison(const string& nick);
 	    void loadsuperadmins();
+	    void reloadsuperadmins();
 	    userinfo_t userinfo(const string& nick);
 
 	    /*

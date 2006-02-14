@@ -171,6 +171,16 @@ namespace xchat {
 	    virtual ~EvRoomTopicChange() {}
     };
     
+    class EvSuperAdminsChange : public Event {
+	    friend class XChat;
+	protected:
+	    vector<string> added, removed;
+	public:
+	    virtual const vector<string> & getadded() { return added; }
+	    virtual const vector<string> & getremoved() { return removed; }
+	    virtual ~EvSuperAdminsChange() {}
+    };
+
     class EvError : public Event {
 	    friend class XChat;
 	public:
