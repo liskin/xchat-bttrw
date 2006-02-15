@@ -7,8 +7,16 @@
 #include <cctype>
 
 namespace net {
+    /*
+     * g_http_conn_timeout does not work yet.
+     */
+    int TomiHTTP::g_http_conn_timeout = 120,
+	TomiHTTP::g_http_recv_timeout = 30;
+
     TomiHTTP::TomiHTTP()
     {
+	conn_timeout = g_http_conn_timeout;
+	recv_timeout = g_http_recv_timeout;
     }
 
     TomiHTTP::~TomiHTTP()
@@ -30,7 +38,7 @@ namespace net {
 
 	address.erase(0,7);
 
-	unsigned int delim = address.find('/');
+	string::size_type delim = address.find('/');
 	if (delim == string::npos) {
 	    address += '/';
 	    delim = address.length() - 1;
@@ -87,7 +95,7 @@ namespace net {
 	string line;
 	if (getline(line)) {
 	    chomp(line);
-	    unsigned int space = line.find(' ');
+	    string::size_type space = line.find(' ');
 	    if (space == string::npos) {
 		throw runtime_error("parse error on HTTP response");
 	    }
@@ -140,7 +148,7 @@ namespace net {
 
 	address.erase(0,7);
 
-	unsigned int delim = address.find('/');
+	string::size_type delim = address.find('/');
 	if (delim == string::npos) {
 	    address += '/';
 	    delim = address.length() - 1;
@@ -200,7 +208,7 @@ namespace net {
 	string line;
 	if (getline(line)) {
 	    chomp(line);
-	    unsigned int space = line.find(' ');
+	    string::size_type space = line.find(' ');
 	    if (space == string::npos) {
 		throw runtime_error("parse error on HTTP response");
 	    }

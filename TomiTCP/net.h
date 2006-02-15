@@ -36,12 +36,15 @@ namespace net {
 	struct sockaddr_in6 sin6;
     };
 
-    int input_timeout(int filedes, int ms);
-    int output_timeout(int filedes, int ms);
+    typedef long long millitime_t;
+
+    int input_timeout(int filedes, millitime_t ms);
+    int output_timeout(int filedes, millitime_t ms);
     string tomi_ntop(const sockaddr_uni& name);
     void tomi_pton(string p, sockaddr_uni& name);
     string revers(const sockaddr_uni& name);
     void resolve(const string& hostname, const string& service, vector<sockaddr_uni> &addrs);
+    millitime_t millitime();
 
     class timeout : public runtime_error {
 	public:
@@ -74,6 +77,9 @@ namespace net {
 	    sockaddr_uni lname,rname;
 	    int sock;
 	    FILE *stream;
+
+	    int conn_timeout, recv_timeout;
+	    static int g_conn_timeout, g_recv_timeout;
 
 #ifdef WIN32
 	    int w32socket;

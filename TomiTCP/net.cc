@@ -6,10 +6,13 @@
 #include "net.h"
 #ifndef WIN32
 # include <netinet/tcp.h>
+# include <sys/time.h>
 #else
 # include <io.h>
 # include <fcntl.h>
 # include <mswsock.h>
+# include <sys/types.h>
+# include <sys/timeb.h>
 #endif
 #include "str.h"
 
@@ -60,7 +63,14 @@ static int my_close(int fd);
 #endif
 
 namespace net {
-    TomiTCP::TomiTCP() : sock(-1), stream(0)
+    /*
+     * FIXME - g_conn_timeout does not work yet!
+     * We don't want to break while (getline()), so g_recv_timeout is zero.
+     */
+    int TomiTCP::g_conn_timeout = 120, TomiTCP::g_recv_timeout = 0;
+
+    TomiTCP::TomiTCP() : sock(-1), stream(0),
+			 conn_timeout(g_conn_timeout), recv_timeout(g_recv_timeout)
 #ifdef WIN32
 			 , w32socket(-1), netsock(w32socket)
 #else
@@ -71,7 +81,8 @@ namespace net {
 	memset(&rname,0,sizeof(rname));
     }
 
-    TomiTCP::TomiTCP(uint16_t port, const string &addr) : sock(-1), stream(0)
+    TomiTCP::TomiTCP(uint16_t port, const string &addr) : sock(-1), stream(0),
+		     conn_timeout(g_conn_timeout), recv_timeout(g_recv_timeout)
 #ifdef WIN32
 		     , w32socket(-1), netsock(w32socket)
 #else
@@ -132,7 +143,8 @@ namespace net {
 #endif
     }
 
-    TomiTCP::TomiTCP(const string& hostname, uint16_t port) : sock(-1), stream(0)
+    TomiTCP::TomiTCP(const string& hostname, uint16_t port) : sock(-1), stream(0),
+		     conn_timeout(g_conn_timeout), recv_timeout(g_recv_timeout)
 #ifdef WIN32
 		     , w32socket(-1), netsock(w32socket)
 #else
@@ -416,14 +428,27 @@ namespace net {
 	int ret;
 
 	s.clear();
-	while ((ret = TEMP_FAILURE_RETRY(read(sock, &c, 1))) == 1 && c != delim) {
-	    s += c;
+
+	millitime_t start = millitime(), towait = 0;
+	while (recv_timeout == 0 ||
+		(towait = (millitime_t)recv_timeout * 1000 + start - millitime()) > 0) {
+	    ret = input_timeout(sock, towait);
+	    if (ret < 0)
+		runtime_error("input_timeout: " + string(strerror(sock_errno)));
+	    if (ret > 0) {
+		ret = TEMP_FAILURE_RETRY(read(sock, &c, 1));
+		if (ret == -1)
+		    throw runtime_error("read: " + string(strerror(errno)));
+		if (ret == 0)
+		    return s.length() > 0;
+		if (c == delim)
+		    return 1;
+		s += c;
+	    }
 	}
 
-	if (ret == -1)
-	    throw runtime_error("read: " + string(strerror(errno)));
-
-	return (ret != 0) || (s.length() > 0);
+	throw timeout("recv timeout");
+	return 0;
     }
     
     string tomi_ntop(const sockaddr_uni& name)
@@ -489,7 +514,7 @@ namespace net {
 	return string(hostname);
     }
 
-    int input_timeout(int filedes, int ms)
+    int input_timeout(int filedes, millitime_t ms)
     {
 	fd_set set;
         struct timeval timeout, *to = 0;
@@ -505,7 +530,7 @@ namespace net {
         return TEMP_FAILURE_RETRY(select(FD_SETSIZE,&set,NULL,NULL,to));
     }
 
-    int output_timeout(int filedes, int ms)
+    int output_timeout(int filedes, millitime_t ms)
     {
 	fd_set set;
         struct timeval timeout, *to = 0;
@@ -519,6 +544,20 @@ namespace net {
 	    to = &timeout;
 	}
         return TEMP_FAILURE_RETRY(select(FD_SETSIZE,NULL,&set,NULL,to));
+    }
+
+    millitime_t millitime()
+    {
+#ifdef WIN32
+	struct _timeb tb;
+	_ftime(&tb);
+	return (millitime_t)tb.time * 1000 + tb.millitm;
+#else
+	struct timeval tv;
+	if (gettimeofday(&tv, 0))
+	    throw runtime_error("gettimeofday: " + string(strerror(errno)));
+	return (millitime_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
+#endif
     }
 }
 
