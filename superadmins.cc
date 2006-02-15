@@ -65,6 +65,8 @@ retry:
 
 	    superadmins[nick] = superadmin;
 	}
+
+	last_superadmins_reload = time(0);
     }
     
     /**

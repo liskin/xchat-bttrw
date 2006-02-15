@@ -164,6 +164,11 @@ namespace xchat {
     const int nextchance_interval = 30;
 
     /**
+     * \brief Interval between reloading superadmins list.
+     */
+    const time_t superadmins_reload_interval = 3600;
+
+    /**
      * \brief A class representing a received Event. It has a mutable
      * auto_ptr<Event> member allowing to copy from a const reference.
      */
@@ -333,6 +338,11 @@ namespace xchat {
 	     * \brief Has the information about new note been already emitted?
 	     */
 	    bool note_emitted;
+
+	    /**
+	     * \brief Time of last superadmins reload
+	     */
+	    time_t last_superadmins_reload;
     };
 
     /**

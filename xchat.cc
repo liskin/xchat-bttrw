@@ -312,6 +312,11 @@ namespace xchat {
 		i->second.last_roominfo = time(0);
 	    }
 	}
+
+	// superadmins reload
+	if (time(0) - last_superadmins_reload >= superadmins_reload_interval) {
+	    reloadsuperadmins();
+	}
     }
 
     /**
