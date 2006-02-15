@@ -340,7 +340,7 @@ namespace xchat {
 	    bool note_emitted;
 
 	    /**
-	     * \brief Time of last superadmins reload
+	     * \brief Time of last superadmins reload.
 	     */
 	    time_t last_superadmins_reload;
     };
