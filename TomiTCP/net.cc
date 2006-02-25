@@ -229,6 +229,7 @@ namespace net {
 
 	memset(&hints,0,sizeof(hints));
 	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_family = PF_UNSPEC;
 
 	ret = getaddrinfo(hostname.length()?hostname.c_str():0,
 		service.length()?service.c_str():0, &hints, &ai);
@@ -429,10 +430,10 @@ namespace net {
 
 	s.clear();
 
-	millitime_t start = millitime(), towait = 0;
+	millitime_t start = millitime(), towait = -1;
 	while (recv_timeout == 0 ||
 		(towait = (millitime_t)recv_timeout * 1000 + start - millitime()) > 0) {
-	    ret = input_timeout(sock, towait);
+	    ret = input_timeout(netsock, towait);
 	    if (ret < 0)
 		runtime_error("input_timeout: " + string(strerror(sock_errno)));
 	    if (ret > 0) {
