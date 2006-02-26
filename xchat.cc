@@ -236,7 +236,10 @@ namespace xchat {
 	    for (rooms_t::iterator i = rooms.begin(); i != rooms.end(); i++) {
 		if (time(0) - i->second.last_sent >= idle_interval - idle_delta) {
 		    sendq.push_back(send_item(i->first, me.nick, genidle()));
-		    idle_delta = rand() % (idle_interval / 5);
+		    if (idle_interval >= 5)
+			idle_delta = rand() % (idle_interval / 5);
+		    else
+			idle_delta = 0;
 		}
 	    }
     }
