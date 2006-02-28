@@ -418,8 +418,8 @@ main_accept:
 			fprintf(*c, ":%s NOTICE %s :idle_interval set to %i\n",
 				me, nick.c_str(), x->idle_interval);
 			setproctitle(("gate: " + tomi_ntop(c->rname) +
-				" (" + nick + ") "
-				"[IDLER=" + cmd[2].c_str() + "]").c_str());
+				" (" + nick + ")" + (x->idle_interval>0?
+				" [IDLER=" + cmd[2] + "]":"")).c_str());
 		    } else if (cmd[1] == "CHARSET" && cmd.size() == 3) {
 			x->client_charset = cmd[2];
 			fprintf(*c, ":%s NOTICE %s :client_charset set to %s\n",
