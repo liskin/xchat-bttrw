@@ -69,7 +69,7 @@ namespace std {
 	    else {
 		t[0] = *i;
 
-		if (j != cmd.end() && string("o").find(*i) != string::npos) {
+		if (j != cmd.end() && string("oh").find(*i) != string::npos) {
 		    mode.push_back(pair<string,string>(string(ch) + string(t), *j));
 		    j++;
 		} else {
