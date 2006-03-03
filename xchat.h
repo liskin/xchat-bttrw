@@ -300,6 +300,7 @@ namespace xchat {
 	    void unlock(const string &room);
 
 	    x_nick* findnick(string src, room **r);
+	    bool isin(const string &rid, string nick);
 	    bool isadmin(const string &rid, string nick);
 	    bool ispermadmin(const string &rid, string nick);
 	    bool issuperadmin(const string nick);

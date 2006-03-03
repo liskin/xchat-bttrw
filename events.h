@@ -119,7 +119,9 @@ namespace xchat {
     class EvRoomAdminChange : public EvRoomOther {
 	    friend class XChat;
 	protected:
-	    string before, now, s2;
+	    string before; ///< Nickname of the former admin in lowercase.
+	    string now; ///< Nickname of the new admin in lowercase.
+	    string s2;
 	public:
 	    virtual const string & str() {
 		s2 = "Admin change: " + before + " => " + now;

@@ -323,6 +323,23 @@ namespace xchat {
     }
 
     /**
+     * Check if given user is in a specified room.
+     * \param rid Room id.
+     * \param nick User's nick.
+     * \return True if he is.
+     */
+    bool XChat::isin(const string &rid, string nick) {
+	if (rooms.find(rid) == rooms.end())
+	    return false;
+	strtolower(nick);
+
+	if (rooms[rid].nicklist.find(nick) != rooms[rid].nicklist.end())
+	    return true;
+
+	return false;
+    }
+
+    /**
      * Check if given user is admin in a specified room.
      * (but not permanent admin nor xchat admin)
      * \param rid Room id.

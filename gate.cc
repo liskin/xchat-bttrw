@@ -1037,18 +1037,23 @@ main_accept:
 		    if (now.nick.length() && (tmp = x->findnick(now.nick, 0)))
 			now = *tmp;
 
-		    if (f->getbefore().empty() ||
-			    x->ispermadmin(f->getrid(), f->getbefore()))
-			fprintf(*c, ":%s MODE #%s +h %s\n", me,
-				f->getrid().c_str(), now.nick.c_str());
-		    else if (f->getnow().empty() ||
-			    x->ispermadmin(f->getrid(), f->getnow()))
-			fprintf(*c, ":%s MODE #%s -h %s\n", me,
-				f->getrid().c_str(), before.nick.c_str());
-		    else
+		    bool minus = !before.nick.empty() &&
+			x->isin(f->getrid(), before.nick) &&
+			!x->ispermadmin(f->getrid(), before.nick);
+		    bool plus = !now.nick.empty() &&
+			x->isin(f->getrid(), now.nick) &&
+			!x->ispermadmin(f->getrid(), now.nick);
+
+		    if (minus && plus)
 			fprintf(*c, ":%s MODE #%s -h+h %s %s\n", me,
 				f->getrid().c_str(), before.nick.c_str(),
 				now.nick.c_str());
+		    else if (plus)
+			fprintf(*c, ":%s MODE #%s +h %s\n", me,
+				f->getrid().c_str(), now.nick.c_str());
+		    else if (minus)
+			fprintf(*c, ":%s MODE #%s -h %s\n", me,
+				f->getrid().c_str(), before.nick.c_str());
 		} else if (dynamic_cast<EvRoomAdminsChange*>(e.get())) {
 		    auto_ptr<EvRoomAdminsChange> f((EvRoomAdminsChange*)e.release());
 
