@@ -72,7 +72,7 @@ void m_nomi_msg(string snick, string shost, vector<string> cmd)
     if (!strcasecmp(cmd[0].c_str(),"NOTICE") &&
 	    !strcasecmp(cmd[1].c_str(),nick.c_str())) {
 	if (!strncasecmp(cmd[2].c_str(),"op ",3)) {
-	    int d = string(cmd[2],3).find(' ');
+	    string::size_type d = string(cmd[2],3).find(' ');
 	    if (d != -1) {
 		string chan = string(cmd[2],3,d);
 		string pass = string(cmd[2],3+d+1);

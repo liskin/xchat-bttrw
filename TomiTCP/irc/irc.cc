@@ -110,7 +110,7 @@ void loadconfig(const char *fname, ostream &out)
     string l;
     while (getline(in,l)) {
 	if (l.length() && l[0]!='#') {
-	    unsigned int d = l.find_first_of(" \f\n\r\t\v");
+	    string::size_type d = l.find_first_of(" \f\n\r\t\v");
 	    if (d > 0 && d != string::npos) {
 		string a(l,0,d),b(l,d+1);
 		wstrip(a); wstrip(b);
@@ -272,7 +272,7 @@ void parsein(const char *buf, string& prefix, vector<string>& cmd)
 
 void splitprefix(string prefix, string &nick, string &host)
 {
-    int d = prefix.find('!');
+    string::size_type d = prefix.find('!');
     if (d == -1) {
 	nick = "";
 	host = "";

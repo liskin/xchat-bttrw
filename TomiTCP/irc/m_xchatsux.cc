@@ -6,8 +6,7 @@ using namespace std;
 
 void unsmilize(string &s)
 {
-    unsigned int a, b;
-    unsigned int pos = 0;
+    string::size_type a, b, pos = 0;
 
     while (((a = s.find('*', pos)) != string::npos) &&
 	    ((b = s.find('*', a + 1)) != string::npos)) {
