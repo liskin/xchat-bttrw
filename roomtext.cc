@@ -22,7 +22,7 @@ namespace xchat {
 	     * Some exceptions...
 	     */
 	    if (client_charset != "UTF-8") {
-		unsigned int a, pos = 0;
+		string::size_type a, pos = 0;
 
 		while ((a = s.find("\xe2\x97\x8f", pos)) != string::npos) {
 		    s.replace(a, 3, "*");
@@ -64,7 +64,7 @@ namespace xchat {
      */
     void XChat::stripjsescapes(string &s)
     {
-	unsigned int a, pos = 0;
+	string::size_type a, pos = 0;
 
 	while ((a = s.find("\\", pos)) != string::npos) {
 	    if (s.begin() + a + 2 <= s.end()) {
@@ -82,7 +82,7 @@ namespace xchat {
      */
     void XChat::striphtml(string &s)
     {
-	unsigned int a, b, lastbr = string::npos, pos = 0;
+	string::size_type a, b, lastbr = string::npos, pos = 0;
 
 	while (((a = s.find('<', pos)) != string::npos) &&
 		((b = string(s, a).find('>')) != string::npos)) {
@@ -92,7 +92,7 @@ namespace xchat {
 	    {
 		static string pat = "<img src=\"http://img.",
 		    pat2 = ".gif\"", pat3 = "/sm/";
-		unsigned int c, d;
+		string::size_type c, d;
 		if (!s.compare(a, pat.length(), pat) &&
 			(c = s.find(pat2, a)) != string::npos &&
 			(d = s.find(pat3, a)) != string::npos &&
@@ -176,7 +176,7 @@ namespace xchat {
 	    target = string(t, src.length() + 2);
 
 	// strip [room]
-	unsigned int a;
+	string::size_type a;
 	if (src[0] == '[' && ((a = src.find(']')) != string::npos))
 	    src.erase(0, a + 1);
 	
@@ -196,8 +196,7 @@ namespace xchat {
      */
     void XChat::unsmilize(string &s)
     {
-	unsigned int a, b;
-	unsigned int pos = 0;
+	string::size_type a, b, pos = 0;
 
 	if (!convert_smiles)
 	    return;
@@ -255,7 +254,7 @@ namespace xchat {
      */
     bool XChat::isjoin(room& r, string &m, string &src, int &sex)
     {
-	unsigned int a,b;
+	string::size_type a,b;
 	if ((a = m.find("Uživatel")) != string::npos &&
 		(((b = m.find("vstoupil  do místnosti")) != string::npos) || 
 		 ((b = m.find("vstoupila do místnosti")) != string::npos))) {
@@ -287,7 +286,7 @@ namespace xchat {
      */
     bool XChat::isleave(room& r, string &m, string &src, int &sex)
     {
-	unsigned int a,b;
+	string::size_type a,b;
 	if ((a = m.find("Uživatel")) != string::npos &&
 		(((b = m.find("opustil  místnost")) != string::npos) || 
 		 ((b = m.find("opustila místnost")) != string::npos))) {
@@ -323,7 +322,7 @@ namespace xchat {
      */
     bool XChat::iskick(room& r, string &m, string &src, string &reason, string &who, int &sex)
     {
-	unsigned int a,b;
+	string::size_type a,b;
 	if ((a = m.find("Uživatel")) != string::npos &&
 		(((b = m.find("byl  vyhozen")) != string::npos) ||
 		(b = m.find("byla vyhozena")) != string::npos)) {
@@ -374,7 +373,7 @@ namespace xchat {
     bool XChat::isadvert(string &m, string &link)
     {
 	static string pat = "<A TARGET=_blank HREF=\\\"/advert/advert.php";
-	unsigned int pos, pos2;
+	string::size_type pos, pos2;
 	if ((pos = m.find(pat)) != string::npos) {
 	    link = "http://xchat.centrum.cz/advert/advert.php" +
 		string(m, pos + pat.length());

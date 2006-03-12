@@ -446,8 +446,7 @@ namespace xchat {
      */
     void striphtmlent(string &m)
     {
-	unsigned int a;
-	unsigned int pos = 0;
+	string::size_type a, pos = 0;
 
 	while (((a = m.find('&', pos)) != string::npos)) {
 	    const char *begin = m.c_str() + a, *end = begin;

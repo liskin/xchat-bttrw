@@ -85,7 +85,7 @@ retry1:
 	}
 	while (s.getline(l)) {
 	    static string pat1 = "<h3 class=\"hdrsuccess\">", pat2 = "</h3>";
-	    unsigned int a, b;
+	    string::size_type a, b;
 	    if ((a = l.find(pat1)) != string::npos &&
 		    (b = l.find(pat2, a + pat1.length())) != string::npos) {
 		string err(l, a + pat1.length(), b - a - pat1.length());
@@ -121,7 +121,7 @@ retry2:
 	bool lastline = false, updateinfo = false;
 	while (s.getline(l)) {
 	    static string pat1 = "&inc=1&last_line=";
-	    unsigned int a, b;
+	    string::size_type a, b;
 	    if ((a = l.find(pat1)) != string::npos &&
 		    (b = l.find('"', a + pat1.length())) != string::npos) {
 		lastline = true;
@@ -167,13 +167,13 @@ retry3:
 		    if (l.find("</select>") != string::npos)
 			break;
 
-		    unsigned int a, b = 0;
+		    string::size_type a, b = 0;
 		    static string pat1 = "<option ", pat2 = "</option>";
 		    while ((a = l.find(pat1, b)) != string::npos &&
 			    (b = l.find(pat2, a)) != string::npos) {
 			string o(l, a, b - a + pat2.length());
 
-			unsigned int pos, pos2;
+			string::size_type pos, pos2;
 			static string pat = "value=\"";
 			o.erase(0, o.find(pat));
 			o.erase(0, pat.length());
@@ -377,7 +377,7 @@ retry:
 	    // look for next last_line number
 	    if (r.l == -1) {
 		static string pat1 = "&inc=1&last_line=";
-		unsigned int a, b;
+		string::size_type a, b;
 		if ((a = l.find(pat1)) != string::npos &&
 			(b = l.find('"', a + pat1.length())) != string::npos) {
 		    r.l = atoi(string(l, a + pat1.length(), b - a - pat1.length()).c_str());
@@ -393,7 +393,7 @@ retry:
 	    if (expect_apos) {
 		expect_apos = false;
 		if (l[0] == '\'') {
-		    unsigned int a, b = 1;
+		    string::size_type a, b = 1;
 		    while ((a = l.find('\'', b)) != string::npos) {
 			if (l[a - 1] == '\\') {
 			    b = a + 1;
@@ -408,7 +408,7 @@ retry:
 		    }
 		}
 	    } else {
-		unsigned int pos1, pos2, a, b;
+		string::size_type pos1, pos2, a, b;
 		static string pat1 = ".addText(", pat2 = "Array('";
 
 		if ((pos1 = l.find(pat1)) != string::npos) {
@@ -436,7 +436,7 @@ retry:
 	     */
 	    {
 		static string pat = "update_info('";
-		unsigned int pos;
+		string::size_type pos;
 		if ((pos = l.find(pat)) != string::npos) {
 		    string admin;
 		    bool locked;
@@ -467,14 +467,14 @@ retry:
 	     * If we got a redirect to error page, look at the error message.
 	     */
 	    static string pat1 = "top.location='", pat2 = "modchat?op=fullscreenmessage";
-	    unsigned int a, b, c;
+	    string::size_type a, b, c;
 	    if ((a = l.find(pat1)) != string::npos &&
 		    (b = l.find(pat2, a)) != string::npos &&
 		    (c = l.find('\'', b)) != string::npos) {
 		string url(l, b, c - b);
 
 		static string pat3 = "&kicking_nick=", pat4 = "&text=";
-		unsigned int pos;
+		string::size_type pos;
 		if ((pos = url.find(pat3)) != string::npos) {
 		    kicker = string(url, pos + pat3.length(),
 			    url.find('&', pos + pat3.length()) - pos - pat3.length());
@@ -497,7 +497,7 @@ retry:
 			    throw 0;
 			while (c.getline(m)) {
 			    static string pat1 = "<h3 class=\"hdrsuccess\">", pat2 = "</h3>";
-			    unsigned int a, b;
+			    string::size_type a, b;
 			    if ((a = m.find(pat1)) != string::npos &&
 				    (b = m.find(pat2, a + pat1.length())) != string::npos) {
 				kickmsg = string(m, a + pat1.length(), b - a - pat1.length());
@@ -606,7 +606,7 @@ retry:
 	     * something in textarea.
 	     */
 	    static string pat2 = " id=\"msg\" value=\"";
-	    unsigned int a;
+	    string::size_type a;
 	    if ((a = l.find(pat2)) != string::npos && l[a + pat2.length()] != '\"')
 		posted = false;
 
@@ -614,7 +614,7 @@ retry:
 	     * Detect envelope blinking and emit event
 	     */
 	    static string pat3 = "<img src=\"http://img.centrum.cz/x4/rm/msg";
-	    unsigned int pos;
+	    string::size_type pos;
 	    if ((pos = l.find(pat3)) != string::npos) {
 		if (l[pos + pat3.length()] == '_') { // Envelope is blinking
 		    if (!note_emitted) {

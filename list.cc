@@ -40,8 +40,8 @@ retry:
 	}
 
 	while (s.getline(l)) {
-	    unsigned int a, b, c;
-	    unsigned int pos = 0;
+	    string::size_type a, b, c;
+	    string::size_type pos = 0;
 	    static string pat1 = "<option value=\"", pat2 = "\"> ", pat3 = "</option>";
 
 	    while (((a = l.find(pat1, pos)) != string::npos) &&
