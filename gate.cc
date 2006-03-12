@@ -38,10 +38,10 @@ string hash(string s)
 {
     strtolower(s);
     unsigned char mdbuf[16]; char tmp[10];
-    MD5_CTX md5;
-    MD5Init(&md5);
-    MD5Update(&md5, (const unsigned char*)s.c_str(), s.length());
-    MD5Final(mdbuf, &md5);
+    md5_state_s md5;
+    md5_init(&md5);
+    md5_append(&md5, (const unsigned char*)s.c_str(), s.length());
+    md5_finish(&md5, mdbuf);
     sprintf(tmp, "%.8x", *((unsigned int*)mdbuf));
     return tmp;
 }
