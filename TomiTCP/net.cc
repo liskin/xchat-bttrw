@@ -48,7 +48,6 @@ int winsock_init() {
 
     return 0;
 }
-int winsock_init_tmp = winsock_init();
 # if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0500)
 #  define USE_FIXED_OSFHANDLE
 #  define _open_osfhandle my_open_osfhandle
@@ -68,6 +67,14 @@ namespace net {
      * We don't want to break while (getline()), so g_recv_timeout is zero.
      */
     int TomiTCP::g_conn_timeout = 120, TomiTCP::g_recv_timeout = 0;
+    
+    int thread_init_tmp = thread_init();
+    int thread_init()
+    {
+#ifdef WIN32
+	winsock_init();
+#endif
+    }
 
     TomiTCP::TomiTCP() : sock(-1), stream(0),
 			 conn_timeout(g_conn_timeout), recv_timeout(g_recv_timeout)

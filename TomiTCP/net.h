@@ -45,6 +45,7 @@ namespace net {
     string revers(const sockaddr_uni& name);
     void resolve(const string& hostname, const string& service, vector<sockaddr_uni> &addrs);
     millitime_t millitime();
+    int thread_init();
 
     class timeout : public runtime_error {
 	public:

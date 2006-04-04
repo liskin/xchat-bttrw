@@ -14,6 +14,8 @@ endif
 
 ifeq ($(TARGET),i386-mingw32msvc)
  LDLIBS += -lws2_32
+ CFLAGS += -mthreads
+ LDFLAGS += -mthreads
  ifndef WIN32_COMPAT
   WIN32_COMPAT=winxp
  endif
