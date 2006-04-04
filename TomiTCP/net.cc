@@ -74,6 +74,7 @@ namespace net {
 #ifdef WIN32
 	winsock_init();
 #endif
+	return 0;
     }
 
     TomiTCP::TomiTCP() : sock(-1), stream(0),
