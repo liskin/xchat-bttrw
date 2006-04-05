@@ -25,6 +25,9 @@
 #else
 # define sock_errno WSAGetLastError()
 # define EAFNOSUPPORT WSAEAFNOSUPPORT
+# ifndef SOL_IPV6
+#  define SOL_IPV6 IPPROTO_IPV6
+# endif
 const char * wsock_strerror(int err);
 # define strerror wsock_strerror
 # undef gai_strerror
@@ -131,6 +134,12 @@ namespace net {
 	int set_opt = 1;
         if (::setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char*)&set_opt,sizeof(set_opt)))
 	    cerr << "Could not set SO_REUSEADDR" << endl;
+
+	if (lname.sa.sa_family == AF_INET6) {
+	    set_opt = 0;
+	    if (::setsockopt(sock,SOL_IPV6,IPV6_V6ONLY,(char*)&set_opt,sizeof(set_opt)))
+		cerr << "Could not set IPV6_V6ONLY" << endl;
+	}
 
 	if (::bind(sock,&lname.sa,SIZEOF_SOCKADDR(lname))) {
 	    int er = sock_errno;
