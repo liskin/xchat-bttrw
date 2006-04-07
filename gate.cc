@@ -1212,8 +1212,8 @@ int main(int argc, char *argv[])
 			cout << " --help/-h - this help" << endl;
 			cout << " --port/-p <port> - listen on given port" << endl;
 			cout << " --bind/-b <addr> - listen on given address" << endl;
-			cout << " --log/-l <addr> - log to given file" << endl;
-			cout << " --restrict/-r <addr> - restrict to nicks in given file" << endl;
+			cout << " --log/-l <file> - log to given file" << endl;
+			cout << " --restrict/-r <file> - restrict to nicks in given file" << endl;
 #ifdef WIN32
 			cout << " --foreground/-f - run in console" << endl;
 #endif
