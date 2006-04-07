@@ -116,8 +116,7 @@ retry:
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry;
-	    } else
-		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	    }
 	}
     }
 

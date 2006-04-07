@@ -25,6 +25,8 @@ endif
 
 ifeq ($(TARGET),i386-mingw32msvc)
  LDLIBS += -lws2_32
+ CFLAGS += -mthreads
+ LDFLAGS += -mthreads
  RSRC=rsrc.o
 endif
 
@@ -122,6 +124,7 @@ buildw32:
 	cp -L COPYING $(DESTDIR)/
 	cp -L README $(DESTDIR)/README.txt
 	cp -L $(shell which libiconv-2.dll) $(DESTDIR)/
+	cp -L $(shell which mingwm10.dll) $(DESTDIR)/
 
 # Documentation
 docs_zmp:

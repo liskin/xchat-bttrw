@@ -1,6 +1,3 @@
-#undef LOG_ENABLED
-#undef RESTRICT_GATEWAY
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -15,8 +12,8 @@
 #ifndef WIN32
 # include <sys/wait.h>
 #endif
-#ifdef RESTRICT_GATEWAY
-# include <fnmatch.h>
+#ifdef WIN32
+# include <process.h>
 #endif
 #include <typeinfo>
 #include "md5.h"
@@ -30,6 +27,18 @@ using namespace xchat;
 using namespace net;
 
 #define VERSION "SVN-" REVISION
+
+/*
+ * Some global variables
+ */
+TomiTCP s;
+string logfile;
+string restrictfile;
+
+/*
+ * Constants
+ */
+static const char * const me = "xchat.cz";
 
 /*
  * Hash nick to make unique username
@@ -105,56 +114,51 @@ bool is_notice(string &s)
     return false;
 }
 
-#ifdef LOG_ENABLED
 void log(const string& s)
 {
-    time_t t = time(0);
-    struct tm lt;
-    char st[128];
+    if (logfile.length()) {
+	time_t t = time(0);
+	struct tm lt;
+	char st[128];
 
-    localtime_r(&t, &lt);
-    strftime(st, 128, "%F %H:%M:%S", &lt);
+#ifndef WIN32
+	localtime_r(&t, &lt);
+#else
+	struct tm *plt = localtime(&t);
+	if (!plt)
+	    throw runtime_error(strerror(errno));
+	lt = *plt;
+#endif
+	strftime(st, 128, "%F %H:%M:%S", &lt);
 
-    FILE *f = fopen("gate-log", "a");
-    if (f) {
-	flockfile(f);
-	funlockfile(f);
-	fprintf(f, "%s [%i] - %s\n", st, getpid(), s.c_str());
-	fclose(f);
+	FILE *f = fopen(logfile.c_str(), "a");
+	if (f) {
+	    fprintf(f, "%s [%i] - %s\n", st, getpid(), s.c_str());
+	    fclose(f);
+	}
+    } else {
+	cout << s << endl;
     }
 }
-#endif
 
-#ifdef RESTRICT_GATEWAY
-bool check_restrict(const string& nick)
+bool check_restrict(string nick)
 {
-    ifstream f("gate-restrict");
+    strtolower(nick);
+
+    ifstream f(restrictfile.c_str());
     string l;
 
-    while (getline(f, l)) {
-	if (!fnmatch(l.c_str(), nick.c_str(), FNM_CASEFOLD))
+    while (f >> l) {
+	if (nick == strtolower_nr(l))
 	    return true;
     }
 
     return false;
 }
-#endif
-
-/*
- * Some global variables
- */
-TomiTCP s;
-auto_ptr<TomiTCP> c;
-auto_ptr<XChat> x;
-
-const char * const me = "xchat.cz";
-
-time_t last_ping = 0, last_ping_sent = 0, connect_time = 0;
-
-bool voiced_girls = false, show_advert = true, show_date = false,
-    show_idler = true;
 
 #ifndef WIN32
+pid_t parent = 0;
+
 void sigchld(int) {
     int status, serrno;
     serrno = errno;
@@ -168,7 +172,7 @@ void sighup(int) {
     /*
      * Close parent process and leave clients' processes
      */
-    if (!connect_time) {
+    if (getpid() == parent) {
 	exit(0);
     }
 
@@ -207,78 +211,22 @@ void welcome()
 	ntohs(PORT_SOCKADDR(s.lname)) << endl;
 }
 
-int main(int argc, char *argv[])
+void serve_client(TomiTCP *cptr)
 {
-    xchat_init();
-#ifndef WIN32
-    signal(SIGCHLD, sigchld);
-    signal(SIGHUP, sighup);
-#endif
+    net::thread_init();
 
-    int port = 6669;
-#ifdef WIN32
-    bool detach = true;
-#endif
+    auto_ptr<TomiTCP> c(cptr);
+    auto_ptr<XChat> x;
+    time_t last_ping = 0, last_ping_sent = 0, connect_time = time(0);
+    bool voiced_girls = false, show_advert = true, show_date = false,
+	 show_idler = true;
+    bool user = false;
+    string nick, pass;
 
-    for (int arg = 1; arg < argc; arg++)
-	if (argv[arg][0] == '-')
-	    for (char *c = argv[arg] + 1; *c; c++)
-		switch (*c) {
-#ifdef WIN32
-		    case 'f':
-			detach = false;
-			break;
-#endif
-		    default:
-			cerr << "Unknown option " << *c << endl;
-		}
-	else
-	    port = atoi(argv[arg]);
-
-#ifdef WIN32
-    if (detach)
-	FreeConsole();
-#endif
-
-    compat_init_setproctitle(argc, argv);
+    setproctitle(("gate: " + tomi_ntop(c->rname)).c_str());
+    log(tomi_ntop(c->rname) + " - Connected");
 
     try {
-	s.listen(port
-#ifdef WIN32
-		, "127.0.0.1"
-#endif
-		);
-
-	welcome();
-
-main_accept:
-	c.reset(s.accept());
-
-#ifndef WIN32
-	pid_t pid = fork();
-	if (pid < 0)
-	    return -1;
-	if (pid > 0) {
-	    c.reset(0);
-	    goto main_accept;
-	}
-
-	// clients should not keep the server socket
-	s.close();
-#endif
-
-#ifdef LOG_ENABLED
-	log(tomi_ntop(c->rname) + " - Connected");
-#endif
-
-	last_ping = 0;
-	last_ping_sent = 0;
-	connect_time = time(0);
-	setproctitle(("gate: " + tomi_ntop(c->rname)).c_str());
-
-	string nick, pass;
-	bool user = false;
-
 	while (1) {
 	    if (input_timeout(c->netsock, 1000) > 0) {
 		/*
@@ -343,19 +291,13 @@ main_accept:
 			    continue;
 			}
 
-#ifdef RESTRICT_GATEWAY
-			if (!check_restrict(nick)) {
+			if (restrictfile.length() && !check_restrict(nick)) {
 			    fprintf(*c, ":%s ERROR :Unauthorized user!\n", me);
-# ifdef LOG_ENABLED
 			    log(tomi_ntop(c->rname) + " - Unauthorized - " + nick);
-# endif
 			    break;
 			}
-#endif
 
-#ifdef LOG_ENABLED
 			log(tomi_ntop(c->rname) + " - Logging in - " + nick);
-#endif
 
 			setproctitle(("gate: " + tomi_ntop(c->rname) + " (" + nick + ")").c_str());
 
@@ -374,7 +316,8 @@ main_accept:
 				" but still connected to xchat.cz\n", me, nick.c_str());
 			fprintf(*c, ":%s 002 %s :Your host is %s[%s/%i]"
 				", running version xchat-bttrw " VERSION "\n", me,
-				nick.c_str(), me, revers(c->lname).c_str(), port);
+				nick.c_str(), me, revers(c->lname).c_str(),
+				ntohs(PORT_SOCKADDR(s.lname)));
 			fprintf(*c, ":%s 003 %s :This server was created god knows when\n",
 				me, nick.c_str());
 			fprintf(*c, ":%s 004 %s :%s xchat-bttrw-" VERSION " 0 io\n",
@@ -901,11 +844,7 @@ main_accept:
 		    fprintf(*c, ":%s 305 %s :You are no longer marked as being away\n",
 			    me, nick.c_str());
 		} else {
-#ifdef LOG_ENABLED
 		    log(tomi_ntop(c->rname) + " - Unknown command (" + l + ")");
-#else
-		    cout << l << endl;
-#endif
 		    fprintf(*c, ":%s 421 %s %s :Unknown command\n", me, nick.c_str(),
 			    cmd[0].c_str());
 		}
@@ -1172,21 +1111,155 @@ main_accept:
 		}
 	    }
 	}
-
-#ifdef LOG_ENABLED
-	log(tomi_ntop(c->rname) + " - Disconnected (" + nick + ")");
-#endif
-
-	x.reset(0);
-	c.reset(0);
-#ifdef WIN32
-	goto main_accept;
-#endif
     } catch (runtime_error e) {
 	cerr << e.what() << endl;
-#ifdef LOG_ENABLED
-	log(tomi_ntop(c->rname) + " - Disconnected - " + e.what());
+    }
+
+    log(tomi_ntop(c->rname) + " - Disconnected (" + nick + ")");
+}
+
+int main(int argc, char *argv[])
+{
+    xchat_init();
+#ifndef WIN32
+    parent = getpid();
+    signal(SIGCHLD, sigchld);
+    signal(SIGHUP, sighup);
 #endif
+
+    int port = 6669;
+    string addr = "::";
+#ifdef WIN32
+    bool detach = true;
+
+    /*
+     * Win32 does not have IPV6_V6ONLY until Vista, so we better have default
+     * address as INADDR_ANY.
+     */
+    addr = "0.0.0.0";
+#endif
+
+    for (int arg = 1; arg < argc; arg++)
+	if (argv[arg][0] == '-') {
+	    if (argv[arg][1] == '-') {
+		char *c = argv[arg] + 2, shortopt = 0;
+
+		if (strcmp(c, "help") == 0)
+		    shortopt = 'h';
+		else if (strcmp(c, "port") == 0)
+		    shortopt = 'p';
+		else if (strcmp(c, "bind") == 0)
+		    shortopt = 'b';
+		else if (strcmp(c, "log") == 0)
+		    shortopt = 'l';
+		else if (strcmp(c, "restrict") == 0)
+		    shortopt = 'r';
+#ifdef WIN32
+		else if (strcmp(c, "foreground") == 0)
+		    shortopt = 'f';
+#endif
+		else {
+		    cerr << "Unknown option --" << c << ", use -h for help" << endl;
+		    return -1;
+		}
+
+		argv[arg][1] = shortopt;
+		for (c = argv[arg] + 2; *c; c++)
+		    *c = 0;
+	    }
+
+	    for (char *c = argv[arg] + 1; *c; c++)
+		switch (*c) {
+#ifdef WIN32
+		    case 'f':
+			detach = false;
+			break;
+#endif
+		    case 'p':
+			arg++;
+			if (arg >= argc) {
+			    cerr << "-p needs parameter" << endl;
+			    return -1;
+			}
+			port = atoi(argv[arg]);
+			break;
+		    case 'b':
+			arg++;
+			if (arg >= argc) {
+			    cerr << "-b needs parameter" << endl;
+			    return -1;
+			}
+			addr = argv[arg];
+			break;
+		    case 'l':
+			arg++;
+			if (arg >= argc) {
+			    cerr << "-l needs parameter" << endl;
+			    return -1;
+			}
+			logfile = argv[arg];
+			break;
+		    case 'r':
+			arg++;
+			if (arg >= argc) {
+			    cerr << "-r needs parameter" << endl;
+			    return -1;
+			}
+			restrictfile = argv[arg];
+			break;
+		    case 'h':
+			cout << "Usage: " << argv[0] << " [options]" << endl;
+			cout << " --help/-h - this help" << endl;
+			cout << " --port/-p <port> - listen on given port" << endl;
+			cout << " --bind/-b <addr> - listen on given address" << endl;
+			cout << " --log/-l <addr> - log to given file" << endl;
+			cout << " --restrict/-r <addr> - restrict to nicks in given file" << endl;
+#ifdef WIN32
+			cout << " --foreground/-f - run in console" << endl;
+#endif
+			return 0;
+			break;
+		    default:
+			cerr << "Unknown option -" << *c << ", use -h for help" << endl;
+			return -1;
+		}
+	}
+	else {
+	    cerr << "Unknown option " << argv[arg] << ", use -h for help" << endl;
+	    return -1;
+	}
+
+#ifdef WIN32
+    if (detach)
+	FreeConsole();
+#endif
+
+    compat_init_setproctitle(argc, argv);
+
+    try {
+	s.listen(port, addr);
+
+	welcome();
+
+	while (1) {
+	    auto_ptr<TomiTCP> c(s.accept());
+
+#ifdef WIN32
+	    if (_beginthread((void(*)(void*))&serve_client, 0, c.release()) == -1)
+		throw runtime_error(string(strerror(errno)));
+#else
+	    pid_t pid;
+	    if ((pid = fork()) == 0) {
+		s.close();
+		serve_client(c.release());
+		return 0;
+	    } else if (pid == -1) {
+		throw runtime_error(string(strerror(errno)));
+	    }
+#endif
+	}
+    } catch (runtime_error e) {
+	cerr << e.what() << endl;
     }
 
     return 0;
