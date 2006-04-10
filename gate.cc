@@ -16,7 +16,6 @@
 # include <process.h>
 #endif
 #include <typeinfo>
-#include "md5.h"
 #include "xchat.h"
 #include "irc.h"
 #include "TomiTCP/net.h"
@@ -41,21 +40,6 @@ string restrictfile;
 static const char * const me = "xchat.cz";
 
 /*
- * Hash nick to make unique username
- */
-string hash(string s)
-{
-    strtolower(s);
-    unsigned char mdbuf[16]; char tmp[10];
-    md5_state_s md5;
-    md5_init(&md5);
-    md5_append(&md5, (const unsigned char*)s.c_str(), s.length());
-    md5_finish(&md5, mdbuf);
-    sprintf(tmp, "%.8x", *((unsigned int*)mdbuf));
-    return tmp;
-}
-
-/*
  * Make host
  */
 inline string host(const x_nick &n)
@@ -66,14 +50,14 @@ inline string host(const x_nick &n)
 	"users.xchat.cz"
     };
 
-    return hash(n.nick) + "." + sexhost[n.sex];
+    return strtolower_nr(n.nick) + "." + sexhost[n.sex];
 }
 
 /*
  * Make username
  */
 inline string username(const x_nick &n) {
-    return hash(n.nick);
+    return strtolower_nr(n.nick);
 }
 
 /*
