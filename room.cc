@@ -352,7 +352,7 @@ retry:
 	int ret;
 	try {
 	    ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid=" + r.rid +
-			"&inc=1&last_line=" + ((r.l>=0)?inttostr(r.l):"")), 0);
+			"&inc=1&last_line=" + ((r.l>=0)?tostr<int>(r.l):"")), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
 	} catch (runtime_error e) {
