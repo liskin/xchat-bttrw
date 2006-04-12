@@ -401,7 +401,7 @@ namespace xchat {
      */
     bool XChat::sysnoroom(string &m)
     {
-	static string pat1 = "INFO: ";
+	static string pat1 = "Info: ";
 	if (!m.compare(0, pat1.length(), pat1)) {
 	    return true;
 	}
