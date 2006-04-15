@@ -7,6 +7,7 @@
 #include "xchat.h"
 #include "smiles.h"
 #include "idle.h"
+#include "TomiTCP/http.h"
 #include "TomiTCP/str.h"
 
 namespace xchat {
@@ -16,6 +17,8 @@ namespace xchat {
      */
     void xchat_init()
     {
+	net::TomiHTTP::g_http_conn_timeout = 30;
+
 	init_recode();
 #ifdef WIN32
 	setlocale(LC_ALL, "Czech.UTF-8");
