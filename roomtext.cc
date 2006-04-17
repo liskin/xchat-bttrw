@@ -421,6 +421,11 @@ namespace xchat {
 	    return true;
 	}
 
+	static string pat5 = "Zapsáno pro";
+	if (m.find(pat5) != string::npos) {
+	    return true;
+	}
+
 	return false;
     }
 
