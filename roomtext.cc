@@ -406,23 +406,28 @@ namespace xchat {
 	    return true;
 	}
 
-	static string pat2 = "Info2: ";
+	static string pat2 = "INFO: ";
 	if (!m.compare(0, pat2.length(), pat2)) {
 	    return true;
 	}
 
-	static string pat3 = "není v žádné místnosti";
-	if (m.find(pat3) != string::npos) {
+	static string pat3 = "Info2: ";
+	if (!m.compare(0, pat3.length(), pat3)) {
 	    return true;
 	}
-	
-	static string pat4 = "neexistuje";
+
+	static string pat4 = "není v žádné místnosti";
 	if (m.find(pat4) != string::npos) {
 	    return true;
 	}
 
-	static string pat5 = "Zapsáno pro";
+	static string pat5 = "neexistuje";
 	if (m.find(pat5) != string::npos) {
+	    return true;
+	}
+
+	static string pat6 = "Zapsáno pro";
+	if (m.find(pat6) != string::npos) {
 	    return true;
 	}
 
