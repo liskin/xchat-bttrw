@@ -19,6 +19,7 @@
 #include "xchat.h"
 #include "irc.h"
 #include "TomiTCP/net.h"
+#include "TomiTCP/http.h"
 #include "TomiTCP/str.h"
 #include "setproctitle.h"
 using namespace std;
@@ -1126,7 +1127,7 @@ int main(int argc, char *argv[])
     for (int arg = 1; arg < argc; arg++)
 	if (argv[arg][0] == '-') {
 	    if (argv[arg][1] == '-') {
-		char *c = argv[arg] + 2, shortopt = 0;
+		char *argp = argv[arg], *c = argp + 2, shortopt = 0;
 
 		if (strcmp(c, "help") == 0)
 		    shortopt = 'h';
@@ -1138,6 +1139,22 @@ int main(int argc, char *argv[])
 		    shortopt = 'l';
 		else if (strcmp(c, "restrict") == 0)
 		    shortopt = 'r';
+		else if (strcmp(c, "conntimeout") == 0) {
+		    arg++;
+		    if (arg >= argc) {
+			cerr << "--conntimeout needs parameter" << endl;
+			return -1;
+		    }
+		    net::TomiHTTP::g_http_conn_timeout = atoi(argv[arg]);
+		}
+		else if (strcmp(c, "recvtimeout") == 0) {
+		    arg++;
+		    if (arg >= argc) {
+			cerr << "--recvtimeout needs parameter" << endl;
+			return -1;
+		    }
+		    net::TomiHTTP::g_http_recv_timeout = atoi(argv[arg]);
+		}
 #ifdef WIN32
 		else if (strcmp(c, "foreground") == 0)
 		    shortopt = 'f';
@@ -1147,8 +1164,11 @@ int main(int argc, char *argv[])
 		    return -1;
 		}
 
-		argv[arg][1] = shortopt;
-		for (c = argv[arg] + 2; *c; c++)
+		if (shortopt == 0)
+		    continue;
+
+		argp[1] = shortopt;
+		for (c = argp + 2; *c; c++)
 		    *c = 0;
 	    }
 
@@ -1198,6 +1218,8 @@ int main(int argc, char *argv[])
 			cout << " --bind/-b <addr> - listen on given address" << endl;
 			cout << " --log/-l <file> - log to given file" << endl;
 			cout << " --restrict/-r <file> - restrict to nicks in given file" << endl;
+			cout << " --conntimeout <secs> - set connect timeout" << endl;
+			cout << " --recvtimeout <secs> - set receive timeout" << endl;
 #ifdef WIN32
 			cout << " --foreground/-f - run in console" << endl;
 #endif
