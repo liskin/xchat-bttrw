@@ -98,16 +98,36 @@ namespace xchat {
 	    virtual ~EvRoomAdvert() {}
     };
     
+    /**
+     * \brief A message from the System nick.
+     */
     class EvRoomSysMsg : public EvRoomOther {
 	    friend class XChat;
 	public:
 	    virtual ~EvRoomSysMsg() {}
     };
     
+    /**
+     * \brief A system message in the room - in fact, every unparsed text in
+     * the room.
+     */
     class EvRoomSysText : public EvRoomOther {
 	    friend class XChat;
 	public:
 	    virtual ~EvRoomSysText() {}
+    };
+    
+    /**
+     * \brief A line of history (backlog) shown upon entering the room.
+     */
+    class EvRoomHistoryMsg : public EvRoomOther {
+	    friend class XChat;
+	    string src;
+	    string target;
+	public:
+	    virtual const string & getsrc() { return src; }
+	    virtual const string & gettarget() { return target; }
+	    virtual ~EvRoomHistoryMsg() {}
     };
     
     class EvRoomIdlerMsg : public EvRoomOther {

@@ -580,4 +580,74 @@ namespace xchat {
 	    }
 	}
     }
+
+    /**
+     * Parse a line from xchat backlog and push appropiate Event to the
+     * #recvq.
+     * \param m The line.
+     * \param r The room the line belongs to.
+     */
+    void XChat::recvq_parse_push_history(string m, room& r)
+    {
+	string link;
+	bool advert = isadvert(m, link);
+
+	stripjsescapes(m);
+	striphtml(m);
+	striphtmlent(m);
+	
+	string date;
+	getdate(m, date);
+
+	if (advert) {
+	    EvRoomAdvert *e = new EvRoomAdvert;
+	    e->s = recode_to_client(m);
+	    e->rid = r.rid;
+	    e->link = link;
+	    e->d = date;
+	    recvq_push(e);
+	    return;
+	}
+
+	string src, target;
+	getnick(m, src, target);
+
+	if (src.length()) {
+	    unsmilize(m);
+
+	    if (strtolower_nr(src) == "system" &&
+		    strtolower_nr(target) == strtolower_nr(me.nick)) {
+		if (checkidle(wstrip_nr(m))) {
+		    EvRoomIdlerMsg *e = new EvRoomIdlerMsg;
+		    e->s = recode_to_client(m);
+		    e->rid = r.rid;
+		    e->d = date;
+		    recvq_push(e);
+		} else {
+		    EvRoomSysMsg *e = new EvRoomSysMsg;
+		    e->s = recode_to_client(m);
+		    e->rid = r.rid;
+		    e->d = date;
+		    recvq_push(e);
+		}
+		/*
+		 * No sysnoroom support, what would it be useful for? -lis
+		 */
+	    } else {
+		EvRoomHistoryMsg *e = new EvRoomHistoryMsg;
+		e->src = src;
+		e->target = target;
+		e->s = recode_to_client(m);
+		e->rid = r.rid;
+		e->d = date;
+		recvq_push(e);
+	    }
+	} else {
+	    EvRoomSysText *e = new EvRoomSysText;
+	    e->s = recode_to_client(m);
+	    e->rid = r.rid;
+	    e->d = date;
+	    recvq_push(e);
+	}
+    }
 }

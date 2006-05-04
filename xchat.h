@@ -262,6 +262,7 @@ namespace xchat {
 	    void fill_recvq();
 	    void recvq_push(Event *e);
 	    void recvq_parse_push(string m, room& r);
+	    void recvq_parse_push_history(string m, room& r);
 	    Event * recvq_pop();
 	    string recode_to_client(string s);
 	    string recode_from_client(string s);
@@ -274,7 +275,7 @@ namespace xchat {
 	    void join(const string& rid);
 	    void leave(string rid);
 	    void getroominfo(room& r);
-	    void getmsg(room& r);
+	    void getmsg(room& r, bool first = false);
 	    bool putmsg(room& r, const string& target, const string& msg);
 	    void setdesc(const string& rid, const string& desc);
 

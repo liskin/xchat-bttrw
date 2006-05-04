@@ -70,6 +70,9 @@ namespace xchat {
 
 	int ret, retries;
 
+	/*
+	 * Join room.
+	 */
 	retries = servers.size();
 retry1:
 	try {
@@ -92,7 +95,7 @@ retry1:
 		striphtml(err);
 		striphtmlent(err);
 		unsmilize(err);
-		throw runtime_error(err);
+		throw runtime_error(recode_to_client(err));
 	    }
 
 	    if (tryagainplease(l)) {
@@ -105,51 +108,16 @@ retry1:
 	}
 	s.close();
 	
+	/*
+	 * Get last_line, history, current admin and locked status.
+	 */
+	getmsg(r, true);
+
+	/*
+	 * Get the nicklist.
+	 */
 	retries = servers.size();
 retry2:
-	try {
-	    ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid=" + rid),0);
-	    if (ret != 200)
-		throw runtime_error("Not HTTP 200 Ok while joining channel");
-	} catch (runtime_error e) {
-	    if (retries--) {
-		lastsrv_broke();
-		goto retry2;
-	    } else
-		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
-	}
-	bool lastline = false, updateinfo = false;
-	while (s.getline(l)) {
-	    static string pat1 = "&inc=1&last_line=";
-	    string::size_type a, b;
-	    if ((a = l.find(pat1)) != string::npos &&
-		    (b = l.find('"', a + pat1.length())) != string::npos) {
-		lastline = true;
-		r.l = atoi(string(l, a + pat1.length(), b - a - pat1.length()).c_str());
-		continue;
-	    }
-
-	    static string pat2 = "update_info('";
-	    if ((a = l.find(pat2)) != string::npos) {
-		updateinfo = true;
-		parse_updateinfo(string(l, a + pat2.length()), r.admin, r.locked);
-	    }
-	}
-	if (!lastline || !updateinfo) {
-	    if (retries--) {
-		lastsrv_broke();
-		goto retry2;
-	    } else
-		throw runtime_error("No initial room params - " + lastsrv_broke());
-	}
-	s.close();
-
-	// didn't get the last_line
-	if (r.l == -1)
-	    throw runtime_error("Parse error");
-
-	retries = servers.size();
-retry3:
 	try {
 	    ret = s.GET(makeurl2("modchat?op=textpageng&skin=2&js=1&rid=" + rid),0);
 	    if (ret != 200)
@@ -157,7 +125,7 @@ retry3:
 	} catch (runtime_error e) {
 	    if (retries--) {
 		lastsrv_broke();
-		goto retry3;
+		goto retry2;
 	    } else
 		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
@@ -201,6 +169,9 @@ retry3:
 	s.close();
 	r.nicklist[strtolower_nr(me.nick)] = me;
 
+	/*
+	 * Get the room info (name, desc, etc.)
+	 */
 	try { getroominfo(r); }
 	catch (runtime_error e) {
 	    EvRoomError *f = new EvRoomError;
@@ -345,29 +316,41 @@ retry:
     /**
      * Get new messages from room.
      * \param r Reference to the room.
+     * \param first Is this the first run in which we are getting history and
+     * info?
      */
-    void XChat::getmsg(room& r)
+    void XChat::getmsg(room& r, bool first)
     {
 	TomiHTTP s;
 	int ret;
+	int retries = servers.size();
+retry:
 	try {
 	    ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid=" + r.rid +
-			"&inc=1&last_line=" + ((r.l>=0)?tostr<int>(r.l):"")), 0);
+			((r.l >= 0) ? ("&inc=1&last_line=" + tostr<int>(r.l)) : "")), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
 	} catch (runtime_error e) {
-	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	    /*
+	     * In the first run we have to use retries, otherwise we should not.
+	     */
+	    if (first && retries--) {
+		lastsrv_broke();
+		goto retry;
+	    } else
+		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
 
 	vector<string> dbg;
 	string kicker, kickmsg;
-	EvRoomAdminChange *erac = 0;
-	EvRoomLockChange *erlc = 0;
+	auto_ptr<EvRoomAdminChange> erac;
+	auto_ptr<EvRoomLockChange> erlc;
 
+	bool expect_apos = false;
+	bool history = (r.l < 0);
 	int old_l = r.l;
 	r.l = -1;
 	string l;
-	bool expect_apos = false;
 	vector<string> tv;
 	while (s.getline(l)) {
 	    wstrip(l);
@@ -442,22 +425,22 @@ retry:
 		    bool locked;
 		    parse_updateinfo(string(l,pos+pat.length()), admin, locked);
 		    if (r.admin != admin) {
-			if (erac)
-			    delete erac;
-			erac = new EvRoomAdminChange;
-			erac->rid = r.rid;
-			erac->before = r.admin;
-			erac->now = admin;
+			if (!first) {
+			    erac.reset(new EvRoomAdminChange);
+			    erac->rid = r.rid;
+			    erac->before = r.admin;
+			    erac->now = admin;
+			}
 			r.admin = admin;
 		    }
 
 		    if (r.locked != locked) {
-			if (erlc)
-			    delete erlc;
-			erlc = new EvRoomLockChange;
-			erlc->rid = r.rid;
-			erlc->before = r.locked;
-			erlc->now = locked;
+			if (!first) {
+			    erlc.reset(new EvRoomLockChange);
+			    erlc->rid = r.rid;
+			    erlc->before = r.locked;
+			    erlc->now = locked;
+			}
 			r.locked = locked;
 		    }
 		}
@@ -524,45 +507,58 @@ retry:
 	 */
 	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++)
 	    if (i->length())
-		recvq_parse_push(*i, r);
+		if (!history)
+		    recvq_parse_push(*i, r);
+		else
+		    recvq_parse_push_history(*i, r);
 
 	/*
 	 * Emit Admin/LockChange
 	 */
-	if (erac)
-	    recvq_push(erac);
-	if (erlc)
-	    recvq_push(erlc);
+	if (erac.get())
+	    recvq_push(erac.release());
+	if (erlc.get())
+	    recvq_push(erlc.release());
 
 	/*
 	 * Look if we should emit a kick/error message
 	 */
 	if (kicker.length()) {
-	    x_nick *n;
-	    EvRoomKick *e = new EvRoomKick;
-	    e->s = kicker + " kicked you because: " + recode_to_client(kickmsg);
-	    e->rid = r.rid;
-	    e->src = (struct x_nick){ kicker, (n = findnick(kicker, 0))?n->sex:2 };
-	    e->target = me;
-	    e->reason = recode_to_client(kickmsg);
-	    recvq_push(e);
-	    rooms.erase(e->rid);
+	    if (!first) {
+		x_nick *n;
+		EvRoomKick *e = new EvRoomKick;
+		e->s = kicker + " kicked you because: " + recode_to_client(kickmsg);
+		e->rid = r.rid;
+		e->src = (struct x_nick){ kicker, (n = findnick(kicker, 0))?n->sex:2 };
+		e->target = me;
+		e->reason = recode_to_client(kickmsg);
+		recvq_push(e);
+		rooms.erase(e->rid);
+	    } else
+		throw runtime_error(kicker + " kicked you because: " +
+			recode_to_client(kickmsg));
 	} else if (kickmsg.length()) {
-	    EvRoomError *e = new EvRoomError;
-	    e->s = recode_to_client(kickmsg);
-	    e->rid = r.rid;
-	    e->fatal = true;
-	    recvq_push(e);
-	    rooms.erase(e->rid);
+	    if (!first) {
+		EvRoomError *e = new EvRoomError;
+		e->s = recode_to_client(kickmsg);
+		e->rid = r.rid;
+		e->fatal = true;
+		recvq_push(e);
+		rooms.erase(e->rid);
+	    } else
+		throw runtime_error(recode_to_client(kickmsg));
 	} else if (r.l == -1) {
 	    for (vector<string>::iterator i = dbg.begin(); i != dbg.end(); i++)
 		cout << *i << endl;
-	    EvRoomError *e = new EvRoomError;
-	    e->s = "Parse error";
-	    e->rid = r.rid;
-	    e->fatal = true;
-	    recvq_push(e);
-	    rooms.erase(e->rid);
+	    if (!first) {
+		EvRoomError *e = new EvRoomError;
+		e->s = "Parse error";
+		e->rid = r.rid;
+		e->fatal = true;
+		recvq_push(e);
+		rooms.erase(e->rid);
+	    } else
+		throw runtime_error("Parse error");
 	}
     }
 
