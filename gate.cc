@@ -948,8 +948,12 @@ void serve_client(TomiTCP *cptr)
 		    if (f->gettarget().length())
 			prefix += "->" + f->gettarget();
 
-		    fprintf(*c, ":%s NOTICE #%s :%s[%s] \002<%s>\002 %s\n", me,
-		    	f->getrid().c_str(), date.c_str(), f->date().c_str(),
+		    string date2;
+		    if (f->date().length())
+			date2 = "[" + f->date() + "] ";
+
+		    fprintf(*c, ":%s NOTICE #%s :%s%s\002<%s>\002 %s\n", me,
+		    	f->getrid().c_str(), date.c_str(), date2.c_str(),
 			prefix.c_str(), f->str().c_str());
 		} else if (dynamic_cast<EvRoomSysText*>(e.get())) {
 		    auto_ptr<EvRoomSysText> f((EvRoomSysText*)e.release());
