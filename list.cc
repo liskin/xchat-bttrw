@@ -31,7 +31,7 @@ retry:
 	    int ret = s.GET(makeurl("~guest~/modchat?op=homepage&skin=2"),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting list");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry;

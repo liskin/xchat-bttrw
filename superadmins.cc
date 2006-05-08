@@ -22,7 +22,7 @@ retry:
 	    int ret = s.GET(makeurl("scripts/admin.php"), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting stars");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry;
@@ -98,10 +98,10 @@ retry:
 	    added.push_back(n++->first);
 
 	if (added.size() || removed.size()) {
-	    EvSuperAdminsChange *e = new EvSuperAdminsChange;
+	    auto_ptr<EvSuperAdminsChange> e(new EvSuperAdminsChange);
 	    e->added = added;
 	    e->removed = removed;
-	    recvq_push(e);
+	    recvq_push((auto_ptr<Event>) e);
 	}
     }    
 }

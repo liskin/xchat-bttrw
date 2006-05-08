@@ -3,6 +3,7 @@
 
 #include <string>
 #include <ctime>
+#include "cloneable.h"
 
 namespace xchat {
     using namespace std;
@@ -16,14 +17,25 @@ namespace xchat {
      * meant to be distinguished by RTTI.
      */
 
-    class Event {
+    class Event : public cloneable {
 	    friend class XChat;
 	protected:
 	    string s;
 	    string d;
+	    /**
+	     * \brief Stop this message from appearing duplically? Classes
+	     * setting this var to true will have to overload operator ==() and
+	     * clone().
+	     */
+	    bool stopdup;
 	public:
+	    Event() : stopdup(false) { }
 	    virtual const string & str() { return s; }
 	    virtual const string & date() { return d; }
+	    virtual bool operator == (const Event &e) {
+		return typeid(*this) == typeid(e) && s == e.s;
+	    }
+	    virtual bool operator != (const Event &e) { return !operator == (e); }
 	    virtual ~Event() {}
     };
 
@@ -218,6 +230,7 @@ namespace xchat {
     class EvSysMsg : public Event {
 	    friend class XChat;
 	public:
+	    virtual EvSysMsg * clone() { return new EvSysMsg(*this); }
 	    virtual ~EvSysMsg() {}
     };
 
@@ -227,8 +240,13 @@ namespace xchat {
 	    x_nick src;
 	    x_nick target;
 	public:
+	    EvWhisper() { stopdup = true; }
 	    virtual const x_nick & getsrc() { return src; }
 	    virtual const x_nick & gettarget() { return target; }
+	    virtual bool operator == (const EvWhisper &e) {
+		return Event::operator == (e) && src == e.src && target == e.target;
+	    }
+	    virtual EvWhisper * clone() { return new EvWhisper(*this); }
 	    virtual ~EvWhisper() {}
     };
 

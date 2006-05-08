@@ -23,7 +23,7 @@ retry1:
 			TomiHTTP::URLencode(nick)),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting userinfo");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry1;
@@ -91,7 +91,7 @@ retry2:
 			TomiHTTP::URLencode(nick)),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting where is user online");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry2;

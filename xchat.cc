@@ -38,9 +38,9 @@ namespace xchat {
 	    servers[lastsrv].break_count++;
 
 	    if (servers[lastsrv].break_count >= tries_to_rest) {
-		EvError *e = new EvError;
+		auto_ptr<EvError> e(new EvError);
 		e->s = "Server " + servers[lastsrv].host + " is having a rest.";
-		recvq_push(e);
+		recvq_push((auto_ptr<Event>) e);
 	    }
 	}
 
@@ -58,10 +58,10 @@ namespace xchat {
 	for (vector<server>::iterator i = servers.begin(); i != servers.end(); i++) {
 	    if (i->break_count >= tries_to_rest &&
 		    (i->last_break + rest_duration) < time(0)) {
-		EvError *e = new EvError;
+		auto_ptr<EvError> e(new EvError);
 		e->s = "Server " + i->host
 		    + " is no longer having a rest.";
-		recvq_push(e);
+		recvq_push((auto_ptr<Event>) e);
 
 		i->break_count = 0;
 		good.push_back(i - servers.begin());
@@ -74,9 +74,9 @@ namespace xchat {
 	if (good.size())
 	    return good[rand() % good.size()];
 	else {
-	    EvNeedRelogin *e = new EvNeedRelogin;
+	    auto_ptr<EvNeedRelogin> e(new EvNeedRelogin);
 	    e->s = "All servers considered bad, cleaning.";
-	    recvq_push(e);
+	    recvq_push((auto_ptr<Event>) e);
 
 	    for (vector<server>::iterator i = servers.begin(); i != servers.end(); i++) {
 		i->break_count = 0;
@@ -174,11 +174,11 @@ namespace xchat {
 	     */
 	    if (u8strlen(ref.msg.c_str()) + u8strlen(prepend.c_str()) > max_msg_length) {
 		if (ref.msg.length() && ref.msg[0] == '/') {
-		    EvRoomError *ev = new EvRoomError;
+		    auto_ptr<EvRoomError> ev(new EvRoomError);
 		    ev->s = "Message might have been shortened";
 		    ev->rid = ref.room;
 		    ev->fatal = false;
-		    recvq_push(ev);
+		    recvq_push((auto_ptr<Event>) ev);
 		} else {
 		    if (u8strlen(prepend.c_str()) >= max_msg_length) {
 			sendq.pop_front();
@@ -206,26 +206,26 @@ namespace xchat {
 	    if (rooms.find(msg.room) != rooms.end()) {
 		if (putmsg(rooms[msg.room], msg.target, prepend + msg.msg)) {
 		    if (!ref.retries--) {
-			EvRoomError *ev = new EvRoomError;
+			auto_ptr<EvRoomError> ev(new EvRoomError);
 			ev->s = "Message lost, xchat is not willing to let it go";
 			ev->rid = msg.room;
 			ev->fatal = false;
-			recvq_push(ev);
+			recvq_push((auto_ptr<Event>) ev);
 		    } else {
-			EvRoomError *ev = new EvRoomError;
+			auto_ptr<EvRoomError> ev(new EvRoomError);
 			ev->s = "Reposting msg, xchat refused it";
 			ev->rid = msg.room;
 			ev->fatal = false;
-			recvq_push(ev);
+			recvq_push((auto_ptr<Event>) ev);
 			return;
 		    }
 		}
 	    } else {
-		EvRoomError *ev = new EvRoomError;
+		auto_ptr<EvRoomError> ev(new EvRoomError);
 		ev->s = "Message lost, room is not available";
 		ev->rid = msg.room;
 		ev->fatal = false;
-		recvq_push(ev);
+		recvq_push((auto_ptr<Event>) ev);
 	    }
 
 	    if (left.msg.length())
@@ -259,12 +259,12 @@ namespace xchat {
 	    }
 	    for (set<string>::iterator i = srooms.begin(); i != srooms.end(); i++) {
 		try { getmsg(rooms[*i]); }
-		catch (runtime_error e) {
-		    EvRoomError *f = new EvRoomError;
+		catch (runtime_error &e) {
+		    auto_ptr<EvRoomError> f(new EvRoomError);
 		    f->s = e.what();
 		    f->rid = *i;
 		    f->fatal = false;
-		    recvq_push(f);
+		    recvq_push((auto_ptr<Event>) f);
 		}
 	    }
 
@@ -289,12 +289,12 @@ namespace xchat {
 		 */
 		if (old.name != i->second.name || old.desc != i->second.desc ||
 		    old.web != i->second.web) {
-		    EvRoomTopicChange *e = new EvRoomTopicChange;
+		    auto_ptr<EvRoomTopicChange> e(new EvRoomTopicChange);
 		    e->rid = i->first;
 		    e->name = i->second.name;
 		    e->desc = i->second.desc;
 		    e->web = i->second.web;
-		    recvq_push(e);
+		    recvq_push((auto_ptr<Event>) e);
 		}
 
 		/*
@@ -308,11 +308,11 @@ namespace xchat {
 			i->second.admins.begin(), i->second.admins.end(),
 			inserter(removed, removed.end()));
 		if (added.size() || removed.size()) {
-		    EvRoomAdminsChange *e = new EvRoomAdminsChange;
+		    auto_ptr<EvRoomAdminsChange> e(new EvRoomAdminsChange);
 		    e->rid = i->first;
 		    e->added = added;
 		    e->removed = removed;
-		    recvq_push(e);
+		    recvq_push((auto_ptr<Event>) e);
 		}
 		
 		i->second.last_roominfo = time(0);
@@ -323,6 +323,36 @@ namespace xchat {
 	if (time(0) - last_superadmins_reload >= superadmins_reload_interval) {
 	    reloadsuperadmins();
 	}
+    }
+
+    /**
+     * \brief Helper class for the duplicate_in_queue function. (Predicate)
+     */
+    class queue_equal_to {
+	private:
+	    const Event *e;
+	public:
+	    explicit queue_equal_to(const Event *e) : e(e) { }
+
+	    bool operator ()(const recv_item &a) {
+		return *a.e == *e;
+	    }
+    };
+
+    /**
+     * Check if this event is already in the primary or secondary queue.
+     * \param e The event.
+     * \return True if it is.
+     */
+    bool XChat::duplicate_in_queue(Event *e)
+    {
+	queue_equal_to compare(e);
+	if (find_if(recvq.begin(), recvq.end(), compare) != recvq.end())
+	    return true;
+	if (find_if(old_recvq.begin(), old_recvq.end(), compare) != old_recvq.end())
+	    return true;
+
+	return false;
     }
 
     /**

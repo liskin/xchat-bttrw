@@ -79,7 +79,7 @@ retry1:
 	    ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&rid=" + rid),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while joining channel");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry1;
@@ -122,7 +122,7 @@ retry2:
 	    ret = s.GET(makeurl2("modchat?op=textpageng&skin=2&js=1&rid=" + rid),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while joining channel");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry2;
@@ -173,12 +173,12 @@ retry2:
 	 * Get the room info (name, desc, etc.)
 	 */
 	try { getroominfo(r); }
-	catch (runtime_error e) {
-	    EvRoomError *f = new EvRoomError;
+	catch (runtime_error &e) {
+	    auto_ptr<EvRoomError> f(new EvRoomError);
 	    f->s = e.what();
 	    f->rid = r.rid;
 	    f->fatal = false;
-	    recvq_push(f);
+	    recvq_push((auto_ptr<Event>) f);
 	}
 
 	// insert it
@@ -202,7 +202,7 @@ retry:
 			"&leftroom=" + rid), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while parting channel");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry;
@@ -244,7 +244,7 @@ retry:
 	    ret = s.GET(makeurl("scripts/room.php?rid=" + r.rid), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting roominfo");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry;
@@ -330,7 +330,7 @@ retry:
 			((r.l >= 0) ? ("&inc=1&last_line=" + tostr<int>(r.l)) : "")), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    /*
 	     * In the first run we have to use retries, otherwise we should not.
 	     */
@@ -516,9 +516,9 @@ retry:
 	 * Emit Admin/LockChange
 	 */
 	if (erac.get())
-	    recvq_push(erac.release());
+	    recvq_push((auto_ptr<Event>) erac);
 	if (erlc.get())
-	    recvq_push(erlc.release());
+	    recvq_push((auto_ptr<Event>) erlc);
 
 	/*
 	 * Look if we should emit a kick/error message
@@ -526,24 +526,24 @@ retry:
 	if (kicker.length()) {
 	    if (!first) {
 		x_nick *n;
-		EvRoomKick *e = new EvRoomKick;
+		auto_ptr<EvRoomKick> e(new EvRoomKick);
 		e->s = kicker + " kicked you because: " + recode_to_client(kickmsg);
 		e->rid = r.rid;
 		e->src = (struct x_nick){ kicker, (n = findnick(kicker, 0))?n->sex:2 };
 		e->target = me;
 		e->reason = recode_to_client(kickmsg);
-		recvq_push(e);
+		recvq_push((auto_ptr<Event>) e);
 		rooms.erase(e->rid);
 	    } else
 		throw runtime_error(kicker + " kicked you because: " +
 			recode_to_client(kickmsg));
 	} else if (kickmsg.length()) {
 	    if (!first) {
-		EvRoomError *e = new EvRoomError;
+		auto_ptr<EvRoomError> e(new EvRoomError);
 		e->s = recode_to_client(kickmsg);
 		e->rid = r.rid;
 		e->fatal = true;
-		recvq_push(e);
+		recvq_push((auto_ptr<Event>) e);
 		rooms.erase(e->rid);
 	    } else
 		throw runtime_error(recode_to_client(kickmsg));
@@ -551,11 +551,11 @@ retry:
 	    for (vector<string>::iterator i = dbg.begin(); i != dbg.end(); i++)
 		cout << *i << endl;
 	    if (!first) {
-		EvRoomError *e = new EvRoomError;
+		auto_ptr<EvRoomError> e(new EvRoomError);
 		e->s = "Parse error";
 		e->rid = r.rid;
 		e->fatal = true;
-		recvq_push(e);
+		recvq_push((auto_ptr<Event>) e);
 		rooms.erase(e->rid);
 	    } else
 		throw runtime_error("Parse error");
@@ -579,7 +579,7 @@ retry:
 		    "&target=" + TomiHTTP::URLencode(target), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while posting msg");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
 
@@ -614,9 +614,9 @@ retry:
 	    if ((pos = l.find(pat3)) != string::npos) {
 		if (l[pos + pat3.length()] == '_') { // Envelope is blinking
 		    if (!note_emitted) {
-			EvNote *e = new EvNote;
+			auto_ptr<EvNote> e(new EvNote);
 			e->s = "New note received";
-			recvq_push(e);
+			recvq_push((auto_ptr<Event>) e);
 			note_emitted = true;
 		    }
 		} else {
@@ -656,7 +656,7 @@ retry:
 		    "&desc=" + TomiHTTP::URLencode(recode_from_client(desc)), 0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while setting room desc");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry;

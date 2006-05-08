@@ -287,7 +287,7 @@ void serve_client(TomiTCP *cptr)
 			setproctitle(("gate: " + tomi_ntop(c->rname) + " (" + nick + ")").c_str());
 
 			try { x.reset(new XChat(nick, pass)); }
-			catch (runtime_error e) {
+			catch (runtime_error &e) {
 			    fprintf(*c, ":%s ERROR :%s\n", me, e.what());
 			    break;
 			}
@@ -388,6 +388,10 @@ void serve_client(TomiTCP *cptr)
 			show_idler = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :show_idler set to %i\n",
 				me, nick.c_str(), show_idler);
+		    } else if (cmd[1] == "WATCH_GLOBAL" && cmd.size() == 3) {
+			x->watch_global = atoi(cmd[2].c_str());
+			fprintf(*c, ":%s NOTICE %s :watch_global set to %i\n",
+				me, nick.c_str(), x->watch_global);
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
 				" count\n", me, nick.c_str());
@@ -450,7 +454,7 @@ void serve_client(TomiTCP *cptr)
 				fprintf(*c, ":%s MODE #%s +v %s\n", me,
 					chan.c_str(), nick.c_str());
 
-			} catch (runtime_error e) {
+			} catch (runtime_error &e) {
 			    fprintf(*c, ":%s 403 %s #%s :Could not join channel\n",
 				    me, nick.c_str(), chan.c_str());
 			    fprintf(*c, ":%s NOTICE %s :Could not join #%s: %s\n", me,
@@ -474,7 +478,7 @@ void serve_client(TomiTCP *cptr)
 				fprintf(*c, ":%s PART #%s :\n",
 					mask(x->me).c_str(),
 					chan.c_str());
-			    } catch (runtime_error e) {
+			    } catch (runtime_error &e) {
 				fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
 					nick.c_str(), e.what());
 			    }
@@ -505,7 +509,7 @@ void serve_client(TomiTCP *cptr)
 			 * Private message
 			 */
 			try { x->whisper(cmd[1], cmd[2]); }
-			catch (runtime_error e) {
+			catch (runtime_error &e) {
 			    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
 				    nick.c_str(), e.what());
 			}
@@ -687,7 +691,7 @@ void serve_client(TomiTCP *cptr)
 		     */
 		    try {
 			x->kill(cmd[1], (cmd.size() > 2)?cmd[2]:"");
-		    } catch (runtime_error e) {
+		    } catch (runtime_error &e) {
 			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
 				nick.c_str(), e.what());
 		    }
@@ -714,7 +718,7 @@ void serve_client(TomiTCP *cptr)
 			cmd[1].erase(cmd[1].begin());
 
 		    try { x->setdesc(cmd[1], cmd[2]); }
-		    catch (runtime_error e) {
+		    catch (runtime_error &e) {
 			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
 				nick.c_str(), e.what());
 		    }
@@ -764,7 +768,7 @@ void serve_client(TomiTCP *cptr)
 				    i->first.c_str(), 0, i->second.c_str());
 			}
 			fprintf(*c, ":%s 323 %s :End of /LIST\n", me, nick.c_str());
-		    } catch (runtime_error e) {
+		    } catch (runtime_error &e) {
 			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
 				nick.c_str(), e.what());
 		    }
@@ -840,7 +844,7 @@ void serve_client(TomiTCP *cptr)
 		 * Let x do it's job on send queue
 		 */
 		try { x->do_sendq(); }
-		catch (runtime_error e) {
+		catch (runtime_error &e) {
 		    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
 			    nick.c_str(), e.what());
 		}
@@ -849,7 +853,7 @@ void serve_client(TomiTCP *cptr)
 		 * Receive some data sometimes
 		 */
 		try { x->fill_recvq(); }
-		catch (runtime_error e) {
+		catch (runtime_error &e) {
 		    fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
 			    nick.c_str(), e.what());
 		}
@@ -1110,7 +1114,7 @@ void serve_client(TomiTCP *cptr)
 		}
 	    }
 	}
-    } catch (runtime_error e) {
+    } catch (exception &e) {
 	cerr << e.what() << endl;
     }
 
@@ -1278,7 +1282,7 @@ int main(int argc, char *argv[])
 	    }
 #endif
 	}
-    } catch (runtime_error e) {
+    } catch (exception &e) {
 	cerr << e.what() << endl;
     }
 

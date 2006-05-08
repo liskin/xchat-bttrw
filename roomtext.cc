@@ -31,10 +31,10 @@ namespace xchat {
 	    }
 
 	    return recode(s, "UTF-8", client_charset);
-	} catch (runtime_error er) {
-	    EvError *e = new EvError;
+	} catch (runtime_error &er) {
+	    auto_ptr<EvError> e(new EvError);
 	    e->s = er.what();
-	    recvq_push(e);
+	    recvq_push((auto_ptr<Event>) e);
 	    return s;
 	}
     }
@@ -50,10 +50,10 @@ namespace xchat {
 
 	try {
 	    return recode(s, client_charset, "UTF-8");
-	} catch (runtime_error er) {
-	    EvError *e = new EvError;
+	} catch (runtime_error &er) {
+	    auto_ptr<EvError> e(new EvError);
 	    e->s = er.what();
-	    recvq_push(e);
+	    recvq_push((auto_ptr<Event>) e);
 	    return s;
 	}
     }
@@ -397,9 +397,10 @@ namespace xchat {
      * Check, if the given system message has a global meaning and should
      * therefore go as EvSysMsg instead of EvRoomSysMsg.
      * \param m The message.
+     * \param stopdup Should we stop this message from duplicating?
      * \return True if it was an advert.
      */
-    bool XChat::sysnoroom(string &m)
+    bool XChat::sysnoroom(string &m, bool &stopdup)
     {
 	static string pat1 = "Info: ";
 	if (!m.compare(0, pat1.length(), pat1)) {
@@ -431,31 +432,10 @@ namespace xchat {
 	    return true;
 	}
 
-	return false;
-    }
-
-    /**
-     * Check if this whisper is already in the primary or secondary queue.
-     * \param m The message.
-     * \param src Source nick.
-     * \return True if it is.
-     */
-    bool XChat::whisper_in_queue(string &m, string &src)
-    {
-	for (deque<recv_item>::iterator i = recvq.begin();
-		i != recvq.end(); i++) {
-	    EvWhisper *e;
-	    if ((e = dynamic_cast<EvWhisper*>(i->e.get())))
-		if (e->getsrc().nick == src && e->str() == m)
-		    return true;
-	}
-
-	for (deque<recv_item>::iterator i = old_recvq.begin();
-		i != old_recvq.end(); i++) {
-	    EvWhisper *e;
-	    if ((e = dynamic_cast<EvWhisper*>(i->e.get())))
-		if (e->getsrc().nick == src && e->str() == m)
-		    return true;
+	static string pat7 = "vstoupil do místnosti";
+	if (watch_global && m.find(pat7) != string::npos) {
+	    stopdup = true;
+	    return true;
 	}
 
 	return false;
@@ -481,12 +461,12 @@ namespace xchat {
 	getdate(m, date);
 
 	if (advert) {
-	    EvRoomAdvert *e = new EvRoomAdvert;
+	    auto_ptr<EvRoomAdvert> e(new EvRoomAdvert);
 	    e->s = recode_to_client(m);
 	    e->rid = r.rid;
 	    e->link = link;
 	    e->d = date;
-	    recvq_push(e);
+	    recvq_push((auto_ptr<Event>) e);
 	    return;
 	}
 
@@ -498,39 +478,40 @@ namespace xchat {
 
 	    if (strtolower_nr(src) == "system" &&
 		    strtolower_nr(target) == strtolower_nr(me.nick)) {
+		bool stopdup = false;
 		if (checkidle(wstrip_nr(m))) {
-		    EvRoomIdlerMsg *e = new EvRoomIdlerMsg;
+		    auto_ptr<EvRoomIdlerMsg> e(new EvRoomIdlerMsg);
 		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
 		    e->d = date;
-		    recvq_push(e);
-		} else if (sysnoroom(m)) {
-		    EvSysMsg *e = new EvSysMsg;
+		    recvq_push((auto_ptr<Event>) e);
+		} else if (sysnoroom(m, stopdup)) {
+		    auto_ptr<EvSysMsg> e(new EvSysMsg);
 		    e->s = recode_to_client(m);
 		    e->d = date;
-		    recvq_push(e);
+		    e->stopdup = stopdup;
+		    recvq_push((auto_ptr<Event>) e);
 		} else {
-		    EvRoomSysMsg *e = new EvRoomSysMsg;
+		    auto_ptr<EvRoomSysMsg> e(new EvRoomSysMsg);
 		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
 		    e->d = date;
-		    recvq_push(e);
+		    recvq_push((auto_ptr<Event>) e);
 		}
 	    } else if (target.length() && strtolower_nr(src) != strtolower_nr(me.nick)) {
-		EvWhisper *e = new EvWhisper;
+		auto_ptr<EvWhisper> e(new EvWhisper);
 		e->s = recode_to_client(m);
 		e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
 		e->target = (struct x_nick){ target, (n = findnick(target, 0))?n->sex:2 };
 		e->d = date;
-		if (!whisper_in_queue(e->s, e->src.nick))
-		    recvq_push(e);
+		recvq_push((auto_ptr<Event>) e);
 	    } else if (strtolower_nr(src) != strtolower_nr(me.nick)) {
-		EvRoomMsg *e = new EvRoomMsg;
+		auto_ptr<EvRoomMsg> e(new EvRoomMsg);
 		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		e->src = (struct x_nick){ src, (n = findnick(src, 0))?n->sex:2 };
 		e->d = date;
-		recvq_push(e);
+		recvq_push((auto_ptr<Event>) e);
 	    }
 	} else {
 	    int sex;
@@ -538,45 +519,45 @@ namespace xchat {
 
 	    if (isjoin(r, m, src, sex)) {
 		if (strtolower_nr(src) != strtolower_nr(me.nick)) {
-		    EvRoomJoin *e = new EvRoomJoin;
+		    auto_ptr<EvRoomJoin> e(new EvRoomJoin);
 		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
 		    e->src = (struct x_nick){ src, sex };
 		    e->d = date;
-		    recvq_push(e);
+		    recvq_push((auto_ptr<Event>) e);
 		}
 	    } else if (isleave(r, m, src, sex)) {
-		EvRoomLeave *e = new EvRoomLeave;
+		auto_ptr<EvRoomLeave> e(new EvRoomLeave);
 		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		e->src = (struct x_nick){ src, sex };
 		e->d = date;
-		recvq_push(e);
+		recvq_push((auto_ptr<Event>) e);
 	    } else if (iskick(r, m, src, reason, who, sex)) {
 		if (who.length()) {
-		    EvRoomKick *e = new EvRoomKick;
+		    auto_ptr<EvRoomKick> e(new EvRoomKick);
 		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
 		    e->src = (struct x_nick){ who, (n = findnick(who, 0))?n->sex:2 };
 		    e->target = (struct x_nick){ src, sex };
 		    e->reason = recode_to_client(reason);
 		    e->d = date;
-		    recvq_push(e);
+		    recvq_push((auto_ptr<Event>) e);
 		} else {
-		    EvRoomLeave *e = new EvRoomLeave;
+		    auto_ptr<EvRoomLeave> e(new EvRoomLeave);
 		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
 		    e->src = (struct x_nick){ src, sex };
 		    e->reason = recode_to_client(reason);
 		    e->d = date;
-		    recvq_push(e);
+		    recvq_push((auto_ptr<Event>) e);
 		}
 	    } else {
-		EvRoomSysText *e = new EvRoomSysText;
+		auto_ptr<EvRoomSysText> e(new EvRoomSysText);
 		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		e->d = date;
-		recvq_push(e);
+		recvq_push((auto_ptr<Event>) e);
 	    }
 	}
     }
@@ -600,12 +581,12 @@ namespace xchat {
 	getdate(m, date);
 
 	if (advert) {
-	    EvRoomAdvert *e = new EvRoomAdvert;
+	    auto_ptr<EvRoomAdvert> e(new EvRoomAdvert);
 	    e->s = recode_to_client(m);
 	    e->rid = r.rid;
 	    e->link = link;
 	    e->d = date;
-	    recvq_push(e);
+	    recvq_push((auto_ptr<Event>) e);
 	    return;
 	}
 
@@ -618,36 +599,36 @@ namespace xchat {
 	    if (strtolower_nr(src) == "system" &&
 		    strtolower_nr(target) == strtolower_nr(me.nick)) {
 		if (checkidle(wstrip_nr(m))) {
-		    EvRoomIdlerMsg *e = new EvRoomIdlerMsg;
+		    auto_ptr<EvRoomIdlerMsg> e(new EvRoomIdlerMsg);
 		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
 		    e->d = date;
-		    recvq_push(e);
+		    recvq_push((auto_ptr<Event>) e);
 		} else {
-		    EvRoomSysMsg *e = new EvRoomSysMsg;
+		    auto_ptr<EvRoomSysMsg> e(new EvRoomSysMsg);
 		    e->s = recode_to_client(m);
 		    e->rid = r.rid;
 		    e->d = date;
-		    recvq_push(e);
+		    recvq_push((auto_ptr<Event>) e);
 		}
 		/*
 		 * No sysnoroom support, what would it be useful for? -lis
 		 */
 	    } else {
-		EvRoomHistoryMsg *e = new EvRoomHistoryMsg;
+		auto_ptr<EvRoomHistoryMsg> e(new EvRoomHistoryMsg);
 		e->src = src;
 		e->target = target;
 		e->s = recode_to_client(m);
 		e->rid = r.rid;
 		e->d = date;
-		recvq_push(e);
+		recvq_push((auto_ptr<Event>) e);
 	    }
 	} else {
-	    EvRoomSysText *e = new EvRoomSysText;
+	    auto_ptr<EvRoomSysText> e(new EvRoomSysText);
 	    e->s = recode_to_client(m);
 	    e->rid = r.rid;
 	    e->d = date;
-	    recvq_push(e);
+	    recvq_push((auto_ptr<Event>) e);
 	}
     }
 }

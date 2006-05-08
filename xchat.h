@@ -26,6 +26,10 @@ namespace xchat {
     struct x_nick {
 	string nick; ///< Nickname in the right case (hopefully).
 	int sex; ///< Sex. 0 for women, 1 for men, 2 for unknown.
+
+	bool operator == (const struct x_nick &n) {
+	    return strtolower_nr(nick) == strtolower_nr(n.nick);
+	}
     };
 
     /**
@@ -179,7 +183,7 @@ namespace xchat {
 	     * Construct a recv_item from an Event pointer.
 	     * \param f Event pointer to create recv_item from.
 	     */
-	    recv_item(Event *f) : e(f) { }
+	    recv_item(auto_ptr<Event> f) : e(f) { }
 	    mutable auto_ptr<Event> e;
     };
 
@@ -216,8 +220,8 @@ namespace xchat {
 	     * Construct a server from its hostname.
 	     * \param a Hostname.
 	     */
-	    server(const string &a) : host(a), last_break(0),
-				      break_count(0)
+	    explicit server(const string &a) : host(a), last_break(0),
+					       break_count(0)
 	    { }
     };
 
@@ -248,8 +252,8 @@ namespace xchat {
 	    deque<send_item> sendq; ///< Queue of messages to send.
 	    deque<recv_item> recvq; ///< Queue of new Event objects.
 	    /**
-	     * \brief Queue of EvWhisper objects from previous run, filled by
-	     * #recvq_pop. Needed to avoid duplicate whisper message.
+	     * \brief Queue of some objects from previous run, filled by
+	     * #recvq_pop. Needed to avoid duplicate messages.
 	     */
 	    deque<recv_item> old_recvq;
 	    /**
@@ -260,10 +264,10 @@ namespace xchat {
 
 	    void do_sendq();
 	    void fill_recvq();
-	    void recvq_push(Event *e);
+	    void recvq_push(auto_ptr<Event> e);
 	    void recvq_parse_push(string m, room& r);
 	    void recvq_parse_push_history(string m, room& r);
-	    Event * recvq_pop();
+	    auto_ptr<Event> recvq_pop();
 	    string recode_to_client(string s);
 	    string recode_from_client(string s);
 
@@ -288,8 +292,8 @@ namespace xchat {
 	    bool isleave(room& r, string &m, string &src, int &sex);
 	    bool iskick(room& r, string &m, string &src, string &reason, string &who, int &sex);
 	    bool isadvert(string &m, string &link);
-	    bool sysnoroom(string &m);
-	    bool whisper_in_queue(string &m, string &src);
+	    bool sysnoroom(string &m, bool &stopdup);
+	    bool duplicate_in_queue(Event *e);
 
 	    void msg(const string &room, const string &msg);
 	    void whisper(const string &room, const string &target, const string &msg);
@@ -331,6 +335,11 @@ namespace xchat {
 	    bool really_logout;
 
 	    /**
+	     * \brief Whether to post watch notices as global notices.
+	     */
+	    bool watch_global;
+
+	    /**
 	     * \brief Local (or client) charset, useful with clients that
 	     * don't support UTF-8.
 	     */
@@ -351,7 +360,10 @@ namespace xchat {
      * Push Event to the #recvq. The auto_ptr takes control of the pointer.
      * \param e Event to be pushed.
      */
-    inline void XChat::recvq_push(Event *e) {
+    inline void XChat::recvq_push(auto_ptr<Event> e) {
+	if (e->stopdup && duplicate_in_queue(e.get()))
+	    return;
+
 	recvq.push_back(recv_item(e));
     }
 
@@ -360,19 +372,18 @@ namespace xchat {
      * the caller to free it.
      * \return The released pointer.
      */
-    inline Event * XChat::recvq_pop() {
+    inline auto_ptr<Event> XChat::recvq_pop() {
 	auto_ptr<Event> e = recvq.front().e; recvq.pop_front();
 
 	/*
-	 * Store EvWhisper in a secondary recvq to make whisper_in_queue able
-	 * to check for existing Whispers in previous refresh. All this is
-	 * needed to fix an xchat.cz race condition.
+	 * Put the events with stopdup flag to the secondary recvq to make
+	 * duplicate_in_queue able to check for them in next refresh. This is
+	 * needed because the event may come in the middle of room refreshing.
 	 */
-	EvWhisper *f = dynamic_cast<EvWhisper*>(e.get());
-	if (f)
-	    old_recvq.push_back(recv_item(new EvWhisper(*f)));
+	if (e->stopdup)
+	    old_recvq.push_back(recv_item(auto_ptr<Event>((Event*)e->clone())));
 
-	return e.release();
+	return e;
     }
     
     /**

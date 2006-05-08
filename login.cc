@@ -15,7 +15,8 @@ namespace xchat {
     XChat::XChat(const string& user, const string& pass)
 	: lastsrv(0), last_sent(0), last_recv(0), idle_delta(0),
 	idle_interval(0), recv_interval(3), convert_smiles(1),
-	really_logout(true), note_emitted(false), last_superadmins_reload(0)
+	really_logout(true), watch_global(true), note_emitted(false),
+	last_superadmins_reload(0)
     {
 	/*
 	 * This is here, because otherwise every forked child would have the
@@ -68,7 +69,7 @@ retry:
 
 	    if (!uid.length() || !sid.length())
 		throw runtime_error("Parse error while logging in: " + l);
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry;
@@ -85,10 +86,10 @@ retry:
     {
 	try {
 	    login(me.nick, pass);
-	} catch (runtime_error e) {
-	    EvError *f = new EvError;
+	} catch (runtime_error &e) {
+	    auto_ptr<EvError> f(new EvError);
 	    f->s = e.what();
-	    recvq_push(f);
+	    recvq_push((auto_ptr<Event>) f);
 	}
     }
 
@@ -112,7 +113,7 @@ retry:
 	    int ret = s.GET(makeurl("~~logout/~$" + uid + "~" + sid + "/"),0);
 	    if (ret != 302)
 		throw runtime_error("Not HTTP 302 Found while logging off");
-	} catch (runtime_error e) {
+	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
 		goto retry;
@@ -148,9 +149,9 @@ retry:
 	if (servers.empty()) {
 	    servers.push_back(server("xchat.centrum.cz"));
 
-	    EvError *e = new EvError;
+	    auto_ptr<EvError> e(new EvError);
 	    e->s = "Could not get xchat server list from DNS. Using xchat.centrum.cz as host.";
-	    recvq_push(e);
+	    recvq_push((auto_ptr<Event>) e);
 	}
     }
 }
