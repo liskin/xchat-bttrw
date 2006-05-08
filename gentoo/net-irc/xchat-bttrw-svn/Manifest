@@ -1,0 +1,7 @@
+MD5 d41d8cd98f00b204e9800998ecf8427e ChangeLog 0
+MD5 d41d8cd98f00b204e9800998ecf8427e files/digest-xchat-bttrw-svn-20060509 0
+MD5 9961f26128530a02fb0b1d5ffa02e4b8 files/gentoo-fix.diff 1696
+MD5 42ed0754015f2deb31e1f24476c37374 files/xchat-bttrw 1026
+MD5 69a9667427361c7fb3b9b20ba38cb3d8 files/xchat-bttrw.confd 236
+MD5 134b7a58f2ba84354dc428bf885652f5 metadata.xml 213
+MD5 b709df15e1bc66243b46d3e68c1b994f xchat-bttrw-svn-20060509.ebuild 825
