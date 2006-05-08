@@ -1145,7 +1145,7 @@ int main(int argc, char *argv[])
     for (int arg = 1; arg < argc; arg++)
 	if (argv[arg][0] == '-') {
 	    if (argv[arg][1] == '-') {
-		char *argp = argv[arg], *c = argp + 2, shortopt = 0;
+		char *argp = argv[arg], *c = argp + 2, shortopt = ' ';
 
 		if (strcmp(c, "help") == 0)
 		    shortopt = 'h';
@@ -1182,12 +1182,12 @@ int main(int argc, char *argv[])
 		    return -1;
 		}
 
-		if (shortopt == 0)
+		if (shortopt == ' ')
 		    continue;
 
 		argp[1] = shortopt;
 		for (c = argp + 2; *c; c++)
-		    *c = 0;
+		    *c = ' ';
 	    }
 
 	    for (char *c = argv[arg] + 1; *c; c++)
@@ -1242,6 +1242,9 @@ int main(int argc, char *argv[])
 			cout << " --foreground/-f - run in console" << endl;
 #endif
 			return 0;
+			break;
+		    case ' ':
+			// ignore.
 			break;
 		    default:
 			cerr << "Unknown option -" << *c << ", use -h for help" << endl;
