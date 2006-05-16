@@ -509,7 +509,7 @@ retry:
 	    if (i->length())
 		if (!history)
 		    recvq_parse_push(*i, r);
-		else
+		else if (show_history)
 		    recvq_parse_push_history(*i, r);
 
 	/*

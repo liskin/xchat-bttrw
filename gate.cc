@@ -392,6 +392,10 @@ void serve_client(TomiTCP *cptr)
 			x->watch_global = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :watch_global set to %i\n",
 				me, nick.c_str(), x->watch_global);
+		    } else if (cmd[1] == "SHOW_HISTORY" && cmd.size() == 3) {
+			x->show_history = atoi(cmd[2].c_str());
+			fprintf(*c, ":%s NOTICE %s :show_history set to %i\n",
+				me, nick.c_str(), x->show_history);
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :Bad variable or parameter"
 				" count\n", me, nick.c_str());

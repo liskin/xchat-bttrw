@@ -340,6 +340,11 @@ namespace xchat {
 	    bool watch_global;
 
 	    /**
+	     * \brief Whether to show history after room join.
+	     */
+	    bool show_history;
+
+	    /**
 	     * \brief Local (or client) charset, useful with clients that
 	     * don't support UTF-8.
 	     */
