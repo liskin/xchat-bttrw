@@ -533,7 +533,7 @@ retry:
 		e->target = me;
 		e->reason = recode_to_client(kickmsg);
 		recvq_push((auto_ptr<Event>) e);
-		rooms.erase(e->rid);
+		rooms.erase(r.rid);
 	    } else
 		throw runtime_error(kicker + " kicked you because: " +
 			recode_to_client(kickmsg));
@@ -544,7 +544,7 @@ retry:
 		e->rid = r.rid;
 		e->fatal = true;
 		recvq_push((auto_ptr<Event>) e);
-		rooms.erase(e->rid);
+		rooms.erase(r.rid);
 	    } else
 		throw runtime_error(recode_to_client(kickmsg));
 	} else if (r.l == -1) {
@@ -556,7 +556,7 @@ retry:
 		e->rid = r.rid;
 		e->fatal = true;
 		recvq_push((auto_ptr<Event>) e);
-		rooms.erase(e->rid);
+		rooms.erase(r.rid);
 	    } else
 		throw runtime_error("Parse error");
 	}
