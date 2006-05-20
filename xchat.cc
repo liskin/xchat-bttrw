@@ -156,7 +156,7 @@ namespace xchat {
 		}
 
 		/*
-		 * Decide if we have to send global msg
+		 * Choose room to send global msg
 		 */
 		room *r;
 		x_nick *n = findnick(ref.target, &r);
@@ -164,9 +164,9 @@ namespace xchat {
 		    msg.room = r->rid;
 		} else {
 		    msg.room = rooms.begin()->first;
-		    prepend = "/m " + msg.target + " ";
-		    msg.target = "~";
 		}
+		prepend = "/m " + msg.target + " ";
+		msg.target = "~";
 	    }
 
 	    /*
