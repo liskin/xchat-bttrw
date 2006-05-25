@@ -276,6 +276,8 @@ void serve_client(TomiTCP *cptr)
 			    break;
 			}
 
+			log(tomi_ntop(c->rname) + " - Logged in - " + nick);
+
 			/*
 			 * Successful login, so output some numerics to make
 			 * client happy.
@@ -817,6 +819,32 @@ void serve_client(TomiTCP *cptr)
 				nick.c_str());
 			    break;
 		    }
+		} else if (cmd[0] == "MAP") {
+		    for (vector<server>::iterator i = x->servers.begin();
+				i != x->servers.end(); i++) {
+    			string last_break;
+			
+			if (i->last_break) {
+			    char lb[128];
+			    struct tm lt;
+    			    struct tm *plt = localtime_r(&i->last_break, &lt);
+    			    if (!plt)
+		        	throw runtime_error(strerror(errno));
+    			    strftime(lb, 128, "%F %H:%M:%S", &lt);
+			    
+			    last_break = " | Last break: " + string(lb) + " (" +
+				tostr<int>(time(0) - i->last_break) + " sec)";
+			}
+			
+			fprintf(*c, ":%s 015 %s :%s (%s) | Breaks: %d (%d total)%s%s\n",
+			    me, nick.c_str(),
+			    i->hostname.c_str(), i->host.c_str(),
+			    i->break_count, i->total_break_count,
+			    last_break.c_str(),
+			    (i->break_count >= tries_to_rest)?" | [REST]":"");
+		    }
+		    fprintf(*c, ":%s 017 %s :End of /MAP\n",
+			me, nick.c_str());
 		} else if (cmd[0] == "AWAY") {
 		    fprintf(*c, ":%s 305 %s :You are no longer marked as being away\n",
 			    me, nick.c_str());

@@ -154,6 +154,10 @@ namespace xchat {
     const int putmsg_retries = 5;
 
     /**
+     * \brief Domain name of fallback server.
+     */
+    const string fallback_server = "xchat.centrum.cz";
+    /**
      * \brief The number of server failures to have a rest.
      */
     const int tries_to_rest = 3;
@@ -212,16 +216,19 @@ namespace xchat {
      */
     class server {
 	public:
+	    string hostname; ///< Original hostname.
 	    string host; ///< Hostname or address.
 	    time_t last_break; ///< Timestamp of last failure.
+	    int total_break_count; ///< Number of failures so far (summary).
 	    int break_count; ///< Number of failures so far.
 
 	    /**
 	     * Construct a server from its hostname.
 	     * \param a Hostname.
 	     */
-	    explicit server(const string &a) : host(a), last_break(0),
-					       break_count(0)
+	    server(const string &a, const string &b) : hostname(a),
+		    host(b), last_break(0), total_break_count(0),
+		    break_count(0)
 	    { }
     };
 

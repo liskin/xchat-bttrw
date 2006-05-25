@@ -35,6 +35,7 @@ namespace xchat {
     {
 	if (servers.size() > 1) {
 	    servers[lastsrv].last_break = time(0);
+	    servers[lastsrv].total_break_count++;
 	    servers[lastsrv].break_count++;
 
 	    if (servers[lastsrv].break_count >= tries_to_rest) {
