@@ -106,14 +106,10 @@ void log(const string& s)
 	struct tm lt;
 	char st[128];
 
-#ifndef WIN32
-	localtime_r(&t, &lt);
-#else
-	struct tm *plt = localtime(&t);
+	struct tm *plt = localtime_r(&t, &lt);
 	if (!plt)
 	    throw runtime_error(strerror(errno));
-	lt = *plt;
-#endif
+
 	strftime(st, 128, "%F %H:%M:%S", &lt);
 
 	FILE *f = fopen(logfile.c_str(), "a");
