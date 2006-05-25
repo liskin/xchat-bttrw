@@ -30,10 +30,6 @@ ifeq ($(TARGET),i386-mingw32msvc)
  RSRC=rsrc.o
 endif
 
-ifdef WIN32_COMPAT
- GATE_WIN32_COMPAT=-DWIN32_COMPAT=\"$(WIN32_COMPAT)\"
-endif
-
 .PHONY: all clean dep conf dummy buildw32 docs
 
 all: libxchat-bttrw.a gate README
@@ -73,7 +69,7 @@ ifeq ($(TARGET),i386-mingw32msvc)
 endif
 
 gate.o:
-	$(COMPILE.cc) $(REVISIONS) $(GATE_WIN32_COMPAT) $(OUTPUT_OPTION) $<
+	$(COMPILE.cc) $(REVISIONS) $(OUTPUT_OPTION) $<
 
 clean:
 	$(RM) libxchat-bttrw.a gate *.o
@@ -95,31 +91,8 @@ buildw32:
 	$(RM) $(filter-out $(DESTDIR)/build.log, $(wildcard $(DESTDIR)/*))
 	$(MAKE) clean dep conf
 	$(MAKE) -C TomiTCP clean dep conf
-	@echo
-	@echo -e '\033[1m' Building for WinXP and up... '\033[m'
-	@echo
-	$(MAKE) WIN32_COMPAT=winxp
+	$(MAKE)
 	cp -L gate $(DESTDIR)/gate.exe
-	@echo
-	
-	touch gate.cc
-	$(MAKE) -C TomiTCP clean dep
-	@echo
-	@echo -e '\033[1m' Building for Win2000 and up... '\033[m'
-	@echo
-	$(MAKE) WIN32_COMPAT=win2k
-	cp -L gate $(DESTDIR)/gate-win2k.exe
-	@echo
-	
-	touch gate.cc
-	$(MAKE) -C TomiTCP clean dep
-	@echo
-	@echo -e '\033[1m' Building for Win98, WinNT4 and up... '\033[m'
-	@echo
-	$(MAKE) WIN32_COMPAT=winnt
-	cp -L gate $(DESTDIR)/gate-win98.exe
-	@echo
-	
 	cp -L COPYRIGHT $(DESTDIR)/
 	cp -L COPYING $(DESTDIR)/
 	cp -L README $(DESTDIR)/README.txt
