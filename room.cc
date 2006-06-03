@@ -424,24 +424,25 @@ retry:
 		    string admin;
 		    bool locked;
 		    parse_updateinfo(string(l,pos+pat.length()), admin, locked);
-		    if (r.admin != admin) {
-			if (!first) {
+		    if (first) {
+			r.admin = admin;
+			r.locked = locked;
+		    } else {
+			if (r.admin != admin) {
 			    erac.reset(new EvRoomAdminChange);
 			    erac->rid = r.rid;
 			    erac->before = r.admin;
 			    erac->now = admin;
+			    r.admin = admin;
 			}
-			r.admin = admin;
-		    }
 
-		    if (r.locked != locked) {
-			if (!first) {
+			if (r.locked != locked) {
 			    erlc.reset(new EvRoomLockChange);
 			    erlc->rid = r.rid;
 			    erlc->before = r.locked;
 			    erlc->now = locked;
+			    r.locked = locked;
 			}
-			r.locked = locked;
 		    }
 		}
 	    }
