@@ -1,7 +1,6 @@
 #ifndef NET_H_INCLUDED
 #define NET_H_INCLUDED
 
-#pragma interface
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -9,16 +8,24 @@
 #include <stdexcept>
 #include <unistd.h>
 #ifdef WIN32
+# include "win32.h"
 # include <ws2tcpip.h>
-# if !defined(_WIN32_WINNT) || (_WIN32_WINNT <= 0x0500)
-#  include <wspiapi.h>
-# endif
+# include <wspiapi.h>
 #else
 # include <netinet/in.h>
 # include <sys/types.h>
 # include <sys/socket.h>
 # include <arpa/inet.h>
 # include <netdb.h>
+#endif
+
+#ifndef WIN32
+# define sock_errno errno
+#else
+# define sock_errno WSAGetLastError()
+# define strerror wsock_strerror
+# undef gai_strerror
+# define gai_strerror strerror
 #endif
 
 #define SIZEOF_SOCKADDR(so) ((so).sa.sa_family == AF_INET6 ? \
@@ -40,6 +47,7 @@ namespace net {
 
     int input_timeout(int filedes, millitime_t ms);
     int output_timeout(int filedes, millitime_t ms);
+    int connect_timeout(int filedes, millitime_t ms);
     string tomi_ntop(const sockaddr_uni& name);
     void tomi_pton(string p, sockaddr_uni& name);
     string revers(const sockaddr_uni& name);
@@ -60,18 +68,14 @@ namespace net {
 	    void listen(uint16_t port, const string& addr = "::");
 	    void connect(const string& hostname, const string& service,
 		    const string& bindhostname = "", const string& bindservice = "");
-	    void attach(int filedes);
 	    void close();
 	    ~TomiTCP();
-	    bool ok();
 	    int nodelay();
 	    TomiTCP* accept();
 	    void send(const char* buf, int sz, unsigned int ms = 10);
 	    int recv(char* buf, int sz, unsigned int ms = 5000);
-	    FILE* makestream();
-	    //int getline(string& s);
 	    int getline(string& s, char delim = '\n');
-	    string ident(int ms = 10000);
+	    void set_nonblock_flag(unsigned long value);
 
 	    operator FILE* () { return stream; }
 

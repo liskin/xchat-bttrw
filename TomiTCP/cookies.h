@@ -1,6 +1,5 @@
 #ifndef COOKIES_H_INCLUDED
 #define COOKIES_H_INCLUDED
-#pragma interface
 #include <map>
 #include <string>
 

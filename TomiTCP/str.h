@@ -1,7 +1,6 @@
 #ifndef STR_H_INCLUDED
 #define STR_H_INCLUDED
 
-#pragma interface
 #include <string>
 #include <cstdio>
 #include <sstream>
@@ -95,37 +94,6 @@ namespace std {
        	s >> b;
 	return b;
     }
-
-    /*
-     * These are considered deprecated and are subject to remove during next
-     * cleanup. Use tostr template functions instead.
-     */
-#define TOSTR(a,b) inline string a##tostr(b i) { return tostr<b>(i); }
-    TOSTR(int,int)
-    TOSTR(lint,long int)
-    TOSTR(llint,long long int)
-    TOSTR(uint,unsigned int)
-    TOSTR(ulint,unsigned long int)
-    TOSTR(ullint,unsigned long long int)
-#undef TOSTR
-#define TOSTR(a,b) inline string a##tohstr(b i, bool j = 0) { return tostr_hex<b>(i,j); }
-    TOSTR(uint,unsigned int)
-    TOSTR(ulint,unsigned long int)
-    TOSTR(ullint,unsigned long long int)
-#undef TOSTR
-#define TOSTR(a,b) inline string a##tostr(b i, int j = -1) { return tostr_float<b>(i,j); }
-    TOSTR(float,float)
-    TOSTR(double,double)
-    TOSTR(ldouble,long double)
-#undef TOSTR
-
-    const string INDENT_DETECT = "\033";
-    int len(const string& s, int ini = 0, int tab = 8);
-    int ntokens(const string& s);
-    string justify(string in, int width, int maxspaces = 4, int tab = 8);
-    string reformat(string ins, int width, const string& firstline = "",
-	    int tab = 8, bool firstlinealone = 0, int maxspaces = 4,
-	    string indent = INDENT_DETECT);
 
     string recode(const string& src, const string& from, const string& to);
     unsigned int u8strlimit(const char *c, unsigned int limit);

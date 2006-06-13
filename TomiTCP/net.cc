@@ -1,15 +1,14 @@
-#pragma implementation
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include "net.h"
 #ifndef WIN32
 # include <netinet/tcp.h>
 # include <sys/time.h>
 #else
 # include <io.h>
-# include <fcntl.h>
 # include <mswsock.h>
 # include <sys/types.h>
 # include <sys/timeb.h>
@@ -20,53 +19,16 @@
 # define TEMP_FAILURE_RETRY(a) (a)
 #endif
 
-#ifndef WIN32
-# define sock_errno errno
-#else
-# define sock_errno WSAGetLastError()
+#ifdef WIN32
 # define EAFNOSUPPORT WSAEAFNOSUPPORT
+# define EINPROGRESS WSAEWOULDBLOCK
 # ifndef SOL_IPV6
 #  define SOL_IPV6 IPPROTO_IPV6
 # endif
-const char * wsock_strerror(int err);
-# define strerror wsock_strerror
-# undef gai_strerror
-# define gai_strerror strerror
-int winsock_init() {
-    WORD wVersionRequested;
-    WSADATA wsaData;
-    int err;
-
-    wVersionRequested = MAKEWORD( 2, 0 );
-
-    err = WSAStartup( wVersionRequested, &wsaData );
-    if ( err != 0 ) {
-	std::cerr << "Too old winsock" << std::endl;
-	throw 0;
-    }
-
-    int iSockOpt = SO_SYNCHRONOUS_NONALERT;
-    setsockopt(INVALID_SOCKET, SOL_SOCKET, SO_OPENTYPE,
-	    (char *)&iSockOpt, sizeof(iSockOpt));
-
-    return 0;
-}
-# if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0500)
-#  define USE_FIXED_OSFHANDLE
-#  define _open_osfhandle my_open_osfhandle
-# else
-#  define my_close(a) while(0){}
-# endif
-#endif
-
-#ifdef USE_FIXED_OSFHANDLE
-static int my_open_osfhandle(intptr_t osfhandle, int flags);
-static int my_close(int fd);
 #endif
 
 namespace net {
     /*
-     * FIXME - g_conn_timeout does not work yet!
      * We don't want to break while (getline()), so g_recv_timeout is zero.
      */
     int TomiTCP::g_conn_timeout = 120, TomiTCP::g_recv_timeout = 0;
@@ -107,9 +69,7 @@ namespace net {
 
     void TomiTCP::listen(uint16_t port, const string &addr)
     {
-	if (ok()) {
-	    close();
-	}
+	close();
 
 	memset(&lname,0,sizeof(lname));
 	lname.sa.sa_family = AF_INET6;
@@ -121,43 +81,40 @@ namespace net {
 	}
 	PORT_SOCKADDR(lname) = htons(port);
 
-	sock = ::socket(lname.sa.sa_family, SOCK_STREAM, 0);
-	if (sock < 0 && (sock_errno == EINVAL || sock_errno == EAFNOSUPPORT) && addr == "::") {
+	netsock = ::socket(lname.sa.sa_family, SOCK_STREAM, 0);
+	if (netsock < 0 && (sock_errno == EINVAL || sock_errno == EAFNOSUPPORT) && addr == "::") {
                 lname.sin.sin_family = AF_INET;
                 lname.sin.sin_addr.s_addr = INADDR_ANY;
                 
-                sock = ::socket(PF_INET, SOCK_STREAM, 0);
-        } else if (sock < 0) {
+                netsock = ::socket(PF_INET, SOCK_STREAM, 0);
+        }
+	if (netsock < 0) {
 	    throw runtime_error("socket: " + string(strerror(sock_errno)));
 	}
 
 	int set_opt = 1;
-        if (::setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,(char*)&set_opt,sizeof(set_opt)))
+#ifndef WIN32
+        if (::setsockopt(netsock,SOL_SOCKET,SO_REUSEADDR,(char*)&set_opt,sizeof(set_opt)))
 	    cerr << "Could not set SO_REUSEADDR" << endl;
+#endif
 
 	if (lname.sa.sa_family == AF_INET6) {
 	    set_opt = 0;
-	    if (::setsockopt(sock,SOL_IPV6,IPV6_V6ONLY,(char*)&set_opt,sizeof(set_opt)))
+	    if (::setsockopt(netsock,SOL_IPV6,IPV6_V6ONLY,(char*)&set_opt,sizeof(set_opt)))
 		cerr << "Could not set IPV6_V6ONLY" << endl;
 	}
 
-	if (::bind(sock,&lname.sa,SIZEOF_SOCKADDR(lname))) {
+	if (::bind(netsock,&lname.sa,SIZEOF_SOCKADDR(lname))) {
 	    int er = sock_errno;
-	    ::close(sock);
-	    sock = -1;
+	    close();
 	    throw runtime_error("bind: " + string(strerror(er)));
 	}
 
-	if (::listen(sock,5)) {
+	if (::listen(netsock,5)) {
 	    int er = sock_errno;
-	    ::close(sock);
-	    sock = -1;
+	    close();
 	    throw runtime_error("listen: " + string(strerror(er)));
 	}
-
-#ifdef WIN32
-	w32socket = sock;
-#endif
     }
 
     TomiTCP::TomiTCP(const string& hostname, uint16_t port) : sock(-1), stream(0),
@@ -168,17 +125,15 @@ namespace net {
 		     , netsock(sock)
 #endif
     {
-	memset(&lname,0,sizeof(lname));
-	memset(&rname,0,sizeof(rname));
-	connect(hostname,uinttostr(port));
+	memset(&lname, 0, sizeof(lname));
+	memset(&rname, 0, sizeof(rname));
+	connect(hostname, tostr<unsigned int>(port));
     }
 
     void TomiTCP::connect(const string& hostname, const string& service,
 	    const string& bindhostname, const string& bindservice)
     {
-	if (ok()) {
-	    close();
-	}
+	close();
 
 	vector<sockaddr_uni> addrs, bindaddrs;
 	resolve(hostname, service, addrs);
@@ -190,42 +145,83 @@ namespace net {
 	for (vector<sockaddr_uni>::iterator i = addrs.begin(); i != addrs.end(); i++) {
 	    memcpy(&rname,&(*i),SIZEOF_SOCKADDR(*i));
 
-	    sock = ::socket(rname.sa.sa_family, SOCK_STREAM, 0);
-	    if (socket < 0) {
+	    netsock = ::socket(rname.sa.sa_family, SOCK_STREAM, 0);
+	    if (netsock < 0) {
 		err = "socket: " + string(strerror(sock_errno));
 	    } else {
 		for (vector<sockaddr_uni>::iterator j = bindaddrs.begin();
 			j != bindaddrs.end(); j++)
 		    if (j->sa.sa_family == rname.sa.sa_family)
-			if (!::bind(sock, &j->sa, SIZEOF_SOCKADDR(*j)))
+			if (!::bind(netsock, &j->sa, SIZEOF_SOCKADDR(*j)))
 			    break;
 
-		if (TEMP_FAILURE_RETRY(::connect(sock,
-				(const sockaddr*)&rname, SIZEOF_SOCKADDR(rname)))) {
+		try { set_nonblock_flag(1); }
+		catch (runtime_error e) {
+		    close();
+		    throw;
+		}
+
+		int ret;
+		ret = TEMP_FAILURE_RETRY(::connect(netsock,
+			    (const sockaddr*)&rname, SIZEOF_SOCKADDR(rname)));
+		if (ret && sock_errno == EINPROGRESS) {
+		    ret = connect_timeout(netsock, conn_timeout * 1000);
+		    if (ret > 0) {
+			int er;
+			socklen_t len = sizeof(er);
+			if (getsockopt(netsock, SOL_SOCKET, SO_ERROR, (char*) &er, &len)) {
+			    int er = sock_errno;
+			    close();
+			    throw runtime_error("getsockopt: " + string(strerror(er)));
+			}
+			if (er) {
+			    close();
+			    err = "connect: " + string(strerror(er));
+			} else {
+			    try { set_nonblock_flag(0); }
+			    catch (runtime_error e) {
+				close();
+				throw;
+			    }
+			    break;
+			}
+		    } else if (ret < 0) {
+			int er = sock_errno;
+			close();
+			throw runtime_error("connect_timeout: " + string(strerror(er)));
+		    } else {
+			close();
+			err = "connect timeout";
+		    }
+		} else if (ret) {
 		    int er = sock_errno;
 		    close();
 		    err = "connect: " + string(strerror(er));
 		} else {
-		    break;
+		    close();
+		    err = "connect: success?";
 		}
 	    }
 	}
 
-	if (!ok())
-	    throw (runtime_error(err));
+	if (netsock < 0) {
+	    if (err == "connect timeout")
+		throw timeout(err);
+	    else
+		throw runtime_error(err);
+	}
 
 	socklen_t len = SIZEOF_SOCKADDR(lname);
-	if (getsockname(sock,(sockaddr*)&lname,&len)) {
+	if (getsockname(netsock,(sockaddr*)&lname,&len)) {
 	    throw runtime_error("getsockname: " + string(strerror(sock_errno)));
 	}
 
 #ifdef WIN32
-	w32socket = sock;
-	sock = _open_osfhandle(sock, _O_RDWR | _O_BINARY);
+	sock = my_open_osfhandle(netsock, _O_RDWR | _O_BINARY);
 	if (sock < 0) {
 	    int er = errno;
 	    close();
-	    throw runtime_error("_open_osfhandle: " + string(strerror(er)));
+	    throw runtime_error("my_open_osfhandle: " + string(strerror(er)));
 	}
 #endif
 
@@ -266,86 +262,6 @@ namespace net {
 	freeaddrinfo(ai);
     }
 
-    string TomiTCP::ident(int ms)
-    {
-	sockaddr_uni addr = rname;
-	PORT_SOCKADDR(addr) = htons(113);
-	int s = ::socket(addr.sa.sa_family, SOCK_STREAM, 0);
-	if (s < 0) {
-	    throw runtime_error("Ident: socket: " + string(strerror(sock_errno)));
-	}
-	if (::connect(s,(const sockaddr*)&addr,SIZEOF_SOCKADDR(addr))) {
-	    int er = sock_errno;
-	    ::close(s);
-	    throw runtime_error("Ident: connect: " + string(strerror(er)));
-	}
-
-	char query[64];
-	sprintf(query,"%hi , %hi\n",ntohs(PORT_SOCKADDR(rname)),ntohs(PORT_SOCKADDR(lname)));
-
-	int retval = TEMP_FAILURE_RETRY(::send(s,query,strlen(query),0));
-	if (retval < 0) {
-	    int er = sock_errno;
-	    ::close(s);
-	    throw runtime_error("Ident: send: " + string(strerror(er)));
-	}
-
-	char buffer[513];
-
-	if (input_timeout(s,ms) > 0)
-	{
-	    retval = TEMP_FAILURE_RETRY(::recv(s,buffer,512,0));
-	    if (retval <= 0) {
-		int er = sock_errno;
-		::close(s);
-		if (retval < 0)
-		    throw runtime_error("Ident: recv: " + string(strerror(er)));
-		return "";
-	    }
-	    buffer[retval] = 0;
-	} else {
-	    throw timeout("ident Timeout (recv)");
-	}
-	::close(s);
-
-	stringstream ss(buffer);
-	string tmp;
-
-	std::getline(ss,tmp,':');
-	ss >> tmp;
-	if (tmp != "USERID") {
-	    return "";
-	} else {
-	    std::getline(ss,tmp,':');
-	    std::getline(ss,tmp,':');
-	    std::getline(ss,tmp,' ');
-	    std::getline(ss,tmp);
-	    return tmp;
-	}
-    }
-
-    /*
-     * This takes a "unix file descriptor" as an argument, on Win32, you have
-     * to call _open_osfhandle to get it.
-     */
-    void TomiTCP::attach(int filedes)
-    {
-	sock = dup(filedes);
-	if (sock < 0)
-	    throw runtime_error("dup: " + string(strerror(errno)));
-
-	stream = fdopen(sock,"rb+");
-	if (!stream) {
-	    int er = errno;
-	    close();
-	    throw runtime_error("fdopen: " + string(strerror(er)));
-	}
-
-	// fill lname & rname !!!
-
-	setvbuf(stream,NULL,_IONBF,0); // no buffering
-    }
-
     TomiTCP::~TomiTCP()
     {
 	close();
@@ -354,7 +270,7 @@ namespace net {
     void TomiTCP::close()
     {
 #ifdef WIN32
-	if (sock >= 0 && w32socket != sock)
+	if (my_close && sock >= 0)
 	    my_close(sock);
 #endif
 
@@ -363,26 +279,27 @@ namespace net {
 		throw runtime_error("fclose: " + string(strerror(errno)));
 	    stream = 0;
 	    sock = -1;
-	} else if (sock >= 0) {
-	    ::close(sock);
+	}
+
+	if (sock >= 0) {
+	    if (::close(sock))
+		throw runtime_error("close: " + string(strerror(errno)));
 	    sock = -1;
 	}
 
 #ifdef WIN32
-	if (w32socket >= 0)
-	    closesocket(w32socket);
+	if (netsock >= 0) {
+	    if (closesocket(netsock))
+		throw runtime_error("closesocket: " + string(strerror(sock_errno)));
+	    netsock = -1;
+	}
 #endif
-    }
-
-    bool TomiTCP::ok()
-    {
-	return (sock >= 0);
     }
 
     int TomiTCP::nodelay()
     {
 	int set_opt = 1;
-	int retval = ::setsockopt(sock,IPPROTO_TCP,TCP_NODELAY,(char*)&set_opt,sizeof(set_opt));
+	int retval = ::setsockopt(netsock,IPPROTO_TCP,TCP_NODELAY,(char*)&set_opt,sizeof(set_opt));
 	if (retval)
 	    cerr << "Could not set TCP_NODELAY" << endl;
 	return retval;
@@ -397,17 +314,16 @@ namespace net {
 	ret->rname.sa.sa_family = lname.sa.sa_family;
 
 	socklen_t len = SIZEOF_SOCKADDR(ret->rname);
-	ret->sock = TEMP_FAILURE_RETRY(::accept(sock,&ret->rname.sa,&len));
-	if (ret->sock < 0)
+	ret->netsock = TEMP_FAILURE_RETRY(::accept(netsock,&ret->rname.sa,&len));
+	if (ret->netsock < 0)
 	    throw runtime_error("accept: " + string(strerror(sock_errno)));
 
 #ifdef WIN32
-	ret->w32socket = ret->sock;
-	ret->sock = _open_osfhandle(ret->sock, _O_RDWR | _O_BINARY);
+	ret->sock = my_open_osfhandle(ret->netsock, _O_RDWR | _O_BINARY);
 	if (ret->sock < 0) {
 	    int er = errno;
 	    delete ret;
-	    throw runtime_error("_open_osfhandle: " + string(strerror(er)));
+	    throw runtime_error("my_open_osfhandle: " + string(strerror(er)));
 	}
 #endif
 
@@ -420,24 +336,6 @@ namespace net {
 	setvbuf(ret->stream,NULL,_IONBF,0); // no buffering
 	
 	return ret;
-    }
-
-    /*
-     * This is considered deprecated and is subject to remove during next
-     * cleanup. Use operator FILE* instead.
-     */
-    FILE* TomiTCP::makestream()
-    {
-	int s = dup(sock);
-	if (s < 0)
-	    throw runtime_error("dup: " + string(strerror(errno)));
-
-	FILE *f = fdopen(s,"rb+");
-	if (!f)
-	    throw runtime_error("fdopen: " + string(strerror(errno)));
-	setvbuf(f,NULL,_IONBF,0); // no buffering
-
-	return f;
     }
 
     int TomiTCP::getline(string& s, char delim)
@@ -467,6 +365,26 @@ namespace net {
 
 	throw timeout("recv timeout");
 	return 0;
+    }
+
+    void TomiTCP::set_nonblock_flag(unsigned long value)
+    {
+#ifdef WIN32
+	if (ioctlsocket(netsock, FIONBIO, &value) != 0)
+	    throw runtime_error(strerror(sock_errno));
+#else
+	int oldflags = fcntl(sock, F_GETFL, 0);
+	if (oldflags == -1)
+	    throw runtime_error(strerror(errno));
+	
+	if (value != 0)
+	    oldflags |= O_NONBLOCK;
+	else
+	    oldflags &= ~O_NONBLOCK;
+
+	if (fcntl(netsock, F_SETFL, oldflags) == -1)
+	    throw runtime_error(strerror(errno));
+#endif
     }
     
     string tomi_ntop(const sockaddr_uni& name)
@@ -545,7 +463,7 @@ namespace net {
 	    timeout.tv_usec = (ms % 1000) * 1000;
 	    to = &timeout;
 	}
-        return TEMP_FAILURE_RETRY(select(FD_SETSIZE,&set,NULL,NULL,to));
+        return TEMP_FAILURE_RETRY(select(filedes + 1, &set, 0, 0, to));
     }
 
     int output_timeout(int filedes, millitime_t ms)
@@ -561,7 +479,25 @@ namespace net {
 	    timeout.tv_usec = (ms % 1000) * 1000;
 	    to = &timeout;
 	}
-        return TEMP_FAILURE_RETRY(select(FD_SETSIZE,NULL,&set,NULL,to));
+        return TEMP_FAILURE_RETRY(select(filedes + 1, 0, &set, 0, to));
+    }
+    
+    int connect_timeout(int filedes, millitime_t ms)
+    {
+	fd_set wset, eset;
+        struct timeval timeout, *to = 0;
+
+        FD_ZERO(&wset);
+        FD_SET(filedes, &wset);
+        FD_ZERO(&eset);
+        FD_SET(filedes, &eset);
+
+	if (ms >= 0) {
+	    timeout.tv_sec = ms / 1000;
+	    timeout.tv_usec = (ms % 1000) * 1000;
+	    to = &timeout;
+	}
+        return TEMP_FAILURE_RETRY(select(filedes + 1, 0, &wset, &eset, to));
     }
 
     millitime_t millitime()
@@ -578,222 +514,3 @@ namespace net {
 #endif
     }
 }
-
-#ifdef WIN32
-#undef strerror
-const char * wsock_strerror(int err) {
-    const char *error = 0;
-
-    switch(err) {
-	case 10004: error = "Interrupted system call"; break;
-	case 10009: error = "Bad file number"; break;
-	case 10013: error = "Permission denied"; break;
-	case 10014: error = "Bad address"; break;
-	case 10022: error = "Invalid argument (not bind)"; break;
-	case 10024: error = "Too many open files"; break;
-	case 10035: error = "Operation would block"; break;
-	case 10036: error = "Operation now in progress"; break;
-	case 10037: error = "Operation already in progress"; break;
-	case 10038: error = "Socket operation on non-socket"; break;
-	case 10039: error = "Destination address required"; break;
-	case 10040: error = "Message too long"; break;
-	case 10041: error = "Protocol wrong type for socket"; break;
-	case 10042: error = "Bad protocol option"; break;
-	case 10043: error = "Protocol not supported"; break;
-	case 10044: error = "Socket type not supported"; break;
-	case 10045: error = "Operation not supported on socket"; break;
-	case 10046: error = "Protocol family not supported"; break;
-	case 10047: error = "Address family not supported by protocol family"; break;
-	case 10048: error = "Address already in use"; break;
-	case 10049: error = "Can't assign requested address"; break;
-	case 10050: error = "Network is down"; break;
-	case 10051: error = "Network is unreachable"; break;
-	case 10052: error = "Net dropped connection or reset"; break;
-	case 10053: error = "Software caused connection abort"; break;
-	case 10054: error = "Connection reset by peer"; break;
-	case 10055: error = "No buffer space available"; break;
-	case 10056: error = "Socket is already connected"; break;
-	case 10057: error = "Socket is not connected"; break;
-	case 10058: error = "Can't send after socket shutdown"; break;
-	case 10059: error = "Too many references, can't splice"; break;
-	case 10060: error = "Connection timed out"; break;
-	case 10061: error = "Connection refused"; break;
-	case 10062: error = "Too many levels of symbolic links"; break;
-	case 10063: error = "File name too long"; break;
-	case 10064: error = "Host is down"; break;
-	case 10065: error = "No Route to Host"; break;
-	case 10066: error = "Directory not empty"; break;
-	case 10067: error = "Too many processes"; break;
-	case 10068: error = "Too many users"; break;
-	case 10069: error = "Disc Quota Exceeded"; break;
-	case 10070: error = "Stale NFS file handle"; break;
-	case 10091: error = "Network SubSystem is unavailable"; break;
-	case 10092: error = "WINSOCK DLL Version out of range"; break;
-	case 10093: error = "Successful WSASTARTUP not yet performed"; break;
-	case 10071: error = "Too many levels of remote in path"; break;
-	case 11001: error = "Host not found"; break;
-	case 11002: error = "Non-Authoritative Host not found"; break;
-	case 11003: error = "Non-Recoverable errors: FORMERR, REFUSED, NOTIMP"; break;
-	case 11004: error = "Valid name, no data record of requested type"; break;
-	default: error = strerror(err); break;
-    }
-
-    if (!error || !*error) {
-	static char t[20];
-	sprintf(t, "%i", err);
-	error = t;
-    }
-
-    return error;
-}
-
-/*
- * Compatibility code to make open_osfhandle work on non-NT Windows versions.
- * Taken from Perl, many thanks.
- */
-#ifdef USE_FIXED_OSFHANDLE
-#undef _open_osfhandle
-
-#if defined(__MINGW32__) && (__MINGW32_MAJOR_VERSION>=3)
-#undef _CRTIMP
-#endif
-#ifndef _CRTIMP
-#define _CRTIMP __declspec(dllimport)
-#endif
-
-/*
- * Control structure for lowio file handles
- */
-typedef struct {
-    intptr_t osfhnd;/* underlying OS file HANDLE */
-    char osfile;    /* attributes of file (e.g., open in text mode?) */
-    char pipech;    /* one char buffer for handles opened on pipes */
-    int lockinitflag;
-    CRITICAL_SECTION lock;
-} ioinfo;
-
-
-/*
- * Array of arrays of control structures for lowio files.
- */
-EXTERN_C _CRTIMP ioinfo* __pioinfo[];
-
-/*
- * Definition of IOINFO_L2E, the log base 2 of the number of elements in each
- * array of ioinfo structs.
- */
-#define IOINFO_L2E	    5
-
-/*
- * Definition of IOINFO_ARRAY_ELTS, the number of elements in ioinfo array
- */
-#define IOINFO_ARRAY_ELTS   (1 << IOINFO_L2E)
-
-/*
- * Access macros for getting at an ioinfo struct and its fields from a
- * file handle
- */
-#define _pioinfo(i) (__pioinfo[(i) >> IOINFO_L2E] + ((i) & (IOINFO_ARRAY_ELTS - 1)))
-#define _osfhnd(i)  (_pioinfo(i)->osfhnd)
-#define _osfile(i)  (_pioinfo(i)->osfile)
-#define _pipech(i)  (_pioinfo(i)->pipech)
-
-/* since we are not doing a dup2(), this works fine */
-#define _set_osfhnd(fh, osfh) (void)(_osfhnd(fh) = (intptr_t)osfh)
-
-#define FOPEN			0x01	/* file handle open */
-#define FNOINHERIT		0x10	/* file handle opened O_NOINHERIT */
-#define FAPPEND			0x20	/* file handle opened O_APPEND */
-#define FDEV			0x40	/* file handle refers to device */
-#define FTEXT			0x80	/* file handle is in text mode */
-
-/***
-*int my_open_osfhandle(intptr_t osfhandle, int flags) - open C Runtime file handle
-*
-*Purpose:
-*       This function allocates a free C Runtime file handle and associates
-*       it with the Win32 HANDLE specified by the first parameter. This is a
-*	temperary fix for WIN95's brain damage GetFileType() error on socket
-*	we just bypass that call for socket
-*
-*	This works with MSVC++ 4.0+ or GCC/Mingw32
-*
-*Entry:
-*       intptr_t osfhandle - Win32 HANDLE to associate with C Runtime file handle.
-*       int flags      - flags to associate with C Runtime file handle.
-*
-*Exit:
-*       returns index of entry in fh, if successful
-*       return -1, if no free entry is found
-*
-*Exceptions:
-*
-*******************************************************************************/
-
-/*
- * we fake up some parts of the CRT that aren't exported by MSVCRT.dll
- * this lets sockets work on Win9X with GCC and should fix the problems
- * with perl95.exe
- *	-- BKS, 1-23-2000
-*/
-
-/* create an ioinfo entry, kill its handle, and steal the entry */
-
-static int
-_alloc_osfhnd(void)
-{
-    HANDLE hF = CreateFile("NUL", 0, 0, NULL, OPEN_ALWAYS, 0, NULL);
-    int fh = _open_osfhandle((intptr_t)hF, 0);
-    CloseHandle(hF);
-    if (fh == -1)
-        return fh;
-    EnterCriticalSection(&(_pioinfo(fh)->lock));
-    return fh;
-}
-
-static int
-my_open_osfhandle(intptr_t osfhandle, int flags)
-{
-    int fh;
-    char fileflags;		/* _osfile flags */
-
-    /* copy relevant flags from second parameter */
-    fileflags = FDEV;
-
-    if (flags & O_APPEND)
-	fileflags |= FAPPEND;
-
-    if (flags & O_TEXT)
-	fileflags |= FTEXT;
-
-    if (flags & O_NOINHERIT)
-	fileflags |= FNOINHERIT;
-
-    /* attempt to allocate a C Runtime file handle */
-    if ((fh = _alloc_osfhnd()) == -1) {
-	errno = EMFILE;		/* too many open files */
-	_doserrno = 0L;		/* not an OS error */
-	return -1;		/* return error to caller */
-    }
-
-    /* the file is open. now, set the info in _osfhnd array */
-    _set_osfhnd(fh, osfhandle);
-
-    fileflags |= FOPEN;		/* mark as open */
-
-    _osfile(fh) = fileflags;	/* set osfile entry */
-    LeaveCriticalSection(&_pioinfo(fh)->lock);
-
-    return fh;			/* return handle */
-}
-
-static int
-my_close(int fd)
-{
-    _set_osfhnd(fd, INVALID_HANDLE_VALUE);
-    return 0;
-}
-
-#endif	/* USE_FIXED_OSFHANDLE */
-
-#endif

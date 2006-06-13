@@ -1,6 +1,5 @@
 #ifndef HTTP_H_INCLUDED
 #define HTTP_H_INCLUDED
-#pragma interface
 #include "net.h"
 #include "cookies.h"
 #include <map>

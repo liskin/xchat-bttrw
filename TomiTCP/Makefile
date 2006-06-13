@@ -6,6 +6,8 @@ CFLAGS=-Wall -D_GNU_SOURCE -O2
 CXXFLAGS=$(CFLAGS)
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
+OBJECTS=net.o http.o cookies.o str.o
+
 ifeq ($(DEBUG),yes)
  CFLAGS += -g -DDEBUG
 else
@@ -16,22 +18,8 @@ ifeq ($(TARGET),i386-mingw32msvc)
  LDLIBS += -lws2_32
  CFLAGS += -mthreads
  LDFLAGS += -mthreads
- ifndef WIN32_COMPAT
-  WIN32_COMPAT=winxp
- endif
- ifeq ($(WIN32_COMPAT),winnt)
-  CFLAGS += -DWINVER=0x0400
- endif
- ifeq ($(WIN32_COMPAT),win2k)
-  CFLAGS += -DWINVER=0x0500
- endif
- ifeq ($(WIN32_COMPAT),winxp)
-  CFLAGS += -DWINVER=0x0501
- endif
+ OBJECTS += win32.o
 endif
-
-COMPONENTS=net http cookies str
-OBJECTS=$(patsubst %,%.o,$(COMPONENTS))
 
 .PHONY: all clean dep conf
 

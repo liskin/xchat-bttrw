@@ -1,4 +1,3 @@
-#pragma implementation
 #include "http.h"
 #include "str.h"
 #include "version.h"
@@ -7,9 +6,6 @@
 #include <cctype>
 
 namespace net {
-    /*
-     * g_http_conn_timeout does not work yet.
-     */
     int TomiHTTP::g_http_conn_timeout = 120,
 	TomiHTTP::g_http_recv_timeout = 30;
 
@@ -65,7 +61,7 @@ namespace net {
 	if (proxyhost && proxyhost)
 	    connect(proxyhost, proxyport);
 	else
-	    connect(host,uinttostr(port));
+	    connect(host, tostr<unsigned int>(port));
 
 	if (port != 80) {
 	    stringstream s;
@@ -175,7 +171,7 @@ namespace net {
 	if (proxyhost && proxyhost)
 	    connect(proxyhost, proxyport);
 	else
-	    connect(host,uinttostr(port));
+	    connect(host, tostr<unsigned int>(port));
 
 	if (port != 80) {
 	    stringstream s;

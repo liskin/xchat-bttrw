@@ -1,4 +1,3 @@
-#pragma implementation
 #include "cookies.h"
 #include <sstream>
 #include <fstream>
