@@ -276,21 +276,21 @@ namespace net {
 
 	if (stream) {
 	    if (fclose(stream))
-		throw runtime_error("fclose: " + string(strerror(errno)));
+		cerr << "fclose: " + string(strerror(errno)) << endl;
 	    stream = 0;
 	    sock = -1;
 	}
 
 	if (sock >= 0) {
 	    if (::close(sock))
-		throw runtime_error("close: " + string(strerror(errno)));
+		cerr << "close: " + string(strerror(errno)) << endl;
 	    sock = -1;
 	}
 
 #ifdef WIN32
 	if (netsock >= 0) {
 	    if (closesocket(netsock))
-		throw runtime_error("closesocket: " + string(strerror(sock_errno)));
+		cerr << "closesocket: " + string(strerror(sock_errno)) << endl;
 	    netsock = -1;
 	}
 #endif
