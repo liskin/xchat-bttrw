@@ -63,11 +63,20 @@ namespace xchat {
     typedef map<string, room> rooms_t;
 
     /**
-     * \brief Type definition for the XChat::list output. It's an array of
-     * room id to room name pairs.
+     * \brief Structure definition for a room in list output.
      */
-    typedef vector<pair<string, string> > listout_t;
-    
+    struct roominfo {
+	string rid; ///< Room id.
+	string name; ///< Room name.
+	int count; ///< User count.
+    };
+
+    /**
+     * \brief Type definition for the XChat::list output. It's an array of
+     * roominfo structures.
+     */
+    typedef vector<roominfo> listout_t;
+
     /**
      * \brief Structure definition for a room in userinfo_t::rooms.
      */

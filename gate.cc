@@ -755,7 +755,7 @@ void serve_client(TomiTCP *cptr)
 			for (listout_t::iterator i = listout.begin();
 				i != listout.end(); i++) {
 			    fprintf(*c, ":%s 322 %s #%s %i :%s\n", me, nick.c_str(),
-				    i->first.c_str(), 0, i->second.c_str());
+				    i->rid.c_str(), i->count, i->name.c_str());
 			}
 			fprintf(*c, ":%s 323 %s :End of /LIST\n", me, nick.c_str());
 		    } catch (runtime_error &e) {
