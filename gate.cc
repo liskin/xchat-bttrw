@@ -751,7 +751,10 @@ void serve_client(TomiTCP *cptr)
 		     */
 		    try {
 			listout_t listout;
-			x->list(listout);
+			if (cmd.size() > 1)
+			    x->list(listout, (cmd[1] == "all"));
+			else
+			    x->list(listout, false);
 			for (listout_t::iterator i = listout.begin();
 				i != listout.end(); i++) {
 			    fprintf(*c, ":%s 322 %s #%s %i :%s\n", me, nick.c_str(),

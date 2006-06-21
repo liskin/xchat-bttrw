@@ -19,8 +19,9 @@ namespace xchat {
     /**
      * Get a list of available rooms.
      * \param listout Output array.
+     * \param all All rooms if true, registered only otherwise.
      */
-    void XChat::list(listout_t &listout)
+    void XChat::list(listout_t &listout, bool all)
     {
 	TomiHTTP s;
 	string l;
@@ -28,7 +29,11 @@ namespace xchat {
 	int retries = servers.size();
 retry:
 	try {
-	    int ret = s.GET(makeurl("~guest~/modchat?op=wwpageng&skin=2"),0);
+	    int ret;
+	    if (all)
+    		ret = s.GET(makeurl("~guest~/modchat?op=wwpageng&skin=2"),0);
+	    else
+		ret = s.GET(makeurl("~guest~/modchat?op=homepage&skin=2"),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting list");
 	} catch (runtime_error &e) {
@@ -42,8 +47,10 @@ retry:
 	while (s.getline(l)) {
 	    string::size_type a, b, c, d;
 	    string::size_type pos = 0;
-	    static string pat1 = "<option value=\"", pat2 = "\" >", 
-		pat3 = " (", pat4 = ")</option>";
+	    
+	    static string pat1 = "<option value=\"", pat3 = " (",
+		pat4 = ")</option>";
+	    string pat2 = (all ?"\" >" : "\"> ");
 
 	    while (((a = l.find(pat1, pos)) != string::npos) &&
 		    ((b = l.find(pat2, a + pat1.length())) != string::npos) &&

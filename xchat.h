@@ -326,7 +326,7 @@ namespace xchat {
 	    bool ispermadmin(const string &rid, string nick);
 	    bool issuperadmin(const string nick);
 
-	    void list(listout_t &listout);
+	    void list(listout_t &listout, bool all);
 	    bool ison(const string& nick);
 	    void loadsuperadmins();
 	    void reloadsuperadmins();
