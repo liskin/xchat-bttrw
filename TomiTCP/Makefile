@@ -1,5 +1,7 @@
 # vim:set sw=8 nosta:
 
+TARGET=$(shell $(CC) -dumpmachine)
+
 DEBUG=no
 
 CFLAGS=-Wall -D_GNU_SOURCE -O2
