@@ -1,5 +1,7 @@
 # vim:set sw=8 nosta:
 
+TARGET=$(shell $(CC) -dumpmachine)
+
 ifeq ($(TARGET),i386-mingw32msvc)
  DEBUG=no
 else
