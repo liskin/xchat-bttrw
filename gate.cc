@@ -180,6 +180,36 @@ void welcome()
 	ntohs(PORT_SOCKADDR(s.lname)) << endl;
 }
 
+void reload_voiced_girls(auto_ptr<XChat> &x, auto_ptr<TomiTCP> &c,
+	bool voiced_girls)
+{
+    string tmp;	
+    nicklist_t::iterator j;
+    int k;
+    
+    for (rooms_t::iterator i = x->rooms.begin();
+	    i != x->rooms.end(); i++) {
+	for (k = 1, tmp.clear(), j = i->second.nicklist.begin();
+		j != i->second.nicklist.end(); j++)
+	    if (j->second.sex == 0) {
+		if (tmp.length())
+		    tmp += " ";
+		tmp += j->first;
+		if (k % 5 == 0) {
+    		    fprintf(*c, ":%s MODE #%s %svvvvv %s\n", me,
+    			    i->first.c_str(), (voiced_girls?"+":"-"),
+			    tmp.c_str());
+		    tmp.clear();
+		}
+		k++;
+	    }
+	if (tmp.length())
+	    fprintf(*c, ":%s MODE #%s %svvvvv %s\n", me,
+    		    i->first.c_str(), (voiced_girls?"+":"-"),
+		    tmp.c_str());
+    }
+}
+
 void serve_client(TomiTCP *cptr)
 {
     net::thread_init();
@@ -339,11 +369,10 @@ void serve_client(TomiTCP *cptr)
 			fprintf(*c, ":%s NOTICE %s :client_charset set to %s\n",
 				me, nick.c_str(), x->client_charset.c_str());
 		    } else if (cmd[1] == "VOICED_GIRLS" && cmd.size() == 3) {
-			/*
-			 * Please don't turn this on later than at the
-			 * beginning
-			 */
+			bool old_voiced_girls = voiced_girls;
 			voiced_girls = atoi(cmd[2].c_str());
+			if (voiced_girls != old_voiced_girls)
+			    reload_voiced_girls(x, c, voiced_girls);
 			fprintf(*c, ":%s NOTICE %s :voiced_girls set to %i\n",
 				me, nick.c_str(), voiced_girls);
 		    } else if (cmd[1] == "SHOW_ADVERT" && cmd.size() == 3) {
@@ -421,12 +450,14 @@ void serve_client(TomiTCP *cptr)
 			    string tmp; int i; nicklist_t::iterator j;
 			    for (i = 1, j = x->rooms[chan].nicklist.begin();
 				    j != x->rooms[chan].nicklist.end(); j++, i++) {
+				if (tmp.length())
+				    tmp += " ";
 				tmp += string("") +
 				    ((x->issuperadmin(j->first))?"!":"") +
 				    ((x->ispermadmin(chan, j->first))?"@":"") +
 				    ((x->isadmin(chan, j->first))?"%":"") +
 				    ((j->second.sex == 0 && voiced_girls)?"+":"") +
-				    j->second.nick + " ";
+				    j->second.nick;
 				if (i % 5 == 0) {
 				    fprintf(*c, ":%s 353 %s = #%s :%s\n", me, nick.c_str(),
 					    chan.c_str(), tmp.c_str());

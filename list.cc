@@ -50,7 +50,7 @@ retry:
 	    
 	    static string pat1 = "<option value=\"", pat3 = " (",
 		pat4 = ")</option>";
-	    string pat2 = (all ?"\" >" : "\"> ");
+	    string pat2 = (all ? "\" >" : "\"> ");
 
 	    while (((a = l.find(pat1, pos)) != string::npos) &&
 		    ((b = l.find(pat2, a + pat1.length())) != string::npos) &&
