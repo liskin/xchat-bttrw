@@ -641,21 +641,31 @@ void serve_client(TomiTCP *cptr)
 				username(n).c_str(), host(n).c_str(),
 				info.c_str());
 
-			string rooms = "";
 			if (us.rooms.size()!=0) {
-			    for (vector<userinfo_room>::iterator i = us.rooms.begin(); 
-				i != us.rooms.end(); i++) {
-				if (rooms != "")
+			    string rooms = "";
+			    int ii = 1;
+			    for (vector<userinfo_room>::iterator i = us.rooms.begin();
+				    i != us.rooms.end(); i++, ii++) {
+				if (rooms.length())
 				    rooms += " ";
 				string name = i->name;
 				for (string::iterator j = name.begin(); j != name.end(); j++)
 				    if (*j == ' ')
 					*j = '_';
 				rooms += "#" + i->rid + "(" + name + "-" + i->idle + ")";
+
+				if (ii % 5 == 0) {
+				    fprintf(*c, ":%s 319 %s %s :%s\n", me,
+					    nick.c_str(), cmd[1].c_str(),
+					    rooms.c_str());
+				    rooms.clear();
+				}
 			    }
-			    fprintf(*c, ":%s 319 %s %s :%s\n", me,
-				nick.c_str(), cmd[1].c_str(),
-				rooms.c_str());
+			    if (rooms.length()) {
+				fprintf(*c, ":%s 319 %s %s :%s\n", me,
+					nick.c_str(), cmd[1].c_str(),
+					rooms.c_str());
+			    }
 			}
 			if (us.star || us.cert)
 			    fprintf(*c, ":%s 313 %s %s :is an %s%s%s\n", me,
