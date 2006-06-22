@@ -293,7 +293,7 @@ void serve_client(TomiTCP *cptr)
 				me, nick.c_str());
 			fprintf(*c, ":%s 004 %s :%s xchat-bttrw-" VERSION " 0 io\n",
 				me, nick.c_str(), me);
-			fprintf(*c, ":%s 005 %s MODES=1 MAXTARGETS=1 NICKLEN=20 SAFELIST"
+			fprintf(*c, ":%s 005 %s MODES=5 MAXTARGETS=1 NICKLEN=20 SAFELIST"
 				" :are supported by this server\n",
 				me, nick.c_str());
 			fprintf(*c, ":%s 005 %s CHANTYPES=# PREFIX=(aohv)!@%%+ CHANMODES=,,,i"
