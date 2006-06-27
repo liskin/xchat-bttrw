@@ -341,6 +341,9 @@ void serve_client(TomiTCP *cptr)
 					motd.c_str());
 			}
 
+			fprintf(*c, ":%s 376 %s :Web login: %s\n",
+			    me, nick.c_str(), x->makeurl2_static("").c_str());
+
 			fprintf(*c, ":%s 376 %s :End of /MOTD command.\n", me, nick.c_str());
 		    }
 
@@ -1120,12 +1123,14 @@ void serve_client(TomiTCP *cptr)
 			for (rooms_t::iterator i = x->rooms.begin();
 			    i != x->rooms.end(); i++)
 			    fprintf(*c, ":%s NOTICE #%s :%s\002Mas novy vzkaz!\002 "
-				"[ http://xchat.centrum.cz/offline ]\n",
-				me, i->first.c_str(), date.c_str());
+				"[ %s ]\n",
+				me, i->first.c_str(), date.c_str(),
+				x->makeurl2_static("offline").c_str());
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :%s\002Mas novy vzkaz!\002 "
-			    "[ http://xchat.centrum.cz/offline ]\n",
-			    me, nick.c_str(), date.c_str());
+			    "[ %s ]\n",
+			    me, nick.c_str(), date.c_str(),
+			    x->makeurl2_static("offline").c_str());
 		    }
 		} else if (dynamic_cast<EvSuperAdminsChange*>(e.get())) {
 		    auto_ptr<EvSuperAdminsChange> f((EvSuperAdminsChange*)e.release());

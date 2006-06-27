@@ -253,6 +253,7 @@ namespace xchat {
 	    int makesrv();
 	    string makeurl(const string& url);
 	    string makeurl2(const string& url);
+	    string makeurl2_static(const string& path);
 	    string lastsrv_broke();
 
 	    string uid; ///< User id, set by #login. Used for queries.

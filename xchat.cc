@@ -108,6 +108,16 @@ namespace xchat {
     }
 
     /**
+     * Prepare static URL with given path, with login information.
+     * \return The URL.
+     */
+    string XChat::makeurl2_static(const string& path)
+    {
+	return "http://" + fallback_server + "/~$" +
+	    uid + "~" + sid + "/" + path;
+    }
+
+    /**
      * Find a nick structure in rooms we are in.
      * \param src Searched nick.
      * \param r The room in which we found it is returned here, if non-NULL.
