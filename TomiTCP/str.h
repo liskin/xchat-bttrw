@@ -98,6 +98,11 @@ namespace std {
     string recode(const string& src, const string& from, const string& to);
     unsigned int u8strlimit(const char *c, unsigned int limit);
     unsigned int u8strlen(const char *c);
+
+    string _strprintf(const string &fmt, int argstart, ...);
+    int _fstrprintf(FILE *stream, const string &fmt, int argstart, ...);
+#define strprintf(fmt, ...) _strprintf(fmt, 0, __VA_ARGS__)
+#define fstrprintf(stream, fmt, ...) _fstrprintf(stream, fmt, 0, __VA_ARGS__)
 }
 
 #endif /* STR_H_INCLUDED */
