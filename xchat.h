@@ -225,7 +225,6 @@ namespace xchat {
      */
     class server {
 	public:
-	    string hostname; ///< Original hostname.
 	    string host; ///< Hostname or address.
 	    time_t last_break; ///< Timestamp of last failure.
 	    int total_break_count; ///< Number of failures so far (summary).
@@ -235,9 +234,8 @@ namespace xchat {
 	     * Construct a server from its hostname.
 	     * \param a Hostname.
 	     */
-	    server(const string &a, const string &b) : hostname(a),
-		    host(b), last_break(0), total_break_count(0),
-		    break_count(0)
+	    server(const string &a) : host(a), last_break(0),
+		total_break_count(0), break_count(0)
 	    { }
     };
 

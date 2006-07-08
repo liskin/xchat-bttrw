@@ -883,11 +883,10 @@ void serve_client(TomiTCP *cptr)
 				tostr<int>(time(0) - i->last_break) + " sec)";
 			}
 			
-			fprintf(*c, ":%s 015 %s :%s (%s) | Breaks: %d (%d total)%s%s\n",
+			fprintf(*c, ":%s 015 %s :%s | Breaks: %d (%d total)%s%s\n",
 			    me, nick.c_str(),
-			    i->hostname.c_str(), i->host.c_str(),
-			    i->break_count, i->total_break_count,
-			    last_break.c_str(),
+			    i->host.c_str(), i->break_count,
+			    i->total_break_count, last_break.c_str(),
 			    (i->break_count >= tries_to_rest)?" | [REST]":"");
 		    }
 		    fprintf(*c, ":%s 017 %s :End of /MAP\n",
