@@ -670,8 +670,12 @@ void serve_client(TomiTCP *cptr)
 
 			info += "TOP: " + us.top_pos;
 
+			if (us.icq != "") {
+			    info += ", ICQ: " + us.icq;
+			}
+
 			fprintf(*c, ":%s 311 %s %s %s %s * :%s\n", me,
-				nick.c_str(), cmd[1].c_str(),
+				nick.c_str(), n.nick.c_str(),
 				username(n).c_str(), host(n).c_str(),
 				info.c_str());
 
@@ -690,26 +694,27 @@ void serve_client(TomiTCP *cptr)
 
 				if (ii % 5 == 0) {
 				    fprintf(*c, ":%s 319 %s %s :%s\n", me,
-					    nick.c_str(), cmd[1].c_str(),
+					    nick.c_str(), n.nick.c_str(),
 					    rooms.c_str());
 				    rooms.clear();
 				}
 			    }
 			    if (rooms.length()) {
 				fprintf(*c, ":%s 319 %s %s :%s\n", me,
-					nick.c_str(), cmd[1].c_str(),
+					nick.c_str(), n.nick.c_str(),
 					rooms.c_str());
 			    }
 			}
 			if (us.star || us.cert)
 			    fprintf(*c, ":%s 313 %s %s :is an %s%s%s\n", me,
-				    nick.c_str(), cmd[1].c_str(),
+				    nick.c_str(), n.nick.c_str(),
 				    (us.star)?star(us).c_str():"",
 				    (us.star && us.cert)?", ":"",
 				    (us.cert)?"certified":"");
 		    }
 		    fprintf(*c, ":%s 318 %s %s :End of /WHOIS list.\n", me,
-			    nick.c_str(), cmd[1].c_str());
+			    nick.c_str(), (us.nick.length() ?
+				us.nick : cmd[1]).c_str());
 		} else if (cmd[0] == "KICK" && cmd.size() >= 3) {
 		    /*
 		     * Kick user.

@@ -36,7 +36,6 @@ retry1:
 
 	if (!s.getline(l))
 	    return out;
-	out.nick = nick;
 	out.name = recode_to_client(chomp(l));
 	
 	if (!s.getline(l))
@@ -80,6 +79,14 @@ retry1:
 	if (!s.getline(l))
 	    throw runtime_error("User info is not complete.");
 	out.top_pos = recode_to_client(chomp(l));
+
+	if (!s.getline(l))
+	    throw runtime_error("User info is not complete.");
+	out.nick = recode_to_client(chomp(l));
+
+	if (!s.getline(l))
+	    throw runtime_error("User info is not complete.");
+	out.icq = recode_to_client(chomp(l));
 
 	s.close();
 

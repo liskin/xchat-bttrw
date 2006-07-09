@@ -112,6 +112,7 @@ namespace xchat {
 	 */
 	string last_online;
 	string top_pos; ///< A position in the TOP chart.
+	string icq; ///< An ICQ contact.
 	vector<userinfo_room> rooms; ///< Array of rooms a user is in.
     };
 
