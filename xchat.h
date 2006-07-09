@@ -69,6 +69,7 @@ namespace xchat {
 	string rid; ///< Room id.
 	string name; ///< Room name.
 	int count; ///< User count.
+	bool registered; ///< Is room registered?
     };
 
     /**
@@ -326,7 +327,7 @@ namespace xchat {
 	    bool ispermadmin(const string &rid, string nick);
 	    bool issuperadmin(const string nick);
 
-	    void list(listout_t &listout, bool all);
+	    void list(listout_t &listout, int type);
 	    bool ison(const string& nick);
 	    void loadsuperadmins();
 	    void reloadsuperadmins();
@@ -376,6 +377,12 @@ namespace xchat {
 	     */
 	    time_t last_superadmins_reload;
     };
+
+    /**
+     * Room types
+     */
+    const int ROOM_TEMPORARY = 1;  // Temporary room
+    const int ROOM_REGISTERED = 2; // Registered room
 
     /**
      * Push Event to the #recvq. The auto_ptr takes control of the pointer.

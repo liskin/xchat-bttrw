@@ -800,14 +800,23 @@ void serve_client(TomiTCP *cptr)
 		     */
 		    try {
 			listout_t listout;
-			if (cmd.size() > 1)
-			    x->list(listout, (cmd[1] == "all"));
-			else
-			    x->list(listout, false);
+			int type = ROOM_REGISTERED + ROOM_TEMPORARY;
+			
+			if (cmd.size() > 1) {
+			    strtoupper(cmd[1]);
+			    if (cmd[1] == "R")
+				type = ROOM_REGISTERED;
+			    else if (cmd[1] == "T")
+				type = ROOM_TEMPORARY;
+			}
+			
+			x->list(listout, type);
+			
 			for (listout_t::iterator i = listout.begin();
 				i != listout.end(); i++) {
 			    fprintf(*c, ":%s 322 %s #%s %i :%s\n", me, nick.c_str(),
-				    i->rid.c_str(), i->count, i->name.c_str());
+				    i->rid.c_str(), i->count, (i->name +
+					(i->registered ? " [R]" : "")).c_str());
 			}
 			fprintf(*c, ":%s 323 %s :End of /LIST\n", me, nick.c_str());
 		    } catch (runtime_error &e) {

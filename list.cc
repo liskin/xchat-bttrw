@@ -13,15 +13,17 @@ namespace xchat {
     static bool stringcmp(const roominfo &a,
 	    const roominfo &b)
     {
+	if (a.registered != b.registered)
+	    return a.registered;
 	return strcoll(a.name.c_str(), b.name.c_str()) < 0;
     }
 
     /**
      * Get a list of available rooms.
      * \param listout Output array.
-     * \param all All rooms if true, registered only otherwise.
+     * \param type Type of rooms to list, binary mask of ROOM_*.
      */
-    void XChat::list(listout_t &listout, bool all)
+    void XChat::list(listout_t &listout, int type)
     {
 	TomiHTTP s;
 	string l;
@@ -29,11 +31,7 @@ namespace xchat {
 	int retries = servers.size();
 retry:
 	try {
-	    int ret;
-	    if (all)
-    		ret = s.GET(makeurl("~guest~/modchat?op=wwpageng&skin=2"),0);
-	    else
-		ret = s.GET(makeurl("~guest~/modchat?op=homepage&skin=2"),0);
+	    int ret = s.GET(makeurl("scripts/rooms.php"),0);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting list");
 	} catch (runtime_error &e) {
@@ -45,39 +43,29 @@ retry:
 	}
 
 	while (s.getline(l)) {
-	    string::size_type a, b, c, d;
-	    string::size_type pos = 0;
-	    
-	    static string pat1 = "<option value=\"", pat3 = " (",
-		pat4 = ")</option>";
-	    string pat2 = (all ? "\" >" : "\"> ");
+	    wstrip(l);
 
-	    while (((a = l.find(pat1, pos)) != string::npos) &&
-		    ((b = l.find(pat2, a + pat1.length())) != string::npos) &&
-		    ((c = l.find(pat3, b + pat2.length())) != string::npos) &&
-		    ((d = l.find(pat4, c + pat3.length())) != string::npos)) {
-		bool fail = 0;
-		for (string::iterator i = l.begin() + a + pat1.length();
-			i != l.begin() + b; i++)
-		    fail |= !isdigit(*i);
-		
-		if (!fail) {
-		    string rid(l.begin() + a + pat1.length(), l.begin() + b);
-		    string name(l.begin() + b + pat2.length(), l.begin() + c);
-		    string count(l.begin() + c + pat3.length(), l.begin() + d);
-		    pos = d + pat4.length();
+	    roominfo room;
 
-		    striphtmlent(name);
+	    room.rid = string(l, 0, l.find(' '));
+	    l.erase(0, room.rid.length());
+	    l.erase(0, l.find_first_not_of(' '));
 
-		    roominfo room;
-		    room.rid = rid;
-		    room.name = name;
-		    room.count = atoi(count.c_str());
-		    listout.push_back(room);
-		} else {
-		    pos = a + 1;
-		}
-	    }
+	    int pos = l.find(' ');
+	    room.registered = (string(l, 0, pos) == "1" ? true : false);
+	    l.erase(0, pos);
+	    l.erase(0, l.find_first_not_of(' '));
+
+	    pos = l.find(' ');
+	    room.count = atoi(string(l, 0, pos).c_str());
+	    l.erase(0, pos);
+	    l.erase(0, l.find_first_not_of(' '));
+
+	    room.name = l;
+
+	    if ((type & ROOM_TEMPORARY && room.registered == 0) ||
+		    (type & ROOM_REGISTERED && room.registered == 1))
+		listout.push_back(room);
 	}
 	s.close();
 
