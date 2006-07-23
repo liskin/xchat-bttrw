@@ -906,8 +906,12 @@ void serve_client(TomiTCP *cptr)
 		    fprintf(*c, ":%s 017 %s :End of /MAP\n",
 			me, nick.c_str());
 		} else if (cmd[0] == "AWAY") {
-		    fprintf(*c, ":%s 305 %s :You are no longer marked as being away\n",
-			    me, nick.c_str());
+		    if (cmd.size() == 2 && cmd[1] != "")
+			fprintf(*c, ":%s 306 %s :You have been marked as being away\n",
+			        me, nick.c_str());
+		    else 
+			fprintf(*c, ":%s 305 %s :You are no longer marked as being away\n",
+			        me, nick.c_str());
 		} else {
 		    log(tomi_ntop(c->rname) + " - Unknown command (" + l + ")");
 		    fprintf(*c, ":%s 421 %s %s :Unknown command\n", me, nick.c_str(),
