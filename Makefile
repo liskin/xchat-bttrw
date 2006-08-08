@@ -2,7 +2,7 @@
 
 TARGET=$(shell $(CC) -dumpmachine)
 
-ifeq ($(TARGET),i386-mingw32msvc)
+ifneq (,$(findstring mingw32,$(TARGET)))
  DEBUG=no
 else
  DEBUG=yes
@@ -25,7 +25,7 @@ else
  CFLAGS += -DNDEBUG
 endif
 
-ifeq ($(TARGET),i386-mingw32msvc)
+ifneq (,$(findstring mingw32,$(TARGET)))
  LDLIBS += -lws2_32
  CFLAGS += -mthreads
  LDFLAGS += -mthreads
@@ -66,7 +66,7 @@ libxchat-bttrw.a: xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o \
 
 gate: gate.o setproctitle.o libxchat-bttrw.a TomiTCP/libTomiTCP.a $(RSRC)
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
-ifeq ($(TARGET),i386-mingw32msvc)
+ifneq (,$(findstring mingw32,$(TARGET)))
 	strip $@
 endif
 
