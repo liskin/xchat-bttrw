@@ -16,7 +16,7 @@ else
  CFLAGS += -DNDEBUG
 endif
 
-ifeq ($(TARGET),i386-mingw32msvc)
+ifneq (,$(findstring mingw32,$(TARGET)))
  LDLIBS += -lws2_32
  CFLAGS += -mthreads
  LDFLAGS += -mthreads
