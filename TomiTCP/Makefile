@@ -27,7 +27,7 @@ endif
 
 all: libTomiTCP.a pok .depend
 
-MAKEDEP=gcc -MM $(wildcard *.c *.cc) > .depend
+MAKEDEP=-gcc -MM $(wildcard *.c *.cc) > .depend
 dep:
 	$(MAKEDEP)
 .depend:
