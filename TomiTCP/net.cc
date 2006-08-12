@@ -19,12 +19,13 @@
 # define TEMP_FAILURE_RETRY(a) (a)
 #endif
 
+#ifndef SOL_IPV6
+# define SOL_IPV6 IPPROTO_IPV6
+#endif
+
 #ifdef WIN32
 # define EAFNOSUPPORT WSAEAFNOSUPPORT
 # define EINPROGRESS WSAEWOULDBLOCK
-# ifndef SOL_IPV6
-#  define SOL_IPV6 IPPROTO_IPV6
-# endif
 #endif
 
 namespace net {
