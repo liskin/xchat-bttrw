@@ -36,7 +36,7 @@ endif
 
 all: libxchat-bttrw.a gate README
 
-MAKEDEP=gcc -MM $(wildcard *.c *.cc) > .depend
+MAKEDEP=-gcc -MM $(wildcard *.c *.cc) > .depend
 dep:
 	$(MAKEDEP)
 .depend:
