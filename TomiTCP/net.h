@@ -12,6 +12,9 @@
 # include <ws2tcpip.h>
 # include <wspiapi.h>
 #else
+# ifdef __APPLE__
+#  define _BSD_SOCKLEN_T_ int
+# endif
 # include <netinet/in.h>
 # include <sys/types.h>
 # include <sys/socket.h>
