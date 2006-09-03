@@ -527,7 +527,12 @@ void serve_client(TomiTCP *cptr)
 			/*
 			 * Channel message
 			 */
-			x->msg(cmd[1], cmd[2]);
+
+			if (x->rooms.find(cmd[1]) == x->rooms.end())
+			    fprintf(*c, ":%s 404 %s %s :Cannot send to channel\n", me,
+				    nick.c_str(), cmd[1].c_str());
+			else
+			    x->msg(cmd[1], cmd[2]);
 		    } else {
 			/*
 			 * Private message
