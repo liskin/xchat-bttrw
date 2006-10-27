@@ -146,7 +146,7 @@ namespace xchat {
      * \brief Interval between posting messages from XChat::sendq.
      * This is needed because xchat refuses to send messages more often.
      */
-    const int send_interval = 5;
+    const int send_interval = 3;
     /**
      * \brief Maximum single message length. XChat::do_sendq splits the
      * message if needed.
