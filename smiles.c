@@ -873,7 +873,7 @@ const char *smiles[] = {
     [863] "*stridani*", /* andilek.c */ 
     [864] "*cernoch*", /* andilek.c */ 
     [865] "*stop*", /* andilek.c */ 
-    [866] ":))", /* onovy */ 
+    [866] "*cert*", /* georgo10 */ 
     [867] "*zakaz zastaveni*", /* andilek.c */ 
     [868] "*dynamit*", /* andilek.c */ 
     [869] "*HA HA*", /* andilek.c */ 
@@ -1487,10 +1487,10 @@ const char *smiles[] = {
     [1477] "8-|", /* freezart_ */ 
     [1478] "*ano*", /* freezart_ */ 
     [1479] "*brouk*", /* freezart_ */ 
-    [1480] "8-D", /* freezart_ */ 
+    [1480] "*pozdrav*", /* georgo10 */ 
     [1481] "*strili*", /* freezart_ */ 
     [1482] "*had*", /* freezart_ */ 
-    [1483] ".-)", /* freezart_ */ 
+    [1483] "*kouka dolu*", /* georgo10 */ 
     [1484] "*mesic*", /* freezart_ */ 
     [1485] ":D", /* freezart_ */ 
     [1486] "*kytka*", /* freezart_ */ 
@@ -1621,7 +1621,7 @@ const char *smiles[] = {
     [1611] "*duhovej :)*", /* mathou */ 
     [1612] ":-)", /* mathou */ 
     [1613] "*peace*", /* georgo10 */ 
-    [1614] ":-/", /* mathou */ 
+    [1614] "=D", /* andilek.c */ 
     [1615] "*kvetina*", /* mathou */ 
     [1616] "*sasek*", /* mathou */ 
     [1617] "*jamaica :)*", /* mathou */ 
@@ -1661,8 +1661,8 @@ const char *smiles[] = {
     [1651] "[>:-P]", /* mathou */ 
     [1652] "*motyl*", /* mathou */ 
     [1653] "*hribek*", /* mathou */ 
-    [1654] ";-)", /* mathou */ 
-    [1655] ":-PP", /* mathou */ 
+    [1654] ":-*", /* andilek.c */ 
+    [1655] "*malina*", /* andilek.c */ 
     [1656] "*nafukuje ho*", /* onovy */ 
     [1657] "[:-)", /* mathou */ 
     [1658] "*usi*", /* mathou */ 
@@ -1673,7 +1673,7 @@ const char *smiles[] = {
     [1663] "*Barca*", /* andilek.c */ 
     [1664] "*pirat*", /* mathou */ 
     [1665] "*-->*", /* mathou */ 
-    [1666] "8-)", /* mathou */ 
+    [1666] "*orech*", /* andilek.c */ 
     [1667] "*:D zizala*", /* paces */ 
     [1668] "*srdce*", /* mathou */ 
     [1669] "*spinka*", /* mathou */ 
@@ -2193,6 +2193,7 @@ const char *smiles[] = {
     [2183] "*breci*", /* paces */ 
     [2184] "*maluje se*", /* andilek.c */ 
     [2185] ":-**", /* onovy */ 
+    [2186] "*tampa bay*", /* georgo10 */ 
     [2187] ";-)", /* onovy */ 
     [2188] "*snek*", /* andilek.c */ 
     [2189] "*zpevak*", /* andilek.c */ 
@@ -2205,6 +2206,7 @@ const char *smiles[] = {
     [2196] "*Etnies*", /* andilek.c */ 
     [2197] "*Blender*", /* andilek.c */ 
     [2198] "*ovce*", /* andilek.c */ 
+    [2199] "*Neplac*", /* andilek.c */ 
     [2200] "*fackujici*", /* paces */ 
     [2201] "*dabel*", /* andilek.c */ 
     [2202] "*ptacek*", /* paces */ 
@@ -2291,6 +2293,7 @@ const char *smiles[] = {
     [2283] ":-P", /* alien */ 
     [2284] "*Ghana*", /* andilek.c */ 
     [2285] "*kompas*", /* alien */ 
+    [2286] "*jeje*", /* georgo10 */ 
     [2287] "*modra kytka*", /* paces */ 
     [2288] "*sekera*", /* andilek.c */ 
     [2289] "*stit*", /* alien */ 
@@ -2377,18 +2380,24 @@ const char *smiles[] = {
     [2372] "*jj chutna*", /* mathou */ 
     [2373] "*stydi se*", /* mathou */ 
     [2374] "*rofl*", /* mathou */ 
+    [2375] "*teleport*", /* georgo10 */ 
     [2376] "*prvni pusa*", /* mathou */ 
     [2377] "*karatista*", /* andilek.c */ 
     [2378] "*dribluje*", /* andilek.c */ 
-    [2380] "*a ne! :P*", /* andilek.c */ 
+    [2379] "*to on*", /* georgo10 */ 
+    [2380] "*play*", /* andilek.c */ 
     [2381] "*Quote*", /* andilek.c */ 
+    [2383] "*libani bot*", /* andilek.c */ 
     [2385] "*cunik*", /* andilek.c */ 
     [2386] "*tuuudle*", /* andilek.c */ 
     [2387] "*kometa*", /* andilek.c */ 
     [2388] "*schema*", /* andilek.c */ 
     [2389] "*Punks not dead*", /* onovy */ 
+    [2390] "*jezecek*", /* andilek.c */ 
     [2391] "*Prima*", /* andilek.c */ 
     [2392] "*Arabie*", /* andilek.c */ 
+    [2393] "[>:-(]", /* andilek.c */ 
+    [2394] "*hvezdicka*", /* andilek.c */ 
     [2395] "*Oi!*", /* onovy */ 
     [2396] "*NOD32*", /* andilek.c */ 
     [2397] "*Exploited*", /* andilek.c */ 
@@ -2398,23 +2407,40 @@ const char *smiles[] = {
     [2403] "*pozor!*", /* onovy */ 
     [2404] "*ha ha*", /* andilek.c */ 
     [2405] "*Ra*", /* andilek.c */ 
+    [2406] "[8(]", /* andilek.c */ 
+    [2407] "=)", /* georgo10 */ 
     [2408] "*FK Jablonec 97*", /* andilek.c */ 
     [2410] "*hledam*", /* andilek.c */ 
+    [2412] "*zvon do pusy*", /* georgo10 */ 
+    [2413] "*papa s raneckem*", /* andilek.c */ 
+    [2414] "*pistolnik*", /* georgo10 */ 
+    [2415] "*splachuje se*", /* andilek.c */ 
+    [2416] "*s doutnikem*", /* andilek.c */ 
+    [2417] "*par :-* *", /* andilek.c */ 
+    [2418] "*drink*", /* andilek.c */ 
     [2425] "*Tri sestry*", /* andilek.c */ 
     [2426] "*Opel*", /* andilek.c */ 
     [2427] "*Honda*", /* andilek.c */ 
     [2428] "*Honda*", /* andilek.c */ 
+    [2431] "*fnuka*", /* georgo10 */ 
+    [2432] "*hopsa*", /* georgo10 */ 
+    [2434] "*rozhlizi se*", /* georgo10 */ 
     [2436] "*kriketak*", /* andilek.c */ 
+    [2437] "*zeleny micek*", /* georgo10 */ 
     [2438] "*slunecnice*", /* andilek.c */ 
     [2439] "*jablko*", /* andilek.c */ 
     [2440] "*jablko*", /* andilek.c */ 
     [2441] "*ryba*", /* andilek.c */ 
     [2442] "*zamereno*", /* andilek.c */ 
+    [2443] "*prustrel*", /* andilek.c */ 
     [2444] "*GDI*", /* andilek.c */ 
     [2445] "*Bakalar*", /* andilek.c */ 
+    [2446] "*zamilovane oci*", /* georgo10 */ 
+    [2447] "*pocitace*", /* georgo10 */ 
     [2448] "*Kaufland*", /* andilek.c */ 
     [2449] "*Bulldogs*", /* andilek.c */ 
     [2450] "*?*", /* onovy */ 
+    [2451] "*ninja*", /* georgo10 */ 
     [2452] "*Dudak*", /* andilek.c */ 
     [2453] "*Pilsner Oiquell*", /* andilek.c */ 
     [2454] "*Gegen Nazis*", /* onovy */ 
@@ -2422,13 +2448,385 @@ const char *smiles[] = {
     [2456] "*Florbal*", /* andilek.c */ 
     [2457] "*Unihoc-florbal*", /* andilek.c */ 
     [2458] "*mic rugby*", /* andilek.c */ 
+    [2460] "*voda*", /* georgo10 */ 
     [2461] "*kopretina*", /* andilek.c */ 
     [2462] "*ryba*", /* andilek.c */ 
+    [2463] "*kytice*", /* andilek.c */ 
     [2466] "*boxer*", /* andilek.c */ 
+    [2467] "*dostanes*", /* georgo10 */ 
+    [2468] "*:( papa*", /* andilek.c */ 
     [2470] "*septy septy*", /* andilek.c */ 
+    [2471] "*omdli*", /* georgo10 */ 
     [2472] "*Coca Cola*", /* andilek.c */ 
     [2473] "*Taure*", /* andilek.c */ 
     [2474] "*Nestea*", /* andilek.c */ 
+    [2475] "*blondezwerg*", /* georgo10 */ 
+    [2479] "*slunce*", /* andilek.c */ 
+    [2480] "*Sprite*", /* andilek.c */ 
+    [2481] "*u pc*", /* georgo10 */ 
+    [2486] "8-|", /* andilek.c */ 
+    [2487] "*kurak*", /* georgo10 */ 
+    [2489] "*Hippies*", /* andilek.c */ 
+    [2490] "*mimino*", /* andilek.c */ 
+    [2491] "*lodicka*", /* andilek.c */ 
+    [2493] "*brecici*", /* georgo10 */ 
+    [2494] "*Santa a sob*", /* andilek.c */ 
+    [2495] "*tancici*", /* georgo10 */ 
+    [2497] "*halooo*", /* georgo10 */ 
+    [2498] "*I love Fierfox*", /* andilek.c */ 
+    [2500] "*Bulharsko*", /* andilek.c */ 
+    [2501] "*papa*", /* andilek.c */ 
+    [2502] "*potlesk*", /* andilek.c */ 
+    [2503] "*smrtka :D*", /* andilek.c */ 
+    [2504] "*ruze*", /* andilek.c */ 
+    [2506] "*Fallout*", /* andilek.c */ 
+    [2507] "*kytka*", /* andilek.c */ 
+    [2511] "*zmrzlinar*", /* georgo10 */ 
+    [2512] "*Heineken*", /* andilek.c */ 
+    [2513] "*Stella Artois*", /* andilek.c */ 
+    [2514] "*SuperSmajlik*", /* andilek.c */ 
+    [2515] "*GaPa*", /* andilek.c */ 
+    [2516] "*nVidia*", /* andilek.c */ 
+    [2517] "*o berlich*", /* georgo10 */ 
+    [2520] "*kanadan*", /* georgo10 */ 
+    [2521] "*Nike*", /* andilek.c */ 
+    [2522] "*Ou tu O2*", /* andilek.c */ 
+    [2524] "*Ska*", /* andilek.c */ 
+    [2525] "*Zetor*", /* andilek.c */ 
+    [2526] "*puska*", /* andilek.c */ 
+    [2527] "*snezenka*", /* andilek.c */ 
+    [2528] "*HUP*", /* andilek.c */ 
+    [2529] "*motylek*", /* andilek.c */ 
+    [2530] "*destnik*", /* andilek.c */ 
+    [2532] "*peprmintka*", /* andilek.c */ 
+    [2533] "*pito*", /* onovy */ 
+    [2534] "*jeanette*", /* andilek.c */ 
+    [2535] "*presypaci hodiny*", /* andilek.c */ 
+    [2536] "*tancici*", /* andilek.c */ 
+    [2537] "*motyl*", /* andilek.c */ 
+    [2538] "*ruzovy film*", /* andilek.c */ 
+    [2539] "*dinosaurek*", /* andilek.c */ 
+    [2540] "*No Nazis!*", /* onovy */ 
+    [2541] "*zijeme offline*", /* andilek.c */ 
+    [2542] "*magie*", /* andilek.c */ 
+    [2543] "*Nitro Snowboards*", /* andilek.c */ 
+    [2544] "*Anubis*", /* andilek.c */ 
+    [2545] "*nastvany*", /* georgo10 */ 
+    [2547] "*Freddy*", /* georgo10 */ 
+    [2548] "*Jason*", /* georgo10 */ 
+    [2549] "*boji se*", /* georgo10 */ 
+    [2554] "*gridlock*", /* georgo10 */ 
+    [2555] "*zarovka*", /* georgo10 */ 
+    [2556] "*radioactive*", /* andilek.c */ 
+    [2557] "*live*", /* onovy */ 
+    [2558] "*zubatej*", /* georgo10 */ 
+    [2559] "*hrachovka*", /* andilek.c */ 
+    [2560] "*X Look*", /* andilek.c */ 
+    [2561] "*dum*", /* andilek.c */ 
+    [2562] "*lebka*", /* georgo10 */ 
+    [2563] "*Tleskac*", /* andilek.c */ 
+    [2567] "*Incident*", /* andilek.c */ 
+    [2568] "*jeanette*", /* andilek.c */ 
+    [2570] "*hvezda*", /* georgo10 */ 
+    [2571] "*refresh*", /* andilek.c */ 
+    [2572] "*AvA*", /* andilek.c */ 
+    [2574] "*na zdravi*", /* georgo10 */ 
+    [2575] "*medvidek*", /* georgo10 */ 
+    [2577] "*abstinent*", /* andilek.c */ 
+    [2580] "*srdce*", /* georgo10 */ 
+    [2583] "*blazne*", /* georgo10 */ 
+    [2584] "*mava*", /* georgo10 */ 
+    [2586] "*Holba*", /* onovy */ 
+    [2587] "*boxer*", /* andilek.c */ 
+    [2589] "*ZzZz*", /* andilek.c */ 
+    [2597] "*Morrowind*", /* andilek.c */ 
+    [2598] "*Gothic*", /* andilek.c */ 
+    [2599] "*Gothic II*", /* andilek.c */ 
+    [2600] "*Black Isle*", /* andilek.c */ 
+    [2602] "*Fallout*", /* georgo10 */ 
+    [2603] "*Fallout*", /* onovy */ 
+    [2604] "*hvezda orange*", /* andilek.c */ 
+    [2605] "*hvezda pink*", /* andilek.c */ 
+    [2606] "*hvezda grey*", /* andilek.c */ 
+    [2607] "*hvezda green*", /* andilek.c */ 
+    [2609] "*kosticky*", /* georgo10 */ 
+    [2612] "*nesouhlas*", /* georgo10 */ 
+    [2614] "*vlna*", /* andilek.c */ 
+    [2615] "*mne si oci*", /* georgo10 */ 
+    [2617] "*na vozicku*", /* georgo10 */ 
+    [2618] "*kachnicky*", /* andilek.c */ 
+    [2619] "*HC Havirov Panthers*", /* andilek.c */ 
+    [2620] "*had*", /* andilek.c */ 
+    [2621] "*pozor kick*", /* andilek.c */ 
+    [2626] "*v desti*", /* georgo10 */ 
+    [2627] "*loituma*", /* georgo10 */ 
+    [2628] "*CD*", /* onovy */ 
+    [2630] "*potlesk*", /* georgo10 */ 
+    [2634] "*cte noviny*", /* andilek.c */ 
+    [2637] "=))", /* georgo10 */ 
+    [2639] "*blondezwerg*", /* georgo10 */ 
+    [2641] "*kure*", /* georgo10 */ 
+    [2642] "*Deli*", /* andilek.c */ 
+    [2644] "*Xchat*", /* onovy */ 
+    [2645] "*ahojky*", /* onovy */ 
+    [2646] "*??*", /* andilek.c */ 
+    [2650] "*andel*", /* andilek.c */ 
+    [2652] "*Kreator*", /* onovy */ 
+    [2653] "*bye*", /* andilek.c */ 
+    [2655] "*dobrou noc*", /* andilek.c */ 
+    [2656] "*love you*", /* andilek.c */ 
+    [2657] "*I love Techno*", /* andilek.c */ 
+    [2659] "*I love Trance*", /* andilek.c */ 
+    [2662] "*zamilovani*", /* georgo10 */ 
+    [2664] "*Lordi*", /* andilek.c */ 
+    [2665] "*oomph!*", /* andilek.c */ 
+    [2667] "*diky*", /* andilek.c */ 
+    [2668] "*uaa ziva*", /* andilek.c */ 
+    [2671] "*zajda*", /* andilek.c */ 
+    [2672] "*kyticka*", /* georgo10 */ 
+    [2673] "*no sex*", /* georgo10 */ 
+    [2681] "*Star Wars*", /* andilek.c */ 
+    [2685] "*Pokemon*", /* andilek.c */ 
+    [2687] "*tancuje*", /* andilek.c */ 
+    [2690] "*hvezda*", /* andilek.c */ 
+    [2691] "*Apple*", /* andilek.c */ 
+    [2692] "*pozor kill*", /* andilek.c */ 
+    [2693] "*Gambrinus*", /* andilek.c */ 
+    [2694] "*Kawasaki*", /* andilek.c */ 
+    [2697] "*sluchatka*", /* andilek.c */ 
+    [2698] "*Kai Tracid*", /* andilek.c */ 
+    [2699] "*FREE!*", /* andilek.c */ 
+    [2700] "*Vanilla ninja*", /* andilek.c */ 
+    [2701] "*Marines*", /* andilek.c */ 
+    [2702] "*USMC*", /* andilek.c */ 
+    [2704] "*HIM*", /* andilek.c */ 
+    [2706] "*Unicov*", /* andilek.c */ 
+    [2707] "*zakaz koureni*", /* andilek.c */ 
+    [2708] "*helikoptera*", /* andilek.c */ 
+    [2709] "*Call of Duty 2*", /* andilek.c */ 
+    [2712] "*MTV*", /* andilek.c */ 
+    [2713] "*VIVA*", /* andilek.c */ 
+    [2718] "*Vanilla ninja*", /* andilek.c */ 
+    [2719] "*Björk*", /* andilek.c */ 
+    [2720] "*boxer*", /* georgo10 */ 
+    [2722] "*Opava*", /* andilek.c */ 
+    [2723] "*kocka*", /* andilek.c */ 
+    [2726] "*darecek*", /* andilek.c */ 
+    [2731] "*vydeseny*", /* georgo10 */ 
+    [2733] "*andilek*", /* andilek.c */ 
+    [2739] "*ozralove*", /* georgo10 */ 
+    [2740] "*se svickou*", /* georgo10 */ 
+    [2741] "*milenci*", /* georgo10 */ 
+    [2742] "*mimino*", /* georgo10 */ 
+    [2744] "*japonec*", /* georgo10 */ 
+    [2748] "*vcela*", /* andilek.c */ 
+    [2751] "*holubar*", /* georgo10 */ 
+    [2752] "*vsemi milovany*", /* georgo10 */ 
+    [2753] "*zalesak*", /* georgo10 */ 
+    [2755] "*lahvacek*", /* georgo10 */ 
+    [2756] "*boxeri*", /* georgo10 */ 
+    [2760] "*alkoholik*", /* andilek.c */ 
+    [2761] "*tanecnici*", /* georgo10 */ 
+    [2765] "*My chemical romance*", /* andilek.c */ 
+    [2766] "*Benny Benassi*", /* andilek.c */ 
+    [2767] "*kamaradi*", /* georgo10 */ 
+    [2772] "*pistolnik*", /* georgo10 */ 
+    [2775] "*Cop*", /* andilek.c */ 
+    [2776] "*bolavy zub*", /* georgo10 */ 
+    [2777] "*urazeny*", /* georgo10 */ 
+    [2781] "*s prakem*", /* georgo10 */ 
+    [2782] "*lukostrelec*", /* georgo10 */ 
+    [2784] "*kouri*", /* andilek.c */ 
+    [2786] "*hraci kostka*", /* andilek.c */ 
+    [2794] "*kdo tam?*", /* andilek.c */ 
+    [2797] "*kukacka*", /* georgo10 */ 
+    [2799] "*lov*", /* georgo10 */ 
+    [2800] "*Users*", /* andilek.c */ 
+    [2801] "*pohrebaci*", /* andilek.c */ 
+    [2802] "*nese strom*", /* georgo10 */ 
+    [2803] "*svatebcane*", /* georgo10 */ 
+    [2805] "*Srbsko*", /* andilek.c */ 
+    [2810] "*s pilnikem*", /* georgo10 */ 
+    [2811] "*breakdance*", /* andilek.c */ 
+    [2815] "*pavouk*", /* andilek.c */ 
+    [2832] "*flasinetar*", /* andilek.c */ 
+    [2833] "*Rasmus*", /* andilek.c */ 
+    [2835] "*sumo*", /* andilek.c */ 
+    [2836] "*banned*", /* andilek.c */ 
+    [2837] "*Viking*", /* andilek.c */ 
+    [2839] "*Duff*", /* andilek.c */ 
+    [2842] "*Lame*", /* andilek.c */ 
+    [2845] "*plete*", /* andilek.c */ 
+    [2846] "*duch*", /* andilek.c */ 
+    [2847] "*s teplomerem*", /* georgo10 */ 
+    [2849] "*volske oko*", /* andilek.c */ 
+    [2850] "*s bicem*", /* georgo10 */ 
+    [2851] "*Titanic*", /* andilek.c */ 
+    [2852] "*souloz*", /* georgo10 */ 
+    [2856] "*Jamajka*", /* andilek.c */ 
+    [2857] "*leguan*", /* georgo10 */ 
+    [2858] "*slon*", /* georgo10 */ 
+    [2859] "*s teplomerem*", /* georgo10 */ 
+    [2864] "*ozrala*", /* georgo10 */ 
+    [2868] "*broucek*", /* andilek.c */ 
+    [2869] "*Domazlice*", /* andilek.c */ 
+    [2870] "*Birdhouse*", /* andilek.c */ 
+    [2871] "*Vans*", /* andilek.c */ 
+    [2876] "*Lonely Day*", /* andilek.c */ 
+    [2877] "*Zero*", /* andilek.c */ 
+    [2879] "*film*", /* andilek.c */ 
+    [2880] "*tenista*", /* georgo10 */ 
+    [2884] "*skejtak*", /* georgo10 */ 
+    [2887] "*klavirista*", /* georgo10 */ 
+    [2892] "*tuli tuli*", /* andilek.c */ 
+    [2894] "*ty ty ty!*", /* andilek.c */ 
+    [2895] "*smich*", /* georgo10 */ 
+    [2897] "*8 a pak :D*", /* andilek.c */ 
+    [2902] "*srdce*", /* georgo10 */ 
+    [2904] "*s kytarou*", /* georgo10 */ 
+    [2905] "*cream*", /* georgo10 */ 
+    [2916] "*KLH Chomutov*", /* andilek.c */ 
+    [2917] "*Uh. Brod*", /* andilek.c */ 
+    [2918] "*Cesky Tesin*", /* andilek.c */ 
+    [2919] "*ziiiv*", /* andilek.c */ 
+    [2920] "*offline*", /* andilek.c */ 
+    [2921] "*online*", /* andilek.c */ 
+    [2922] "*Broumov*", /* andilek.c */ 
+    [2923] "*Breclav*", /* andilek.c */ 
+    [2926] "*KFOR*", /* andilek.c */ 
+    [2927] "*CZSK17*", /* andilek.c */ 
+    [2929] "*Sonic-X*", /* andilek.c */ 
+    [2930] "*Witch*", /* andilek.c */ 
+    [2932] "*ska*", /* andilek.c */ 
+    [2933] "*cigareta*", /* andilek.c */ 
+    [2939] "*ROFL*", /* andilek.c */ 
+    [2941] "*lokomotiva*", /* andilek.c */ 
+    [2942] "*vagonek A*", /* andilek.c */ 
+    [2943] "*vagonek B*", /* andilek.c */ 
+    [2944] "*vagonek C*", /* andilek.c */ 
+    [2945] "*vagonek D*", /* andilek.c */ 
+    [2946] "*vagonek E*", /* andilek.c */ 
+    [2947] "*vagonek F*", /* andilek.c */ 
+    [2948] "*vagonek G*", /* andilek.c */ 
+    [2949] "*vagonek H*", /* andilek.c */ 
+    [2950] "*vagonek I*", /* andilek.c */ 
+    [2951] "*vagonek J*", /* andilek.c */ 
+    [2952] "*vagonek K*", /* andilek.c */ 
+    [2953] "*vagonek L*", /* andilek.c */ 
+    [2954] "*vagonek M*", /* andilek.c */ 
+    [2955] "*vagonek N*", /* andilek.c */ 
+    [2956] "*vagonek O*", /* andilek.c */ 
+    [2957] "*vagonek P*", /* andilek.c */ 
+    [2958] "*vagonek Q*", /* andilek.c */ 
+    [2959] "*vagonek R*", /* andilek.c */ 
+    [2960] "*vagonek S*", /* andilek.c */ 
+    [2961] "*vagonek T*", /* andilek.c */ 
+    [2962] "*vagonek U*", /* andilek.c */ 
+    [2963] "*vagonek V*", /* andilek.c */ 
+    [2964] "*vagonek W*", /* andilek.c */ 
+    [2965] "*vagonek X*", /* andilek.c */ 
+    [2966] "*vagonek Y*", /* andilek.c */ 
+    [2967] "*vagonek Z*", /* andilek.c */ 
+    [2968] "*vagonek 1*", /* andilek.c */ 
+    [2969] "*vagonek 2*", /* andilek.c */ 
+    [2971] "*vagonek 3*", /* andilek.c */ 
+    [2972] "*vagonek 4*", /* andilek.c */ 
+    [2973] "*vagonek 5*", /* andilek.c */ 
+    [2974] "*vagonek 6*", /* andilek.c */ 
+    [2975] "*vagonek 7*", /* andilek.c */ 
+    [2976] "*vagonek 8*", /* andilek.c */ 
+    [2977] "*vagonek 9*", /* andilek.c */ 
+    [2978] "*vagonek 0*", /* andilek.c */ 
+    [2979] "*vagonek !*", /* andilek.c */ 
+    [2980] "*vagonek ?*", /* andilek.c */ 
+    [2981] "*vagonek .*", /* andilek.c */ 
+    [2982] "*vagonek :*", /* andilek.c */ 
+    [2983] "*vagonek @*", /* andilek.c */ 
+    [2984] "*vagonek -*", /* andilek.c */ 
+    [2985] "*vagonek &*", /* andilek.c */ 
+    [2986] "*prazdny vagon*", /* andilek.c */ 
+    [2991] "*spam*", /* andilek.c */ 
+    [2992] "*papousek*", /* andilek.c */ 
+    [2993] "*Jetix*", /* andilek.c */ 
+    [2994] "*locked*", /* andilek.c */ 
+    [2995] "*klaun*", /* andilek.c */ 
+    [2996] "*polojasno*", /* andilek.c */ 
+    [2997] "*slunicko*", /* andilek.c */ 
+    [3001] "*prsi*", /* andilek.c */ 
+    [3004] "*to ne ne*", /* andilek.c */ 
+    [3005] "*klanim se*", /* andilek.c */ 
+    [3006] "*mlha*", /* andilek.c */ 
+    [3007] "*mrak*", /* andilek.c */ 
+    [3009] "*andilek*", /* andilek.c */ 
+    [3010] "*Brno*", /* andilek.c */ 
+    [3014] "*Pohadka*", /* andilek.c */ 
+    [3015] "*Vita te Krajina za zrcadlem*", /* andilek.c */ 
+    [3016] "*HC Slavia*", /* andilek.c */ 
+    [3017] "*Carolina*", /* andilek.c */ 
+    [3018] "*Mam se dobre*", /* andilek.c */ 
+    [3021] "*Lineage*", /* andilek.c */ 
+    [3026] "*telefonuje*", /* andilek.c */ 
+    [3027] "*ROFL*", /* andilek.c */ 
+    [3037] "*kytara*", /* andilek.c */ 
+    [3038] "*Pro7*", /* andilek.c */ 
+    [3039] "*kytara*", /* andilek.c */ 
+    [3040] ":-)", /* andilek.c */ 
+    [3041] ":-(", /* andilek.c */ 
+    [3049] "*Fallout*", /* andilek.c */ 
+    [3051] "*Simpsons*", /* andilek.c */ 
+    [3052] "*Vsetin*", /* andilek.c */ 
+    [3053] "*Roznov p. R.*", /* andilek.c */ 
+    [3058] "*Vitej v Oaze*", /* andilek.c */ 
+    [3059] "*Srub zavislaku*", /* andilek.c */ 
+    [3060] "*Amerika*", /* andilek.c */ 
+    [3068] "*doktor*", /* andilek.c */ 
+    [3070] "*rozcestnik*", /* andilek.c */ 
+    [3079] "*sorry*", /* andilek.c */ 
+    [3083] "*no smoking*", /* andilek.c */ 
+    [3089] "*kamion*", /* andilek.c */ 
+    [3091] "*vajicko*", /* andilek.c */ 
+    [3096] "*bozi oko*", /* andilek.c */ 
+    [3097] "*plot*", /* andilek.c */ 
+    [3100] "*netopyr*", /* andilek.c */ 
+    [3108] "*SKA*", /* andilek.c */ 
+    [3109] "*Liberec-Doubi*", /* andilek.c */ 
+    [3110] "*Emo*", /* andilek.c */ 
+    [3111] "*AC/DC*", /* andilek.c */ 
+    [3117] "*fixa*", /* andilek.c */ 
+    [3118] "*Zubri*", /* andilek.c */ 
+    [3119] "*Kamikaze*", /* andilek.c */ 
+    [3144] "*Sokolov*", /* andilek.c */ 
+    [3161] "*kriz*", /* andilek.c */ 
+    [3175] "*nuda*", /* andilek.c */ 
+    [3178] "*WC*", /* andilek.c */ 
+    [3180] "*Francie*", /* andilek.c */ 
+    [3185] "*Brno*", /* andilek.c */ 
+    [3197] "*Chorvatsko*", /* andilek.c */ 
+    [3198] "*Pivni vuz*", /* andilek.c */ 
+    [3199] "*zluta hvezda*", /* andilek.c */ 
+    [3200] "*cervena hvezda*", /* andilek.c */ 
+    [3201] "*cerna hvezda*", /* andilek.c */ 
+    [3202] "*modra hvezda*", /* andilek.c */ 
+    [3203] "*zelena hvezda*", /* andilek.c */ 
+    [3206] "*ruze*", /* andilek.c */ 
+    [3210] "*Metaxa*", /* andilek.c */ 
+    [3215] "*kdo neskace...*", /* andilek.c */ 
+    [3217] "*metal*", /* andilek.c */ 
+    [3224] "*achjo*", /* andilek.c */ 
+    [3226] "*duha*", /* andilek.c */ 
+    [3250] "*true*", /* andilek.c */ 
+    [3252] "*false*", /* andilek.c */ 
+    [3262] "*moment*", /* andilek.c */ 
+    [3273] "*nuzky*", /* andilek.c */ 
+    [3279] "*MMNT*", /* andilek.c */ 
+    [3306] "*Word*", /* andilek.c */ 
+    [3307] "*Excel*", /* andilek.c */ 
+    [3308] "*Dance*", /* andilek.c */ 
+    [3338] "*dort*", /* andilek.c */ 
+    [3356] "*MNT*", /* andilek.c */ 
+    [3359] "*Zlin je in*", /* andilek.c */ 
+    [3360] "* ! *", /* andilek.c */ 
+    [3361] "*Hnusnej banner*", /* andilek.c */ 
 };
 
 /**
