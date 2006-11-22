@@ -9,6 +9,9 @@ namespace net {
     int TomiHTTP::g_http_conn_timeout = 120,
 	TomiHTTP::g_http_recv_timeout = 30;
 
+    char *TomiHTTP::proxyhost = getenv("PROXYHOST"),
+         *TomiHTTP::proxyport = getenv("PROXYPORT");
+
     TomiHTTP::TomiHTTP()
     {
 	conn_timeout = g_http_conn_timeout;
@@ -19,88 +22,117 @@ namespace net {
     {
     }
 
-    int TomiHTTP::GET(string address, TomiCookies* cookies)
+    void TomiHTTP::parseaddr(string address, string &host, int &port, string &path)
     {
-	string host, path;
-	int port = 0;
-
-	headers.clear();
-
-	address.erase(0,address.find_first_not_of(" \t"));
-
-	if (string(address,0,7).compare(string("http://"))) {
+	if (string(address, 0, 7).compare(string("http://"))) {
 	    throw runtime_error("Not a http URL!");
 	}
-
-	address.erase(0,7);
+	address.erase(0, 7);
 
 	string::size_type delim = address.find('/');
 	if (delim == string::npos) {
 	    address += '/';
+
 	    delim = address.length() - 1;
 	    if (delim < 1) {
-		throw runtime_error("Not a http URL!");
+		throw runtime_error("Not an http URL!");
 	    }
 	}
 
-	path.assign(address,delim,address.length() - delim);
-	host.assign(address,0,delim);
+	path.assign(address, delim, address.length() - delim);
+	host.assign(address, 0, delim);
 	address = host;
 
 	delim = address.find(':');
 	if (delim != string::npos) {
-	    host.assign(address,0,delim);
+	    host.assign(address, 0, delim);
 	    port = atoi(address.c_str() + delim + 1);
 	}
 	if (port < 1)
 	    port = 80;
-
-	char *proxyhost = getenv("PROXYHOST");
-	char *proxyport = getenv("PROXYPORT");
-
-	if (proxyhost && proxyhost)
+    }
+            
+    void TomiHTTP::doconnect(const string &host, int port) {
+	if (proxyhost && proxyport)
 	    connect(proxyhost, proxyport);
 	else
 	    connect(host, tostr<unsigned int>(port));
+    }
+    
+    void TomiHTTP::doGET(const string &host, int port, string path, TomiCookies* cookies)
+    {
+	headers.clear();
 
-	if (port != 80) {
-	    stringstream s;
-	    s << host << ":" << port;
-	    host = s.str();
-	}
+        if (proxyhost && proxyport)
+            path = "http://" + host + ":" + tostr<int>(port) + path;
 
 	fprintf(stream,
 		"GET %s HTTP/1.0\r\n"
 		"User-Agent: TomiTCP/" PACKAGE_VERSION "\r\n"
-		"Host: %s\r\n"
+		"Host: %s:%i\r\n"
 		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\r\n"
 		"Accept-Charset: utf-8;q=0.7,*;q=0.7\r\n"
 		"Connection: close\r\n",
-		(proxyhost && proxyhost)?("http://"+host+path).c_str():path.c_str(),
-		host.c_str() );
+		path.c_str(), host.c_str(), port);
 	/* cookies... */
 	if (cookies) {
 	    string c;
 	    cookies->http_getcookies(c);
-	    fprintf(stream,"%s",c.c_str());
+	    fprintf(stream, "%s", c.c_str());
 	}
-	fprintf(stream,"\r\n");
+	fprintf(stream, "\r\n");
+        fseek(stream, 0, SEEK_CUR);
+    }
+            
+    void TomiHTTP::doPOST(const string &host, int port, string path,
+            const string& data, TomiCookies* cookies)
+    {
+	headers.clear();
 
+        if (proxyhost && proxyport)
+            path = "http://" + host + ":" + tostr<int>(port) + path;
+
+	fprintf(stream,
+		"POST %s HTTP/1.0\r\n"
+		"User-Agent: TomiTCP/" PACKAGE_VERSION "\r\n"
+		"Host: %s:%i\r\n"
+		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\r\n"
+		"Accept-Charset: utf-8;q=0.7,*;q=0.7\r\n"
+		"Connection: close\r\n"
+		"Content-type: application/x-www-form-urlencoded\r\n"
+		"Content-length: %i\r\n",
+		path.c_str(), host.c_str(), port, (int)data.length());
+	/* cookies... */
+	if (cookies) {
+	    string c;
+	    cookies->http_getcookies(c);
+	    fprintf(stream, "%s", c.c_str());
+	}
+	fprintf(stream, "\r\n");
+	fprintf(stream, "%s", data.c_str());
+        fseek(stream, 0, SEEK_CUR);
+    }
+
+    int TomiHTTP::parseresponse(TomiCookies* cookies) {
 	int ret;
 
 	string line;
 	if (getline(line)) {
 	    chomp(line);
+
 	    string::size_type space = line.find(' ');
 	    if (space == string::npos) {
 		throw runtime_error("parse error on HTTP response");
 	    }
-	    line.erase(0,space + 1);
+
+	    line.erase(0, space + 1);
+
 	    space = line.find(' ');
 	    if (space == string::npos) {
 		space = line.length();
 	    }
-	    string rets(line,0,space);
+
+	    string rets(line, 0, space);
 	    ret = atoi(rets.c_str());
 	    if (!ret)
 		throw runtime_error("parse error on HTTP response");
@@ -112,10 +144,12 @@ namespace net {
 	    chomp(line);
 	    if (line.empty())
 		break;
-	    delim = line.find(':');
+
+            string::size_type delim = line.find(':');
 	    if (delim != string::npos) {
-		string a(line,0,delim),b(line,delim+1);
-		b.erase(0,b.find_first_not_of(" \t"));
+		string a(line, 0, delim), b(line, delim + 1);
+
+		b.erase(0, b.find_first_not_of(" \t"));
 
 		strtolower(a);
 		headers[a] = b;
@@ -129,117 +163,26 @@ namespace net {
 	return ret;
     }
 
+    int TomiHTTP::GET(string address, TomiCookies* cookies)
+    {
+	string host, path;
+	int port = 0;
+
+        parseaddr(address, host, port, path);
+        doconnect(host, port);
+        doGET(host, port, path, cookies);
+        return parseresponse(cookies);
+    }
+
     int TomiHTTP::POST(string address, const string& data, TomiCookies* cookies)
     {
 	string host, path;
 	int port = 0;
 
-	headers.clear();
-
-	address.erase(0,address.find_first_not_of(" \t"));
-
-	if (string(address,0,7).compare(string("http://"))) {
-	    throw runtime_error("Not a http URL!");
-	}
-
-	address.erase(0,7);
-
-	string::size_type delim = address.find('/');
-	if (delim == string::npos) {
-	    address += '/';
-	    delim = address.length() - 1;
-	    if (delim < 1) {
-		throw runtime_error("Not a http URL!");
-	    }
-	}
-
-	path.assign(address,delim,address.length() - delim);
-	host.assign(address,0,delim);
-	address = host;
-
-	delim = address.find(':');
-	if (delim != string::npos) {
-	    host.assign(address,0,delim);
-	    port = atoi(address.c_str() + delim + 1);
-	}
-	if (port < 1)
-	    port = 80;
-
-	char *proxyhost = getenv("PROXYHOST");
-	char *proxyport = getenv("PROXYPORT");
-
-	if (proxyhost && proxyhost)
-	    connect(proxyhost, proxyport);
-	else
-	    connect(host, tostr<unsigned int>(port));
-
-	if (port != 80) {
-	    stringstream s;
-	    s << host << ":" << port;
-	    host = s.str();
-	}
-
-	fprintf(stream,
-		"POST %s HTTP/1.0\r\n"
-		"User-Agent: TomiTCP/" PACKAGE_VERSION "\r\n"
-		"Host: %s\r\n"
-		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\r\n"
-		"Accept-Charset: utf-8;q=0.7,*;q=0.7\r\n"
-		"Connection: close\r\n"
-		"Content-type: application/x-www-form-urlencoded\r\n"
-		"Content-length: %i\r\n",
-		(proxyhost && proxyhost)?("http://"+host+path).c_str():path.c_str(),
-		host.c_str(), (int)data.length() );
-	/* cookies... */
-	if (cookies) {
-	    string c;
-	    cookies->http_getcookies(c);
-	    fprintf(stream,"%s",c.c_str());
-	}
-	fprintf(stream,"\r\n");
-	fprintf(stream,"%s",data.c_str());
-
-	int ret;
-
-	string line;
-	if (getline(line)) {
-	    chomp(line);
-	    string::size_type space = line.find(' ');
-	    if (space == string::npos) {
-		throw runtime_error("parse error on HTTP response");
-	    }
-	    line.erase(0,space + 1);
-	    space = line.find(' ');
-	    if (space == string::npos) {
-		space = line.length();
-	    }
-	    string rets(line,0,space);
-	    ret = atoi(rets.c_str());
-	    if (!ret)
-		throw runtime_error("parse error on HTTP response");
-	} else {
-	    throw runtime_error("zero sized HTTP reply");
-	}
-
-	while (getline(line)) {
-	    chomp(line);
-	    if (line.empty())
-		break;
-	    delim = line.find(':');
-	    if (delim != string::npos) {
-		string a(line,0,delim),b(line,delim+1);
-		b.erase(0,b.find_first_not_of(" \t"));
-
-		strtolower(a);
-		headers[a] = b;
-
-		if (cookies && a == "set-cookie") {
-		    cookies->http_setcookie(b);
-		}
-	    }
-	}
-	
-	return ret;
+        parseaddr(address, host, port, path);
+        doconnect(host, port);
+        doPOST(host, port, path, data, cookies);
+        return parseresponse(cookies);
     }
 
     inline bool URLneedencode(unsigned char c)
