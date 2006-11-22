@@ -514,4 +514,12 @@ namespace net {
 	return (millitime_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
 #endif
     }
+
+    bool operator == (const sockaddr_uni &a, const sockaddr_uni &b)
+    {
+        if (a.sa.sa_family != b.sa.sa_family)
+            return 0;
+
+        return !memcmp(&a, &b, SIZEOF_SOCKADDR(a));
+    }
 }

@@ -46,6 +46,8 @@ namespace net {
 	struct sockaddr_in6 sin6;
     };
 
+    bool operator == (const sockaddr_uni &a, const sockaddr_uni &b);
+
     typedef long long millitime_t;
 
     int input_timeout(int filedes, millitime_t ms);
