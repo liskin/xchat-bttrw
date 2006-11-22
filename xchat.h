@@ -266,10 +266,6 @@ namespace xchat {
 	    vector<server> servers; ///< Array of xchat.cz clusters.
 	    int lastsrv; ///< Index of last cluster, used by #lastsrv_broke.
 	    
-	    string makeurl(const string& url) __attribute__((deprecated));
-	    string makeurl2(const string& url) __attribute__((deprecated));;
-	    string makeurl2_static(const string& path) __attribute__((deprecated));;
-	    
             void makeservers();
 	    int makesrv(server_type type);
 	    string lastsrv_broke();

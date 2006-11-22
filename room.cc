@@ -76,7 +76,8 @@ namespace xchat {
 	retries = servers.size();
 retry1:
 	try {
-	    ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&rid=" + rid),0);
+	    ret = request_GET(s, SERVER_MODCHAT,
+		    "modchat?op=mainframeset&skin=2&rid=" + rid, PATH_AUTH);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while joining channel");
 	} catch (runtime_error &e) {
@@ -119,7 +120,8 @@ retry1:
 	retries = servers.size();
 retry2:
 	try {
-	    ret = s.GET(makeurl2("modchat?op=textpageng&skin=2&js=1&rid=" + rid),0);
+	    ret = request_GET(s, SERVER_MODCHAT,
+		    "modchat?op=textpageng&skin=2&js=1&rid=" + rid, PATH_AUTH);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while joining channel");
 	} catch (runtime_error &e) {
@@ -197,9 +199,10 @@ retry2:
 
 	int retries = servers.size();
 retry:
-	try {
-	    int ret = s.GET(makeurl2("modchat?op=mainframeset&skin=2&js=1&menuaction=leave"
-			"&leftroom=" + rid), 0);
+	try {		
+	    int ret = request_GET(s, SERVER_MODCHAT,
+		    "modchat?op=mainframeset&skin=2&js=1&menuaction=leave&"
+		    "leftroom=" + rid, PATH_AUTH);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while parting channel");
 	} catch (runtime_error &e) {
@@ -327,8 +330,10 @@ retry:
 	int retries = servers.size();
 retry:
 	try {
-	    ret = s.GET(makeurl2("modchat?op=roomtopng&skin=2&js=1&rid=" + r.rid +
-			((r.l >= 0) ? ("&inc=1&last_line=" + tostr<int>(r.l)) : "")), 0);
+	    ret = request_GET(s, SERVER_MODCHAT,
+		    "modchat?op=roomtopng&skin=2&js=1&rid=" + r.rid +
+		    ((r.l >= 0) ? ("&inc=1&last_line=" + tostr<int>(r.l)) : ""),
+		    PATH_AUTH);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting channels msgs");
 	} catch (runtime_error &e) {
@@ -477,7 +482,7 @@ retry:
 		if (!kicker.length() && !kickmsg.length()) {
 		    TomiHTTP c; string m;
 		    try {
-			ret = c.GET(makeurl2(url),0);
+			ret = request_GET(s, SERVER_MODCHAT, url, PATH_AUTH);
 			if (ret != 200)
 			    throw 0;
 			while (c.getline(m)) {
@@ -576,9 +581,11 @@ retry:
     {
 	TomiHTTP s;
 	try {
-	    int ret = s.POST(makeurl2("modchat"),"op=textpageng&js=1&skin=2&rid=" + r.rid +
+	    int ret = request_POST(s, SERVER_MODCHAT,
+		    "modchat", PATH_AUTH,
+		    "op=textpageng&js=1&skin=2&rid=" + r.rid +
 		    "&textarea=" + TomiHTTP::URLencode(msg) +
-		    "&target=" + TomiHTTP::URLencode(target), 0);
+		    "&target=" + TomiHTTP::URLencode(target));
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while posting msg");
 	} catch (runtime_error &e) {
@@ -654,8 +661,10 @@ retry:
 	int retries = servers.size();
 retry:
 	try {
-	    int ret = s.POST(makeurl2("modchat"),"op=rightadmin&skin=2&rid=" + rid +
-		    "&desc=" + TomiHTTP::URLencode(recode_from_client(desc)), 0);
+	    int ret = request_POST(s, SERVER_MODCHAT,
+		    "modchat", PATH_AUTH,
+		    "op=rightadmin&skin=2&rid=" + rid + "&desc=" +
+		    TomiHTTP::URLencode(recode_from_client(desc)));
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while setting room desc");
 	} catch (runtime_error &e) {

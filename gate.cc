@@ -342,7 +342,8 @@ void serve_client(TomiTCP *cptr)
 			}
 
 			fprintf(*c, ":%s 376 %s :Web login: %s\n",
-			    me, nick.c_str(), x->makeurl2_static("").c_str());
+			    me, nick.c_str(),
+			    x->makepath("", PATH_STATIC).c_str());
 
 			fprintf(*c, ":%s 376 %s :End of /MOTD command.\n", me, nick.c_str());
 		    }
@@ -1171,12 +1172,12 @@ void serve_client(TomiTCP *cptr)
 			    fprintf(*c, ":%s NOTICE #%s :%s\002Mas novy vzkaz!\002 "
 				"[ %s ]\n",
 				me, i->first.c_str(), date.c_str(),
-				x->makeurl2_static("offline").c_str());
+				x->makepath("offline", PATH_STATIC).c_str());
 		    } else {
 			fprintf(*c, ":%s NOTICE %s :%s\002Mas novy vzkaz!\002 "
 			    "[ %s ]\n",
 			    me, nick.c_str(), date.c_str(),
-			    x->makeurl2_static("offline").c_str());
+			    x->makepath("offline", PATH_STATIC).c_str());
 		    }
 		} else if (dynamic_cast<EvSuperAdminsChange*>(e.get())) {
 		    auto_ptr<EvSuperAdminsChange> f((EvSuperAdminsChange*)e.release());

@@ -143,37 +143,6 @@ namespace xchat {
     }
 
     /**
-     * Prepare URL with given path, without login information.
-     * \return The URL.
-     */
-    string XChat::makeurl(const string& path)
-    {
-        int s = makesrv(SERVER_MODCHAT);
-        return "http://" + servers[s].types[SERVER_MODCHAT]
-            + makepath(path, PATH_PLAIN);
-    }
-
-    /**
-     * Prepare URL with given path, with login information.
-     * \return The URL.
-     */
-    string XChat::makeurl2(const string& path)
-    {
-        int s = makesrv(SERVER_MODCHAT);
-        return "http://" + servers[s].types[SERVER_MODCHAT]
-            + makepath(path, PATH_AUTH);
-    }
-
-    /**
-     * Prepare static URL with given path, with login information.
-     * \return The URL.
-     */
-    string XChat::makeurl2_static(const string& path)
-    {
-        return makepath(path, PATH_STATIC);
-    }
-
-    /**
      * Construct a path using a given path and type.
      * \param path The path.
      * \param type Type, see path_type.
