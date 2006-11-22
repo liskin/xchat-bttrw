@@ -390,6 +390,9 @@ namespace net {
     
     string tomi_ntop(const sockaddr_uni& name)
     {
+        if (name.sa.sa_family == 0)
+            return "";
+
 	char tmp[128],*p;
 
 #ifdef WIN32
