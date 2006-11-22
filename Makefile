@@ -61,7 +61,7 @@ endif
 
 
 libxchat-bttrw.a: xchat.o roomtext.o login.o room.o irc.o idle.o smiles.o \
-                  charset.o list.o ison.o userinfo.o superadmins.o
+                  charset.o list.o ison.o userinfo.o superadmins.o cluster.o
 	$(AR) rsv $@ $?
 
 gate: gate.o setproctitle.o libxchat-bttrw.a TomiTCP/libTomiTCP.a $(RSRC)

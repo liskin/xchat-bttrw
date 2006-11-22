@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include "TomiTCP/net.h"
+#include "TomiTCP/http.h"
 #include "TomiTCP/str.h"
 #include "charset.h"
 
@@ -221,24 +222,40 @@ namespace xchat {
 		room(r), target(t), msg(m), retries(putmsg_retries) { }
     };
 
+    enum server_type {
+        SERVER_MODCHAT = 0,
+        SERVER_SCRIPTS = 1
+    };
+
+    enum path_type {
+        PATH_PLAIN = 0,
+        PATH_AUTH = 1,
+        PATH_STATIC = 2
+    };
+
     /**
      * \brief A class representing one of xchat servers. Used to track
      * failures.
      */
     class server {
-	public:
-	    string host; ///< Hostname or address.
-	    time_t last_break; ///< Timestamp of last failure.
-	    int total_break_count; ///< Number of failures so far (summary).
-	    int break_count; ///< Number of failures so far.
+        public:
+            /**
+             * \brief Map of types to hostnames.
+             */
+            typedef map<server_type, string> types_t;
 
-	    /**
-	     * Construct a server from its hostname.
-	     * \param a Hostname.
-	     */
-	    server(const string &a) : host(a), last_break(0),
-		total_break_count(0), break_count(0)
-	    { }
+            net::sockaddr_uni host; ///< Host.
+            types_t types; ///< Types and hostnames.
+            time_t last_break; ///< Timestamp of last failure.
+            int total_break_count; ///< Number of failures so far (summary).
+            int break_count; ///< Number of failures so far.
+
+            server() : last_break(0), total_break_count(0), break_count(0)
+            { }
+
+            bool supports(server_type type) {
+                return types.find(type) != types.end();
+            }
     };
 
     /**
@@ -248,13 +265,19 @@ namespace xchat {
 	public:
 	    vector<server> servers; ///< Array of xchat.cz clusters.
 	    int lastsrv; ///< Index of last cluster, used by #lastsrv_broke.
-
-	    void makeservers();
-	    int makesrv();
-	    string makeurl(const string& url);
-	    string makeurl2(const string& url);
-	    string makeurl2_static(const string& path);
+	    
+	    string makeurl(const string& url) __attribute__((deprecated));
+	    string makeurl2(const string& url) __attribute__((deprecated));;
+	    string makeurl2_static(const string& path) __attribute__((deprecated));;
+	    
+            void makeservers();
+	    int makesrv(server_type type);
 	    string lastsrv_broke();
+            string makepath(const string& path, path_type type);
+            int request_GET(net::TomiHTTP &s, server_type st, const string& path,
+                    path_type pt);
+            int request_POST(net::TomiHTTP &s, server_type st, const string& path,
+                    path_type pt, const string &data);
 
 	    string uid; ///< User id, set by #login. Used for queries.
 	    string sid; ///< Session id, set by #login. Used for queries.

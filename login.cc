@@ -51,9 +51,9 @@ namespace xchat {
 	int retries = servers.size();
 retry:
 	try {
-	    int ret = s.POST(makeurl("~guest~/login/"),
-		    "js=1&hp=1&usehash=3&skin=2&u_name="+TomiHTTP::URLencode(user)+"&u_pass="+
-		    TomiHTTP::URLencode(pass),0);
+	    int ret = request_POST(s, SERVER_MODCHAT, "~guest~/login/", PATH_PLAIN,
+                    "js=1&hp=1&usehash=3&skin=2&u_name="+TomiHTTP::URLencode(user)+"&u_pass="+
+		    TomiHTTP::URLencode(pass));
 	    if (ret != 302)
 		throw runtime_error("Not HTTP 302 Found while logging in");
 
@@ -110,7 +110,8 @@ retry:
 	int retries = servers.size();
 retry:
 	try {
-	    int ret = s.GET(makeurl("~~logout/~$" + uid + "~" + sid + "/"),0);
+	    int ret = request_GET(s, SERVER_MODCHAT,
+                    "~~logout/~$" + uid + "~" + sid + "/", PATH_PLAIN);
 	    if (ret != 302)
 		throw runtime_error("Not HTTP 302 Found while logging off");
 	} catch (runtime_error &e) {
@@ -118,40 +119,6 @@ retry:
 		lastsrv_broke();
 		goto retry;
 	    }
-	}
-    }
-
-    /**
-     * Get the list of available servers from DNS.
-     * If not possible (in proxy environments for example), add
-     * "xchat.centrum.cz" (clustering and failure tracking won't work).
-     */
-    void XChat::makeservers()
-    {
-	int i;
-	string hostname;
-	
-	for (char *c = "sp"; *c; c++) {
-	    for (i = 1; i <= 100 /* safety limit */; i++) {
-		vector<sockaddr_uni> sockaddrs;
-		hostname = *c + string("x") + tostr<int>(i) + ".xchat.centrum.cz";
-	        try {
-		    resolve(hostname, "", sockaddrs);
-		} catch (...) { }
-
-		if (!sockaddrs.size())
-		    break;
-
-		servers.push_back(server(hostname));
-	    }
-	}
-
-	if (servers.empty()) {
-	    servers.push_back(server(fallback_server));
-
-	    auto_ptr<EvError> e(new EvError);
-	    e->s = "Could not get xchat server list from DNS. Using xchat.centrum.cz as host.";
-	    recvq_push((auto_ptr<Event>) e);
 	}
     }
 }

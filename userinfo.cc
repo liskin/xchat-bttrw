@@ -19,8 +19,9 @@ namespace xchat {
 	int retries = servers.size();
 retry1:
 	try {
-	    int ret = s.GET(makeurl("scripts/user.php?nick=" + 
-			TomiHTTP::URLencode(nick)),0);
+	    int ret = request_GET(s, SERVER_SCRIPTS,
+                    "scripts/user.php?nick=" + TomiHTTP::URLencode(nick),
+                    PATH_PLAIN);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting userinfo");
 	} catch (runtime_error &e) {
@@ -94,8 +95,9 @@ retry1:
 	retries = servers.size();
 retry2:
 	try {
-	    int ret = s.GET(makeurl("scripts/wonline.php?nick=" + 
-			TomiHTTP::URLencode(nick)),0);
+	    int ret = request_GET(s, SERVER_SCRIPTS,
+                    "scripts/wonline.php?nick=" + TomiHTTP::URLencode(nick),
+                    PATH_PLAIN);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting where is user online");
 	} catch (runtime_error &e) {

@@ -916,12 +916,21 @@ void serve_client(TomiTCP *cptr)
 			    last_break = " | Last break: " + string(lb) + " (" +
 				tostr<int>(time(0) - i->last_break) + " sec)";
 			}
+
+                        string hosts;
+                        for (server::types_t::iterator j = i->types.begin();
+                                j != i->types.end(); j++) {
+                            if (!hosts.empty())
+                                hosts += ", ";
+                            hosts += j->second;
+                        }
 			
-			fprintf(*c, ":%s 015 %s :%s | Breaks: %d (%d total)%s%s\n",
+			fprintf(*c, ":%s 015 %s :%s | Breaks: %d (%d total)%s%s | Vhosts: %s\n",
 			    me, nick.c_str(),
-			    i->host.c_str(), i->break_count,
+			    tomi_ntop(i->host).c_str(), i->break_count,
 			    i->total_break_count, last_break.c_str(),
-			    (i->break_count >= tries_to_rest)?" | [REST]":"");
+			    (i->break_count >= tries_to_rest)?" | [REST]":"",
+                            hosts.c_str());
 		    }
 		    fprintf(*c, ":%s 017 %s :End of /MAP\n",
 			me, nick.c_str());

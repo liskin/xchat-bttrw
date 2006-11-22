@@ -31,7 +31,7 @@ namespace xchat {
 	int retries = servers.size();
 retry:
 	try {
-	    int ret = s.GET(makeurl("scripts/rooms.php"),0);
+	    int ret = request_GET(s, SERVER_SCRIPTS, "scripts/rooms.php", PATH_PLAIN);
 	    if (ret != 200)
 		throw runtime_error("Not HTTP 200 Ok while getting list");
 	} catch (runtime_error &e) {
