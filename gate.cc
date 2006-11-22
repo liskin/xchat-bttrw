@@ -633,93 +633,98 @@ void serve_client(TomiTCP *cptr)
 		     * Output user WHOIS
 		     */
 
-		    userinfo_t us = x->userinfo(cmd[1]);
+                    try {
+                        userinfo_t us = x->userinfo(cmd[1]);
 
-		    if (!us.nick.length()) {
-			fprintf(*c, ":%s 401 %s %s :No such nick/channel\n", me,
-				nick.c_str(), cmd[1].c_str());
-		    } else {
-			x_nick n;
-			n.nick = us.nick;
-			n.sex = us.sex;
-			
-			string info = us.name;
-			
-			if (us.surname != "") {
-			    if (info != "")
-				info += " ";
-			    info += us.surname;
-			}
-			
-			if (us.age != 0) {
-			    if (info != "")
-				info += " ";
-			    info += "(" + tostr<int>(us.age) + ")";
-			}
-			
-			if (us.email != "") {
-			    if (info != "")
-				info += " ";
-			    info += "(" + us.email + ")";
-			}
-			
-			if (info != "")
-			    info += " ";
-			info += "last: " + us.last_online + ", ";
-			
-			info += "wasted: " +
-			    tostr_float<double>(us.time_wasted / 3600.0, 2) +
-			    " h, ";
+                        if (!us.nick.length()) {
+                            fprintf(*c, ":%s 401 %s %s :No such nick/channel\n", me,
+                                    nick.c_str(), cmd[1].c_str());
+                        } else {
+                            x_nick n;
+                            n.nick = us.nick;
+                            n.sex = us.sex;
+                            
+                            string info = us.name;
+                            
+                            if (us.surname != "") {
+                                if (info != "")
+                                    info += " ";
+                                info += us.surname;
+                            }
+                            
+                            if (us.age != 0) {
+                                if (info != "")
+                                    info += " ";
+                                info += "(" + tostr<int>(us.age) + ")";
+                            }
+                            
+                            if (us.email != "") {
+                                if (info != "")
+                                    info += " ";
+                                info += "(" + us.email + ")";
+                            }
+                            
+                            if (info != "")
+                                info += " ";
+                            info += "last: " + us.last_online + ", ";
+                            
+                            info += "wasted: " +
+                                tostr_float<double>(us.time_wasted / 3600.0, 2) +
+                                " h, ";
 
-			info += "created: " + us.nick_created + ", ";
+                            info += "created: " + us.nick_created + ", ";
 
-			info += "TOP: " + us.top_pos;
+                            info += "TOP: " + us.top_pos;
 
-			if (us.icq != "") {
-			    info += ", ICQ: " + us.icq;
-			}
+                            if (us.icq != "") {
+                                info += ", ICQ: " + us.icq;
+                            }
 
-			fprintf(*c, ":%s 311 %s %s %s %s * :%s\n", me,
-				nick.c_str(), n.nick.c_str(),
-				username(n).c_str(), host(n).c_str(),
-				info.c_str());
+                            fprintf(*c, ":%s 311 %s %s %s %s * :%s\n", me,
+                                    nick.c_str(), n.nick.c_str(),
+                                    username(n).c_str(), host(n).c_str(),
+                                    info.c_str());
 
-			if (us.rooms.size()!=0) {
-			    string rooms = "";
-			    int ii = 1;
-			    for (vector<userinfo_room>::iterator i = us.rooms.begin();
-				    i != us.rooms.end(); i++, ii++) {
-				if (rooms.length())
-				    rooms += " ";
-				string name = i->name;
-				for (string::iterator j = name.begin(); j != name.end(); j++)
-				    if (*j == ' ')
-					*j = '_';
-				rooms += "#" + i->rid + "(" + name + "-" + i->idle + ")";
+                            if (us.rooms.size()!=0) {
+                                string rooms = "";
+                                int ii = 1;
+                                for (vector<userinfo_room>::iterator i = us.rooms.begin();
+                                        i != us.rooms.end(); i++, ii++) {
+                                    if (rooms.length())
+                                        rooms += " ";
+                                    string name = i->name;
+                                    for (string::iterator j = name.begin(); j != name.end(); j++)
+                                        if (*j == ' ')
+                                            *j = '_';
+                                    rooms += "#" + i->rid + "(" + name + "-" + i->idle + ")";
 
-				if (ii % 5 == 0) {
-				    fprintf(*c, ":%s 319 %s %s :%s\n", me,
-					    nick.c_str(), n.nick.c_str(),
-					    rooms.c_str());
-				    rooms.clear();
-				}
-			    }
-			    if (rooms.length()) {
-				fprintf(*c, ":%s 319 %s %s :%s\n", me,
-					nick.c_str(), n.nick.c_str(),
-					rooms.c_str());
-			    }
-			}
-			if (us.star || us.cert)
-			    fprintf(*c, ":%s 313 %s %s :is an %s%s%s\n", me,
-				    nick.c_str(), n.nick.c_str(),
-				    (us.star)?star(us).c_str():"",
-				    (us.star && us.cert)?", ":"",
-				    (us.cert)?"certified":"");
+                                    if (ii % 5 == 0) {
+                                        fprintf(*c, ":%s 319 %s %s :%s\n", me,
+                                                nick.c_str(), n.nick.c_str(),
+                                                rooms.c_str());
+                                        rooms.clear();
+                                    }
+                                }
+                                if (rooms.length()) {
+                                    fprintf(*c, ":%s 319 %s %s :%s\n", me,
+                                            nick.c_str(), n.nick.c_str(),
+                                            rooms.c_str());
+                                }
+                            }
+                            if (us.star || us.cert)
+                                fprintf(*c, ":%s 313 %s %s :is an %s%s%s\n", me,
+                                        nick.c_str(), n.nick.c_str(),
+                                        (us.star)?star(us).c_str():"",
+                                        (us.star && us.cert)?", ":"",
+                                        (us.cert)?"certified":"");
+                        }
+                        fprintf(*c, ":%s 318 %s %s :End of /WHOIS list.\n", me,
+                                nick.c_str(), (us.nick.length() ?
+                                    us.nick : cmd[1]).c_str());
+		    } catch (runtime_error &e) {
+			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+				nick.c_str(), e.what());
 		    }
-		    fprintf(*c, ":%s 318 %s %s :End of /WHOIS list.\n", me,
-			    nick.c_str(), (us.nick.length() ?
-				us.nick : cmd[1]).c_str());
 		} else if (cmd[0] == "KICK" && cmd.size() >= 3) {
 		    /*
 		     * Kick user.
@@ -845,45 +850,55 @@ void serve_client(TomiTCP *cptr)
 		    /*
 		     * Output an ISON reply
 		     */
-		    string rpl;
-		    for (vector<string>::iterator i = cmd.begin() + 1;
-			    i != cmd.end(); i++) {
-			string n;
-			stringstream sn(*i);
-			while (sn >> n)
-			    if (x->ison(n))
-				rpl += n + " ";
+                    try {
+                        string rpl;
+                        for (vector<string>::iterator i = cmd.begin() + 1;
+                                i != cmd.end(); i++) {
+                            string n;
+                            stringstream sn(*i);
+                            while (sn >> n)
+                                if (x->ison(n))
+                                    rpl += n + " ";
+                        }
+                        fprintf(*c, ":%s 303 %s :%s\n", me, nick.c_str(), rpl.c_str());
+		    } catch (runtime_error &e) {
+			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+				nick.c_str(), e.what());
 		    }
-		    fprintf(*c, ":%s 303 %s :%s\n", me, nick.c_str(), rpl.c_str());
 		} else if (cmd[0] == "STATS" && cmd.size() >= 2) {
-		    switch (cmd[1][0]) {
-			case 'o':
-			case 'O':
-			    x->reloadsuperadmins();
-			    for (superadmins_t::iterator i = x->superadmins.begin();
-				i != x->superadmins.end(); i++) {
-				fprintf(*c, ":%s 243 %s %c * * %s\n", me, nick.c_str(),
-				    cmd[1][0], i->second.nick.c_str());
-			    }
-			    fprintf(*c, ":%s 219 %s %c :End of STATS report\n", me,
-				nick.c_str(), cmd[1][0]);
-			    break;
-			case 'p':
-			    x->reloadsuperadmins();
-			    for (superadmins_t::iterator i = x->superadmins.begin();
-				i != x->superadmins.end(); i++) {
-				if (i->second.online) {
-				    fprintf(*c, ":%s 249 %s p %s\n", me, nick.c_str(),
-					i->second.nick.c_str());
-				}
-			    }
-			    fprintf(*c, ":%s 219 %s p :End of STATS report\n", me,
-				nick.c_str());
-			    break;
-			default:
-			    fprintf(*c, ":%s NOTICE %s :Bad parameter\n", me,
-				nick.c_str());
-			    break;
+                    try {
+                        switch (cmd[1][0]) {
+                            case 'o':
+                            case 'O':
+                                x->reloadsuperadmins();
+                                for (superadmins_t::iterator i = x->superadmins.begin();
+                                    i != x->superadmins.end(); i++) {
+                                    fprintf(*c, ":%s 243 %s %c * * %s\n", me, nick.c_str(),
+                                        cmd[1][0], i->second.nick.c_str());
+                                }
+                                fprintf(*c, ":%s 219 %s %c :End of STATS report\n", me,
+                                    nick.c_str(), cmd[1][0]);
+                                break;
+                            case 'p':
+                                x->reloadsuperadmins();
+                                for (superadmins_t::iterator i = x->superadmins.begin();
+                                    i != x->superadmins.end(); i++) {
+                                    if (i->second.online) {
+                                        fprintf(*c, ":%s 249 %s p %s\n", me, nick.c_str(),
+                                            i->second.nick.c_str());
+                                    }
+                                }
+                                fprintf(*c, ":%s 219 %s p :End of STATS report\n", me,
+                                    nick.c_str());
+                                break;
+                            default:
+                                fprintf(*c, ":%s NOTICE %s :Bad parameter\n", me,
+                                    nick.c_str());
+                                break;
+                        }
+		    } catch (runtime_error &e) {
+			fprintf(*c, ":%s NOTICE %s :Error: %s\n", me,
+				nick.c_str(), e.what());
 		    }
 		} else if (cmd[0] == "MAP") {
 		    for (vector<server>::iterator i = x->servers.begin();

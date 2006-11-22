@@ -292,7 +292,15 @@ namespace xchat {
 	    if (time(0) - i->second.last_roominfo >= roominfo_interval) {
 		room old = i->second;
 		
-		getroominfo(i->second);
+		try { getroominfo(i->second); }
+		catch (runtime_error &e) {
+		    auto_ptr<EvRoomError> f(new EvRoomError);
+		    f->s = e.what();
+		    f->rid = i->first;
+		    f->fatal = false;
+		    recvq_push((auto_ptr<Event>) f);
+                    continue;
+		}
 
 		/*
 		 * Check for room name and description change (resulting in
@@ -332,7 +340,12 @@ namespace xchat {
 
 	// superadmins reload
 	if (time(0) - last_superadmins_reload >= superadmins_reload_interval) {
-	    reloadsuperadmins();
+	    try { reloadsuperadmins(); }
+            catch (runtime_error &e) {
+                auto_ptr<EvError> f(new EvError);
+                f->s = e.what();
+                recvq_push((auto_ptr<Event>) f);
+            }
 	}
     }
 
