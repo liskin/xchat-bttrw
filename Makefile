@@ -1,6 +1,12 @@
 # vim:set sw=8 nosta:
 
-TARGET=$(shell $(CC) -dumpmachine)
+CFLAGS=
+LDFLAGS=
+ifneq (,$(CCTARGET))
+ CFLAGS += -b $(CCTARGET)
+ LDFLAGS += -b $(CCTARGET)
+endif
+TARGET=$(shell $(CC) $(CFLAGS) -dumpmachine)
 
 ifneq (,$(findstring mingw32,$(TARGET)))
  DEBUG=no
@@ -9,10 +15,8 @@ else
 endif
 
 WINDRES=windres
-CFLAGS=-Wall -D_GNU_SOURCE -O2
+CFLAGS+=-Wall -D_GNU_SOURCE -O2
 CXXFLAGS=$(CFLAGS)
-LDLIBS=
-LDFLAGS=
 REVISIONS=-DREVISION=\"$(shell svn info | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\" \
 	-DTOMITCP_REV=\"$(shell svn info TomiTCP | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\"
 RSRC=
@@ -32,11 +36,16 @@ ifneq (,$(findstring mingw32,$(TARGET)))
  RSRC=rsrc.o
 endif
 
+ifneq (,$(findstring -apple-,$(TARGET)))
+ LDLIBS += -lstdc++
+ LDFLAGS += -fexceptions
+endif
+
 .PHONY: all clean dep conf dummy buildw32 docs
 
 all: libxchat-bttrw.a gate README
 
-MAKEDEP=-gcc -MM $(wildcard *.c *.cc) > .depend
+MAKEDEP=-$(CC) $(CFLAGS) -MM $(wildcard *.c *.cc) > .depend
 dep:
 	$(MAKEDEP)
 .depend:
@@ -46,7 +55,7 @@ dep:
 
 MAKECONF=I=.conf-$$RANDOM.c; echo "main(){}" >$$I; \
 	 echo -n >.config; O=.conf-$$RANDOM; \
-	 if $(CC) -o $$O $$I -liconv 2>/dev/null; then \
+	 if $(CC) $(CFLAGS) -o $$O $$I -liconv 2>/dev/null; then \
 	 echo ICONV=external >>.config; fi; $(RM) $$O $$I
 conf:
 	$(MAKECONF)
