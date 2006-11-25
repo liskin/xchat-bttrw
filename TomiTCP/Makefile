@@ -1,11 +1,18 @@
 # vim:set sw=8 nosta:
 
-TARGET=$(shell $(CC) -dumpmachine)
+CFLAGS=
+LDFLAGS=
+ifneq (,$(CCTARGET))
+ CFLAGS += -b $(CCTARGET)
+ LDFLAGS += -b $(CCTARGET)
+endif
+TARGET=$(shell $(CC) $(CFLAGS) -dumpmachine)
 
 DEBUG=no
 
-CFLAGS=-Wall -D_GNU_SOURCE -O2
+CFLAGS+=-Wall -D_GNU_SOURCE -O2
 CXXFLAGS=$(CFLAGS)
+
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
 
 OBJECTS=net.o http.o cookies.o str.o
@@ -23,11 +30,16 @@ ifneq (,$(findstring mingw32,$(TARGET)))
  OBJECTS += win32.o
 endif
 
+ifneq (,$(findstring -apple-,$(TARGET)))
+ LDLIBS += -lstdc++
+ LDFLAGS += -fexceptions
+endif
+
 .PHONY: all clean dep conf
 
 all: libTomiTCP.a pok .depend
 
-MAKEDEP=-gcc -MM $(wildcard *.c *.cc) > .depend
+MAKEDEP=-$(CC) $(CFLAGS) -MM $(wildcard *.c *.cc) > .depend
 dep:
 	$(MAKEDEP)
 .depend:
@@ -37,7 +49,7 @@ dep:
 
 MAKECONF=I=.conf-$$RANDOM.c; echo "main(){}" >$$I; \
 	 echo -n >.config; O=.conf-$$RANDOM; \
-	 if $(CC) -o $$O $$I -liconv 2>/dev/null; then \
+	 if $(CC) $(CFLAGS) -o $$O $$I -liconv 2>/dev/null; then \
 	 echo ICONV=external >>.config; fi; $(RM) $$O $$I
 conf:
 	$(MAKECONF)
