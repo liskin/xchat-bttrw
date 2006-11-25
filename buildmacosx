@@ -1,0 +1,29 @@
+#!/bin/bash
+
+MAKEOPTS="-j 3"
+
+REV=`svn info | perl -ne 'if(/Last Changed Rev: (\d+)/){print $1;}'`
+[ "$REV" -gt "0" ]; if [ "$?" -ne "0" ]; then exit; fi
+
+function build {
+	make $MAKEOPTS CCTARGET="$1" clean dep conf
+	make $MAKEOPTS CCTARGET="$1" -C TomiTCP/ clean dep conf
+	make $MAKEOPTS CCTARGET="$1"
+	strip gate
+	mv gate "$2"
+}
+
+build "-b i686-apple-darwin8 -m32" "gate.i686.32"
+#build "-b i686-apple-darwin8 -m64" "gate.i686.64"
+build "-b powerpc-apple-darwin8 -m32" "gate.ppc.32"
+#build "-b powerpc-apple-darwin8 -m64" "gate.ppc.64"
+lipo -create gate.i686.32 gate.ppc.32 -output gate
+#lipo -create gate.i686.32 gate.i686.64 gate.ppc.32 gate.ppc.64 -output gate.uni
+
+mkdir -p gate-$REV
+cp -L gate gate-$REV/
+cp -L COPYRIGHT gate-$REV/
+cp -L COPYING gate-$REV/
+cp -L README gate-$REV/README.txt
+tar czf gate-$REV.tar.gz gate-$REV
+rm -rf gate-$REV
