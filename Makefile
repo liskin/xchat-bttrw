@@ -3,8 +3,8 @@
 CFLAGS=
 LDFLAGS=
 ifneq (,$(CCTARGET))
- CFLAGS += -b $(CCTARGET)
- LDFLAGS += -b $(CCTARGET)
+ CFLAGS += $(CCTARGET)
+ LDFLAGS += $(CCTARGET)
 endif
 TARGET=$(shell $(CC) $(CFLAGS) -dumpmachine)
 
