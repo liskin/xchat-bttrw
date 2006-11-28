@@ -482,7 +482,7 @@ retry:
 		if (!kicker.length() && !kickmsg.length()) {
 		    TomiHTTP c; string m;
 		    try {
-			ret = request_GET(s, SERVER_MODCHAT, url, PATH_AUTH);
+			ret = request_GET(c, SERVER_MODCHAT, url, PATH_AUTH);
 			if (ret != 200)
 			    throw 0;
 			while (c.getline(m)) {
