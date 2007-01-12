@@ -1,31 +1,29 @@
 Index: Makefile
 ===================================================================
---- Makefile	(revision 525)
+--- Makefile	(revision 589)
 +++ Makefile	(working copy)
-@@ -9,10 +9,10 @@
+@@ -17,8 +17,9 @@
  WINDRES=windres
- CFLAGS=-Wall -D_GNU_SOURCE -O2
+ CFLAGS+=-Wall -D_GNU_SOURCE -O2
  CXXFLAGS=$(CFLAGS)
--LDLIBS=
-+LDLIBS=-lTomiTCP
- LDFLAGS=
 -REVISIONS=-DREVISION=\"$(shell svn info | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\" \
 -	-DTOMITCP_REV=\"$(shell svn info TomiTCP | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\"
++LDLIBS=-lTomiTCP
 +REVISIONS=-DREVISION=\"$(shell svn info ${SVN_DIR}/xchat-bttrw/head| perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\" \
 +	-DTOMITCP_REV=\"$(shell svn info ${SVN_DIR}/TomiTCP/head | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\"
  RSRC=
  
  LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
-@@ -66,7 +66,7 @@
-                   charset.o list.o ison.o userinfo.o superadmins.o
+@@ -73,7 +74,7 @@
+                   charset.o list.o ison.o userinfo.o superadmins.o cluster.o
  	$(AR) rsv $@ $?
  
 -gate: gate.o setproctitle.o libxchat-bttrw.a TomiTCP/libTomiTCP.a $(RSRC)
 +gate: gate.o setproctitle.o libxchat-bttrw.a $(RSRC)
  	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
- ifeq ($(TARGET),i386-mingw32msvc)
+ ifneq (,$(findstring mingw32,$(TARGET)))
  	strip $@
-@@ -79,9 +79,6 @@
+@@ -86,9 +87,6 @@
  	$(RM) libxchat-bttrw.a gate *.o
  #	$(MAKE) -C TomiTCP clean
  
@@ -37,9 +35,9 @@ Index: Makefile
  
 Index: gate.cc
 ===================================================================
---- gate.cc	(revision 525)
+--- gate.cc	(revision 589)
 +++ gate.cc	(working copy)
-@@ -317,7 +317,7 @@
+@@ -333,7 +333,7 @@
  			fprintf(*c, ":%s 375 %s :- %s Message of the Day -\n", me,
  				nick.c_str(), me);
  
