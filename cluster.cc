@@ -30,25 +30,19 @@ namespace xchat {
      */
     void XChat::makeservers()
     {
-	int i;
 	string hostname;
 
-	for (char *c = "sp"; *c; c++) {
-	    for (i = 1; i <= 100 /* safety limit */; i++) {
-		vector<sockaddr_uni> sockaddrs;
-		hostname = *c + string("x") + tostr<int>(i) + ".xchat.centrum.cz";
-	        try {
-		    resolve(hostname, "", sockaddrs);
-		} catch (...) { }
+        {
+            vector<sockaddr_uni> sockaddrs;
+            hostname = "xchat.centrum.cz";
+            try {
+                resolve(hostname, "", sockaddrs);
+            } catch (...) { }
 
-		if (!sockaddrs.size())
-		    break;
-
-                for (vector<sockaddr_uni>::iterator i = sockaddrs.begin();
-                        i != sockaddrs.end(); i++)
-                    addserver(servers, *i, hostname, SERVER_MODCHAT);
-	    }
-	}
+            for (vector<sockaddr_uni>::iterator i = sockaddrs.begin();
+                    i != sockaddrs.end(); i++)
+                addserver(servers, *i, hostname, SERVER_MODCHAT);
+        }
 
         {
             vector<sockaddr_uni> sockaddrs;
