@@ -72,7 +72,7 @@ inline string mask(const x_nick &n)
 /*
  * Make star
  */
-inline string star(const userinfo_t &n)
+inline string star(int star)
 {
     static const char * const stars[] = {
 	"Blue",
@@ -82,7 +82,7 @@ inline string star(const userinfo_t &n)
 	"Black",
     };
 
-    return stars[n.star - 1] + string(" star");
+    return stars[star - 1] + string(" star");
 }
 
 /*
@@ -715,7 +715,7 @@ void serve_client(TomiTCP *cptr)
                             if (us.star || us.cert)
                                 fprintf(*c, ":%s 313 %s %s :is an %s%s%s\n", me,
                                         nick.c_str(), n.nick.c_str(),
-                                        (us.star)?star(us).c_str():"",
+                                        (us.star)?star(us.star).c_str():"",
                                         (us.star && us.cert)?", ":"",
                                         (us.cert)?"certified":"");
                         }
@@ -874,8 +874,8 @@ void serve_client(TomiTCP *cptr)
                                 x->reloadsuperadmins();
                                 for (superadmins_t::iterator i = x->superadmins.begin();
                                     i != x->superadmins.end(); i++) {
-                                    fprintf(*c, ":%s 243 %s %c * * %s\n", me, nick.c_str(),
-                                        cmd[1][0], i->second.nick.c_str());
+                                    fprintf(*c, ":%s 243 %s %c * * %s (%s)\n", me, nick.c_str(),
+                                        cmd[1][0], i->second.nick.c_str(), star(i->second.star).c_str());
                                 }
                                 fprintf(*c, ":%s 219 %s %c :End of STATS report\n", me,
                                     nick.c_str(), cmd[1][0]);
@@ -885,8 +885,8 @@ void serve_client(TomiTCP *cptr)
                                 for (superadmins_t::iterator i = x->superadmins.begin();
                                     i != x->superadmins.end(); i++) {
                                     if (i->second.online) {
-                                        fprintf(*c, ":%s 249 %s p %s\n", me, nick.c_str(),
-                                            i->second.nick.c_str());
+                                        fprintf(*c, ":%s 249 %s p %s (%s)\n", me, nick.c_str(),
+                                            i->second.nick.c_str(), star(i->second.star).c_str());
                                     }
                                 }
                                 fprintf(*c, ":%s 219 %s p :End of STATS report\n", me,
