@@ -357,62 +357,74 @@ void serve_client(TomiTCP *cptr)
 		 */
 		if (cmd[0] == "SET" && cmd.size() >= 2) {
 		    strtoupper(cmd[1]);
-		    if (cmd[1] == "IDLE_INTERVAL" && cmd.size() == 3) {
+		    if (cmd[1] == "IDLE_INTERVAL") {
 			/*
 			 * Note: You're violating the XChat rules by using
 			 * this.
 			 */
-			x->idle_interval = atoi(cmd[2].c_str());
-			fprintf(*c, ":%s NOTICE %s :idle_interval set to %i\n",
-				me, nick.c_str(), x->idle_interval);
-			setproctitle(("gate: " + tomi_ntop(c->rname) +
+			if (cmd.size() == 3) {
+			    x->idle_interval = atoi(cmd[2].c_str());
+			    setproctitle(("gate: " + tomi_ntop(c->rname) +
 				" (" + nick + ")" + (x->idle_interval>0?
 				" [IDLER=" + cmd[2] + "]":"")).c_str());
-		    } else if (cmd[1] == "CHARSET" && cmd.size() == 3) {
-			x->client_charset = cmd[2];
+			}
+			fprintf(*c, ":%s NOTICE %s :idle_interval set to %i\n",
+				me, nick.c_str(), x->idle_interval);
+		    } else if (cmd[1] == "CHARSET") {
+			if (cmd.size() == 3)
+			    x->client_charset = cmd[2];
 			fprintf(*c, ":%s NOTICE %s :client_charset set to %s\n",
 				me, nick.c_str(), x->client_charset.c_str());
-		    } else if (cmd[1] == "VOICED_GIRLS" && cmd.size() == 3) {
+		    } else if (cmd[1] == "VOICED_GIRLS") {
 			bool old_voiced_girls = voiced_girls;
-			voiced_girls = atoi(cmd[2].c_str());
+			if (cmd.size() == 3)
+			    voiced_girls = atoi(cmd[2].c_str());
 			if (voiced_girls != old_voiced_girls)
 			    reload_voiced_girls(x, c, voiced_girls);
 			fprintf(*c, ":%s NOTICE %s :voiced_girls set to %i\n",
 				me, nick.c_str(), voiced_girls);
-		    } else if (cmd[1] == "SHOW_ADVERT" && cmd.size() == 3) {
+		    } else if (cmd[1] == "SHOW_ADVERT") {
 			/*
 			 * Note that you're probably not behaving fair while
 			 * having this turned off.
 			 */
-			show_advert = atoi(cmd[2].c_str());
+			if (cmd.size() == 3)
+			    show_advert = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :show_advert set to %i\n",
 				me, nick.c_str(), show_advert);
-		    } else if (cmd[1] == "RECV_INTERVAL" && cmd.size() == 3) {
-			x->recv_interval = atoi(cmd[2].c_str());
+		    } else if (cmd[1] == "RECV_INTERVAL") {
+			if (cmd.size() == 3)
+			    x->recv_interval = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :recv_interval set to %i\n",
 				me, nick.c_str(), x->recv_interval);
-		    } else if (cmd[1] == "SHOW_DATE" && cmd.size() == 3) {
-			show_date = atoi(cmd[2].c_str());
+		    } else if (cmd[1] == "SHOW_DATE") {
+			if (cmd.size() == 3)
+			    show_date = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :show_date set to %i\n",
 				me, nick.c_str(), show_date);
-		    } else if (cmd[1] == "CONVERT_SMILES" && cmd.size() == 3) {
-			x->convert_smiles = atoi(cmd[2].c_str());
+		    } else if (cmd[1] == "CONVERT_SMILES") {
+			if (cmd.size() == 3)
+			    x->convert_smiles = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :convert_smiles set to %i\n",
 				me, nick.c_str(), x->convert_smiles);
-		    } else if (cmd[1] == "REALLY_LOGOUT" && cmd.size() == 3) {
-			x->really_logout = atoi(cmd[2].c_str());
+		    } else if (cmd[1] == "REALLY_LOGOUT" && cmd.size() >= 2) {
+			if (cmd.size() == 3)
+			    x->really_logout = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :really_logout set to %i\n",
 				me, nick.c_str(), x->really_logout);
-		    } else if (cmd[1] == "SHOW_IDLER" && cmd.size() == 3) {
-			show_idler = atoi(cmd[2].c_str());
+		    } else if (cmd[1] == "SHOW_IDLER") {
+			if (cmd.size() == 3)
+			    show_idler = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :show_idler set to %i\n",
 				me, nick.c_str(), show_idler);
-		    } else if (cmd[1] == "WATCH_GLOBAL" && cmd.size() == 3) {
-			x->watch_global = atoi(cmd[2].c_str());
+		    } else if (cmd[1] == "WATCH_GLOBAL") {
+			if (cmd.size() == 3)
+			    x->watch_global = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :watch_global set to %i\n",
 				me, nick.c_str(), x->watch_global);
-		    } else if (cmd[1] == "SHOW_HISTORY" && cmd.size() == 3) {
-			x->show_history = atoi(cmd[2].c_str());
+		    } else if (cmd[1] == "SHOW_HISTORY") {
+			if (cmd.size() == 3)
+			    x->show_history = atoi(cmd[2].c_str());
 			fprintf(*c, ":%s NOTICE %s :show_history set to %i\n",
 				me, nick.c_str(), x->show_history);
 		    } else {
