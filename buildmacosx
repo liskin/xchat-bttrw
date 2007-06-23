@@ -13,12 +13,12 @@ function build {
 	mv gate "$2"
 }
 
-build "-b i686-apple-darwin8 -m32" "gate.i686.32"
-#build "-b i686-apple-darwin8 -m64" "gate.i686.64"
-build "-b powerpc-apple-darwin8 -m32" "gate.ppc.32"
-#build "-b powerpc-apple-darwin8 -m64" "gate.ppc.64"
-lipo -create gate.i686.32 gate.ppc.32 -output gate
-#lipo -create gate.i686.32 gate.i686.64 gate.ppc.32 gate.ppc.64 -output gate.uni
+build "-bi686-apple-darwin9 -m32" "gate.i686.32"
+build "-bi686-apple-darwin9 -m64" "gate.i686.64"
+build "-bpowerpc-apple-darwin9 -m32" "gate.ppc.32"
+build "-bpowerpc-apple-darwin9 -m64" "gate.ppc.64"
+#lipo -create gate.i686.32 gate.ppc.32 -output gate
+lipo -create gate.i686.32 gate.i686.64 gate.ppc.32 gate.ppc.64 -output gate
 
 mkdir -p gate-$REV
 cp -L gate gate-$REV/
