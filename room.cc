@@ -96,7 +96,6 @@ retry0:
 		} else
 		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
 	    }
-	    cout << s << endl;
 	}
 	s.close();
 	
