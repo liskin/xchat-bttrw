@@ -123,6 +123,10 @@ namespace net {
 	    string::size_type space = line.find(' ');
 	    if (space == string::npos) {
 		// Simple response
+		/* This line will be discarded, next getline will not return
+		 * it, because the current API can't do it. Let's hope no-one
+		 * cares about the first line anyway.
+		 */
 		return 200;
 	    }
 
@@ -137,6 +141,7 @@ namespace net {
 	    ret = atoi(rets.c_str());
 	    if (!ret) {
 		// Simple response
+		/* See ^^^ */
 		return 200;
 	    }
 	} else {
