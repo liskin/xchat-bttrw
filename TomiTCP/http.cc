@@ -122,7 +122,8 @@ namespace net {
 
 	    string::size_type space = line.find(' ');
 	    if (space == string::npos) {
-		throw runtime_error("parse error on HTTP response");
+		// Simple response
+		return 200;
 	    }
 
 	    line.erase(0, space + 1);
@@ -134,8 +135,10 @@ namespace net {
 
 	    string rets(line, 0, space);
 	    ret = atoi(rets.c_str());
-	    if (!ret)
-		throw runtime_error("parse error on HTTP response");
+	    if (!ret) {
+		// Simple response
+		return 200;
+	    }
 	} else {
 	    throw runtime_error("zero sized HTTP reply");
 	}
