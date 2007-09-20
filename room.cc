@@ -71,6 +71,36 @@ namespace xchat {
 	int ret, retries;
 
 	/*
+	 * Accept rules.
+	 */
+	retries = servers.size();
+retry0:
+	try {
+	    ret = request_GET(s, SERVER_MODCHAT,
+		    "room/intro.php?_btn_enter=ENTER&disclaim=on&rid=" + rid,
+		    PATH_AUTH);
+	    if (ret != 302)
+		throw runtime_error("Not HTTP 302 Found while accepting channel rules");
+	} catch (runtime_error &e) {
+	    if (retries--) {
+		lastsrv_broke();
+		goto retry0;
+	    } else
+		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
+	}
+	while (s.getline(l)) {
+	    if (tryagainplease(l)) {
+		if (retries--) {
+		    lastsrv_broke();
+		    goto retry0;
+		} else
+		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
+	    }
+	    cout << s << endl;
+	}
+	s.close();
+	
+	/*
 	 * Join room.
 	 */
 	retries = servers.size();
