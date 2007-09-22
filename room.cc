@@ -79,8 +79,6 @@ retry0:
 	    ret = request_GET(s, SERVER_MODCHAT,
 		    "room/intro.php?_btn_enter=ENTER&disclaim=on&rid=" + rid,
 		    PATH_AUTH);
-	    if (ret != 302)
-		throw runtime_error("Not HTTP 302 Found while accepting channel rules");
 	} catch (runtime_error &e) {
 	    if (retries--) {
 		lastsrv_broke();
@@ -88,6 +86,8 @@ retry0:
 	    } else
 		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
+	
+	bool captcha = false, password = false;
 	while (s.getline(l)) {
 	    if (tryagainplease(l)) {
 		if (retries--) {
@@ -96,8 +96,32 @@ retry0:
 		} else
 		    throw runtime_error("Chvilku strpeni prosim - " + lastsrv_broke());
 	    }
+
+	    static string pat1 = " name=\"code\"";
+	    if (l.find(pat1) != string::npos) {
+		auto_ptr<EvRoomError> f(new EvRoomError);
+		f->s = "Room is captcha protected, fill it: " +
+		    makepath("room/intro.php?rid=" + rid, PATH_STATIC);
+		f->rid = r.rid;
+		f->fatal = false;
+		recvq_push((auto_ptr<Event>) f);
+		captcha = true;
+	    }
+	    static string pat2 = " name=\"pass\"";
+	    if (l.find(pat2) != string::npos) {
+		auto_ptr<EvRoomError> f(new EvRoomError);
+		f->s = "Room is password protected, fill it: " +
+		    makepath("room/intro.php?rid=" + rid, PATH_STATIC);
+		f->rid = r.rid;
+		f->fatal = false;
+		recvq_push((auto_ptr<Event>) f);
+		password = true;
+	    }
 	}
 	s.close();
+	
+	if (!captcha && !password && ret != 302)
+	    throw runtime_error("Not HTTP 302 Found while accepting channel rules");
 	
 	/*
 	 * Join room.
