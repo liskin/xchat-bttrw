@@ -311,13 +311,13 @@ namespace xchat {
 
     /**
      * Check for user being kicked from a room. Store its nick, kicker's nick
-     * and kicker's sex. Delete it from the nicklist.
+     * and kickee's sex. Delete it from the nicklist.
      * \param r The room the message belongs to.
      * \param m The message.
      * \param src Output string for nick.
      * \param reason Output string for kick reason.
      * \param who Output string for kicker's nick.
-     * \param sex Output string for kicker's sex.
+     * \param sex Output string for kickee's sex.
      * \return True if it was a kick.
      */
     bool XChat::iskick(room& r, string &m, string &src, string &reason, string &who, int &sex)
@@ -351,6 +351,49 @@ namespace xchat {
 		    (b = m.find_last_of(")")) != string::npos) {
 		reason = string(m, a + 1, b - a - 1);
 	    }
+
+	    if (r.nicklist.find(strtolower_nr(src)) == r.nicklist.end())
+		sex = 2;
+	    else
+    		sex = r.nicklist[strtolower_nr(src)].sex;
+	    r.nicklist.erase(strtolower_nr(src));
+	    return 1;
+	}
+
+	return 0;
+    }
+
+    /**
+     * Check for user being killed from all rooms. Store its nick, killer's nick
+     * and killee's sex. Delete it from the nicklist.
+     * \param r The room the message belongs to.
+     * \param m The message.
+     * \param src Output string for nick.
+     * \param who Output string for killer's nick.
+     * \param sex Output string for killee's sex.
+     * \return True if it was a kill.
+     */
+    bool XChat::iskill(room& r, string &m, string &src, string &who, int &sex)
+    {
+	string::size_type a,b;
+	if ((a = m.find("Uživatel")) != string::npos &&
+		(((b = m.find("byl  vyhozen")) != string::npos) ||
+		(b = m.find("byla vyhozena")) != string::npos)) {
+	    if (m.find("Uživatelka") != string::npos) {
+		src = string(m, a + sizeof("Uživatelka ") - 1, b - a - sizeof("Uživatelka ") + 1);
+		wstrip(src);
+	    } else {
+		src = string(m, a + sizeof("Uživatel ") - 1, b - a - sizeof("Uživatel ") + 1);
+		wstrip(src);
+	    }
+ 
+	    if ((a = m.find("administrátorem")) != string::npos &&
+		    (b = m.find("ze všech místností")) != string::npos) {
+		who = string(m, a + sizeof("administrátorem ") - 1,
+			b - a - sizeof("administrátorem ") + 1);
+		wstrip(who);
+	    } else
+		return 0;
 
 	    if (r.nicklist.find(strtolower_nr(src)) == r.nicklist.end())
 		sex = 2;
@@ -538,6 +581,14 @@ namespace xchat {
 		e->rid = r.rid;
 		e->src = (struct x_nick){ src, sex };
 		e->d = date;
+		recvq_push((auto_ptr<Event>) e);
+	    } else if (iskill(r, m, src, who, sex)) {
+		auto_ptr<EvKill> e(new EvKill);
+		e->s = recode_to_client(m);
+		e->src = (struct x_nick){ who, (n = findnick(who, 0))?n->sex:2 };
+		e->target = (struct x_nick){ src, sex };
+		e->d = date;
+		e->stopdup = true;
 		recvq_push((auto_ptr<Event>) e);
 	    } else if (iskick(r, m, src, reason, who, sex)) {
 		if (who.length()) {

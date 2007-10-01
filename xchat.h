@@ -327,6 +327,7 @@ namespace xchat {
 	    bool isjoin(room& r, string &m, string &src, int &sex);
 	    bool isleave(room& r, string &m, string &src, int &sex);
 	    bool iskick(room& r, string &m, string &src, string &reason, string &who, int &sex);
+	    bool iskill(room& r, string &m, string &src, string &who, int &sex);
 	    bool isadvert(string &m, string &link);
 	    bool sysnoroom(string &m, bool &stopdup);
 	    bool duplicate_in_queue(Event *e);

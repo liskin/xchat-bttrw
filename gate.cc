@@ -1211,6 +1211,12 @@ void serve_client(TomiTCP *cptr)
 				    fprintf(*c, ":%s MODE #%s -a %s\n", me,
 					j->first.c_str(), i->c_str());
 		    }
+		} else if (dynamic_cast<EvKill*>(e.get())) {
+		    auto_ptr<EvKill> f((EvKill*)e.release());
+
+		    fprintf(*c, ":%s QUIT :Killed (%s)\n",
+			    mask(f->gettarget()).c_str(),
+			    f->getsrc().nick.c_str());
 		} else {
 		    fprintf(*c, ":%s NOTICE %s :%sOther: %s - %s\n", me,
 			    nick.c_str(), date.c_str(),

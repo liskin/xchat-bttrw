@@ -255,6 +255,21 @@ namespace xchat {
 	public:
 	    virtual ~EvNote() {}
     };
+
+    class EvKill : public Event {
+           friend class XChat;
+	protected:
+           x_nick src;
+           x_nick target;
+	public:
+            virtual const x_nick & getsrc() { return src; }
+            virtual const x_nick & gettarget() { return target; }
+	    virtual bool operator == (const EvKill &e) {
+	        return Event::operator == (e) && src == e.src && target == e.target;
+	    }
+	    virtual EvKill * clone() { return new EvKill(*this); }
+            virtual ~EvKill() {}
+    };    
 }
 
 #include "xchat.h"
