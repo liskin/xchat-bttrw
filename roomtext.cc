@@ -438,6 +438,12 @@ namespace xchat {
 	    return true;
 	}
 
+        static string pat8 = "vstoupila do místnosti";
+        if (watch_global && m.find(pat8) != string::npos) {
+	    stopdup = true;
+	    return true;
+	}
+
 	return false;
     }
 
