@@ -11,6 +11,7 @@
 #include "TomiTCP/net.h"
 #include "TomiTCP/http.h"
 #include "TomiTCP/str.h"
+#include "TomiTCP/cookies.h"
 #include "charset.h"
 
 /** \brief A namespace containing classes, functions, types and variables for
@@ -274,6 +275,7 @@ namespace xchat {
                     path_type pt);
             int request_POST(net::TomiHTTP &s, server_type st, const string& path,
                     path_type pt, const string &data);
+	    net::TomiCookies cookies; ///< Cookies for connection.
 
 	    string uid; ///< User id, set by #login. Used for queries.
 	    string sid; ///< Session id, set by #login. Used for queries.

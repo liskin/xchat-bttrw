@@ -163,8 +163,8 @@ namespace xchat {
         server &ss = servers[si];
 
         s.doconnect(ss.host.sa.sa_family ? tomi_ntop(ss.host) : ss.types[st], 80);
-        s.doGET(ss.types[st], 80, makepath(path, pt), 0);
-        return s.parseresponse(0);
+        s.doGET(ss.types[st], 80, makepath(path, pt), &cookies);
+        return s.parseresponse(&cookies);
     }
     
     /**
@@ -177,7 +177,7 @@ namespace xchat {
         server &ss = servers[si];
 
         s.doconnect(ss.host.sa.sa_family ? tomi_ntop(ss.host) : ss.types[st], 80);
-        s.doPOST(ss.types[st], 80, makepath(path, pt), data, 0);
-        return s.parseresponse(0);
+        s.doPOST(ss.types[st], 80, makepath(path, pt), data, &cookies);
+        return s.parseresponse(&cookies);
     }
 }
