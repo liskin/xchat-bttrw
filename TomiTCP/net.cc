@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <cstring>
 #include "net.h"
 #ifndef WIN32
 # include <netinet/tcp.h>
