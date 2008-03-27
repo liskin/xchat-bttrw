@@ -2,6 +2,7 @@
 #define _CLONEABLE_H_INCLUDED
 
 #include <stdexcept>
+#include <typeinfo>
 
 namespace std {
     /**

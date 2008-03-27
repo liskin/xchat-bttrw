@@ -1,5 +1,6 @@
 #include <iostream>
 #include <map>
+#include <cstring>
 #include "charset.h"
 #include "TomiTCP/str.h"
 

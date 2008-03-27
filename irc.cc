@@ -1,3 +1,4 @@
+#include <cstring>
 #include "irc.h"
 #include "TomiTCP/str.h"
 

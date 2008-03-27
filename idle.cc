@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include "idle.h"
 
 namespace xchat {

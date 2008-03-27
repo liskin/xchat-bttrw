@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <cerrno>
+#include <cstring>
 #ifndef WIN32
 # include <sys/wait.h>
 #endif
