@@ -13,11 +13,11 @@ HOMEPAGE="http://www.nomi.cz/projects.shtml?id=xchat-bttrw"
 SRC_URI=""
 
 LICENSE="GPL-2"
-KEYWORDS="x86"
+KEYWORDS=""
 SLOT="0"
 
 DEPEND="${RDEPEND}
-    dev-libs/TomiTCP-svn"
+    dev-libs/TomiTCP"
 RDEPEND=""
 
 src_compile() {

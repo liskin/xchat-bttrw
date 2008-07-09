@@ -11,7 +11,7 @@ HOMEPAGE="http://www.nomi.cz/projects.shtml?id=TomiTCP"
 SRC_URI=""
 
 LICENSE="GPL-2"
-KEYWORDS="x86"
+KEYWORDS=""
 SLOT="0"
 
 DEPEND="${RDEPEND}"
