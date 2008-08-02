@@ -566,11 +566,12 @@ retry:
 	 * Push messages to recvq in reverse.
 	 */
 	for (vector<string>::reverse_iterator i = tv.rbegin(); i != tv.rend(); i++)
-	    if (i->length())
+	    if (i->length()) {
 		if (!history)
 		    recvq_parse_push(*i, r);
 		else if (show_history)
 		    recvq_parse_push_history(*i, r);
+	    }
 
 	/*
 	 * Emit Admin/LockChange
