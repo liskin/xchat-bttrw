@@ -88,6 +88,7 @@ namespace xchat {
 		((b = string(s, a).find('>')) != string::npos)) {
 	    int smile = 0;
 	    bool br = 0;
+	    string link = "";
 
 	    {
 		static string pat = "<img src=\"http://img.",
@@ -101,7 +102,21 @@ namespace xchat {
 		    smile = atoi(string(s, c).c_str());
 		}
 	    }
-	    
+
+	    {
+		static string pat = "<a href=\"http://redir.xchat.cz/~guest~/?url=",
+		    pat2 = "</a>", pat3 = "\" target";
+		string::size_type c, d;
+		if (!s.compare(a, pat.length(), pat) &&
+			(c = s.find(pat2, a)) != string::npos &&
+			(d = s.find(pat3, a)) != string::npos &&
+			c > a + b && d < c) {
+		    link = net::TomiHTTP::URLdecode(string(s, a + pat.length(),
+				d - a - pat.length()).c_str());
+		    b = c + pat2.length() - 1 - a;
+		}
+	    }
+
 	    {
 		static string pat = "<br";
 		if (!s.compare(a, pat.length(), pat))
@@ -114,6 +129,10 @@ namespace xchat {
 	    if (smile) {
 		s.insert(a, "*" + tostr(smile) + "*");
 		pos += ("*" + tostr(smile) + "*").length();
+	    }
+	    if (!link.empty()) {
+		s.insert(a, link);
+		pos += link.length();
 	    }
 	    if (br) {
 		s.insert(a, " | ");
