@@ -1,16 +1,16 @@
 xchat-bttrw (back to the real world)
-Copyright (C) 2004-2006  Tomas Janousek <tomi@nomi.cz>
-Copyright (C) 2005-2006  Ondrej Novy <onovy@nomi.cz>
+Copyright (C) 2004-2009  Tomas Janousek <tomi@nomi.cz>
+Copyright (C) 2005-2009  Ondrej Novy <onovy@nomi.cz>
 
 Win32 porting
-Copyright (C) 2004-2006  Tomas Janousek <tomi@nomi.cz>
+Copyright (C) 2004-2009  Tomas Janousek <tomi@nomi.cz>
 
 Win32 installers
-Copyright (C) 2004-2006  Ondrej Novy <onovy@nomi.cz>
+Copyright (C) 2004-2009  Ondrej Novy <onovy@nomi.cz>
 
 Win32 tarballs
-Copyright (C) 2004-2006  Ondrej Novy <onovy@nomi.cz>
-Copyright (C) 2005-2006  Tomas Janousek <tomi@nomi.cz>
+Copyright (C) 2004-2009  Ondrej Novy <onovy@nomi.cz>
+Copyright (C) 2005-2009  Tomas Janousek <tomi@nomi.cz>
 
 Win32 my_open_osfhandle code
 Taken from Perl.
@@ -20,7 +20,7 @@ xchat-bttrw artwork
 Copyright (C) 2005  Jan Kalab <pitel@nomi.cz>
 Copyright (C) 2005  Tomas Janousek <tomi@nomi.cz>
 Copyright (C) 2005  Ondrej Novy <onovy@nomi.cz>
-Copyright (C) 1999-2006  NetCentrum, http://o.centrum.cz/
+Copyright (C) 1999-2009  NetCentrum, http://o.centrum.cz/
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
