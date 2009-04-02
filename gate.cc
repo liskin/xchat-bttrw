@@ -166,8 +166,7 @@ void sighup(int) {
 
 void welcome()
 {
-    cout << "Hello, this is an IRC to xchat gateway from xchat-bttrw r." REVISION << endl;
-    cout << "Built with TomiTCP r." TOMITCP_REV << endl;
+    cout << "Hello, this is an IRC to xchat gateway from xchat-bttrw version " REVISION << endl;
     cout << "Coded by Tomas Janousek <tomi@nomi.cz> and others" << endl;
     cout << "Homepage: http://nomi.cz/projects.shtml?id=xchat-bttrw" << endl;
 #ifdef WIN32
@@ -529,8 +528,7 @@ void serve_client(TomiTCP *cptr)
 		    if (cmd[0] == "NOTICE") {
 			static string ver = "\x01VERSION ";
 			if (!cmd[2].compare(0, ver.length(), ver))
-			    cmd[2].insert(ver.length(), "[xchat-bttrw r." REVISION
-				    ", TomiTCP r." TOMITCP_REV "] ");
+			    cmd[2].insert(ver.length(), "[xchat-bttrw ver " REVISION "] ");
 
 			cmd[2] = "Notice: " + cmd[2];
 		    }

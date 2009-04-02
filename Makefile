@@ -17,8 +17,7 @@ endif
 WINDRES=windres
 CFLAGS+=-Wall -D_GNU_SOURCE -O2
 CXXFLAGS=$(CFLAGS)
-REVISIONS=-DREVISION=\"$(shell svn info | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\" \
-	-DTOMITCP_REV=\"$(shell svn info TomiTCP | perl -ne 'if(/Last Changed Rev: (\d+)/){print $$1;}')\"
+REVISION=$(shell git describe --always --tags)
 RSRC=
 
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
@@ -79,8 +78,7 @@ ifneq (,$(findstring mingw32,$(TARGET)))
 	strip $@
 endif
 
-gate.o:
-	$(COMPILE.cc) $(REVISIONS) $(OUTPUT_OPTION) $<
+gate.o: CFLAGS+=-DREVISION=\"$(REVISION)\"
 
 clean:
 	$(RM) libxchat-bttrw.a gate *.o
@@ -109,6 +107,9 @@ buildw32:
 	cp -L README $(DESTDIR)/README.txt
 	cp -L $(shell which libiconv-2.dll) $(DESTDIR)/
 	cp -L $(shell which mingwm10.dll) $(DESTDIR)/
+
+revision:
+	@echo $(REVISION)
 
 # Documentation
 docs_zmp:
