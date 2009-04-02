@@ -1,0 +1,11 @@
+#!../irc
+server	tyrael.czech.net
+port	6667
+nick	Campbel4
+password	
+master	Liskni_s?!~pytt_l@62.77.119.154
+master	Liskni_s?!~pytt_l@ip154.gamebunkr.cz
+master	Liskni_s?!pytt_l@bigcomp.home.nomi.cz
+oname	
+opassword	
+max_modes	3

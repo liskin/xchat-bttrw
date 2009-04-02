@@ -1,0 +1,21 @@
+#!../irc
+server	irc.nomi.cz
+#server irc.smoula.net
+port	6667
+nick	B4gr
+#password	nomi-team
+master	Liskni_s?!pytt_l@bigcomp.home.nomi.cz
+master	Liskni_s?!pytt_l@lisk.in
+#oname	Liskni_si
+#opassword	xxx
+max_modes	4
+#module	rejoin
+module	channel
+module	take
+module	say
+module	opslaves
+module	massping
+module	talk
+slave_port 12205
+ch_channels	#nomi
+#rj_sleep	0
