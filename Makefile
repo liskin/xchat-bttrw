@@ -17,7 +17,7 @@ endif
 WINDRES=windres
 CFLAGS+=-Wall -D_GNU_SOURCE -O2
 CXXFLAGS=$(CFLAGS)
-REVISION=$(shell git describe --always --tags)
+REVISION=$(shell git describe --tags)
 RSRC=
 
 LINK.o=$(CXX) $(LDFLAGS) $(TARGET_ARCH)
