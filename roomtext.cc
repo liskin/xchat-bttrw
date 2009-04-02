@@ -9,7 +9,7 @@
 
 namespace xchat {
     /**
-     * Recode from UTF-8 to #client_charset.
+     * Recode from ISO-8859-2 to #client_charset.
      * \param s Input string.
      * \return Recoded string if ok, original string if an error has occured.
      */
@@ -21,7 +21,7 @@ namespace xchat {
 	    /*
 	     * Some exceptions...
 	     */
-	    if (client_charset != "UTF-8") {
+	    if (client_charset != "ISO-8859-2") {
 		string::size_type a, pos = 0;
 
 		while ((a = s.find("\xe2\x97\x8f", pos)) != string::npos) {
@@ -30,7 +30,7 @@ namespace xchat {
 		}
 	    }
 
-	    return recode(s, "UTF-8", client_charset);
+	    return recode(s, "ISO-8859-2", client_charset);
 	} catch (runtime_error &er) {
 	    auto_ptr<EvError> e(new EvError);
 	    e->s = er.what();
@@ -40,7 +40,7 @@ namespace xchat {
     }
 
     /**
-     * Recode from #client_charset to UTF-8.
+     * Recode from #client_charset to ISO-8859-2.
      * \param s Input string.
      * \return Recoded string if ok, original string if an error has occured.
      */
@@ -49,7 +49,7 @@ namespace xchat {
 	    return s;
 
 	try {
-	    return recode(s, client_charset, "UTF-8");
+	    return recode(s, client_charset, "ISO-8859-2");
 	} catch (runtime_error &er) {
 	    auto_ptr<EvError> e(new EvError);
 	    e->s = er.what();
@@ -274,16 +274,16 @@ namespace xchat {
     bool XChat::isjoin(room& r, string &m, string &src, int &sex)
     {
 	string::size_type a,b;
-	if ((a = m.find("U≈æivatel")) != string::npos &&
-		(((b = m.find("vstoupil  do m√≠stnosti")) != string::npos) || 
-		 ((b = m.find("vstoupila do m√≠stnosti")) != string::npos))) {
-	    if (m.find("U≈æivatelka") != string::npos) {
-		src = string(m, a + sizeof("U≈æivatelka ") - 1, b - a - sizeof("U≈æivatelka ") + 1);
+	if ((a = m.find("Uæivatel")) != string::npos &&
+		(((b = m.find("vstoupil  do mÌstnosti")) != string::npos) || 
+		 ((b = m.find("vstoupila do mÌstnosti")) != string::npos))) {
+	    if (m.find("Uæivatelka") != string::npos) {
+		src = string(m, a + sizeof("Uæivatelka ") - 1, b - a - sizeof("Uæivatelka ") + 1);
 		wstrip(src);
 		r.nicklist[strtolower_nr(src)] = (struct x_nick){src, 0};
 		sex = 0;
 	    } else {
-		src = string(m, a + sizeof("U≈æivatel ") - 1, b - a - sizeof("U≈æivatel ") + 1);
+		src = string(m, a + sizeof("Uæivatel ") - 1, b - a - sizeof("Uæivatel ") + 1);
 		wstrip(src);
 		r.nicklist[strtolower_nr(src)] = (struct x_nick){src, 1};
 		sex = 1;
@@ -306,14 +306,14 @@ namespace xchat {
     bool XChat::isleave(room& r, string &m, string &src, int &sex)
     {
 	string::size_type a,b;
-	if ((a = m.find("U≈æivatel")) != string::npos &&
-		(((b = m.find("opustil  m√≠stnost")) != string::npos) || 
-		 ((b = m.find("opustila m√≠stnost")) != string::npos))) {
-	    if (m.find("U≈æivatelka") != string::npos) {
-		src = string(m, a + sizeof("U≈æivatelka ") - 1, b - a - sizeof("U≈æivatelka ") + 1);
+	if ((a = m.find("Uæivatel")) != string::npos &&
+		(((b = m.find("opustil  mÌstnost")) != string::npos) || 
+		 ((b = m.find("opustila mÌstnost")) != string::npos))) {
+	    if (m.find("Uæivatelka") != string::npos) {
+		src = string(m, a + sizeof("Uæivatelka ") - 1, b - a - sizeof("Uæivatelka ") + 1);
 		wstrip(src);
 	    } else {
-		src = string(m, a + sizeof("U≈æivatel ") - 1, b - a - sizeof("U≈æivatel ") + 1);
+		src = string(m, a + sizeof("Uæivatel ") - 1, b - a - sizeof("Uæivatel ") + 1);
 		wstrip(src);
 	    }
 
@@ -342,27 +342,27 @@ namespace xchat {
     bool XChat::iskick(room& r, string &m, string &src, string &reason, string &who, int &sex)
     {
 	string::size_type a,b;
-	if ((a = m.find("U≈æivatel")) != string::npos &&
+	if ((a = m.find("Uæivatel")) != string::npos &&
 		(((b = m.find("byl  vyhozen")) != string::npos) ||
 		(b = m.find("byla vyhozena")) != string::npos)) {
-	    if (m.find("U≈æivatelka") != string::npos) {
-		src = string(m, a + sizeof("U≈æivatelka ") - 1, b - a - sizeof("U≈æivatelka ") + 1);
+	    if (m.find("Uæivatelka") != string::npos) {
+		src = string(m, a + sizeof("Uæivatelka ") - 1, b - a - sizeof("Uæivatelka ") + 1);
 		wstrip(src);
 	    } else {
-		src = string(m, a + sizeof("U≈æivatel ") - 1, b - a - sizeof("U≈æivatel ") + 1);
+		src = string(m, a + sizeof("Uæivatel ") - 1, b - a - sizeof("Uæivatel ") + 1);
 		wstrip(src);
 	    }
 
-	    if ((a = m.find("spr√°vcem")) != string::npos &&
-		    (b = m.find("z m√≠stnosti")) != string::npos) {
-		who = string(m, a + sizeof("spr√°vcem ") - 1, b - a - sizeof("spr√°vcem ") + 1);
+	    if ((a = m.find("spr·vcem")) != string::npos &&
+		    (b = m.find("z mÌstnosti")) != string::npos) {
+		who = string(m, a + sizeof("spr·vcem ") - 1, b - a - sizeof("spr·vcem ") + 1);
 		wstrip(who);
 	    }
 	    
-	    if ((a = m.find("administr√°torem")) != string::npos &&
-		    (b = m.find("z m√≠stnosti")) != string::npos) {
-		who = string(m, a + sizeof("administr√°torem ") - 1,
-			b - a - sizeof("administr√°torem ") + 1);
+	    if ((a = m.find("administr·torem")) != string::npos &&
+		    (b = m.find("z mÌstnosti")) != string::npos) {
+		who = string(m, a + sizeof("administr·torem ") - 1,
+			b - a - sizeof("administr·torem ") + 1);
 		wstrip(who);
 	    }
 
@@ -395,21 +395,21 @@ namespace xchat {
     bool XChat::iskill(room& r, string &m, string &src, string &who, int &sex)
     {
 	string::size_type a,b;
-	if ((a = m.find("U≈æivatel")) != string::npos &&
+	if ((a = m.find("Uæivatel")) != string::npos &&
 		(((b = m.find("byl  vyhozen")) != string::npos) ||
 		(b = m.find("byla vyhozena")) != string::npos)) {
-	    if (m.find("U≈æivatelka") != string::npos) {
-		src = string(m, a + sizeof("U≈æivatelka ") - 1, b - a - sizeof("U≈æivatelka ") + 1);
+	    if (m.find("Uæivatelka") != string::npos) {
+		src = string(m, a + sizeof("Uæivatelka ") - 1, b - a - sizeof("Uæivatelka ") + 1);
 		wstrip(src);
 	    } else {
-		src = string(m, a + sizeof("U≈æivatel ") - 1, b - a - sizeof("U≈æivatel ") + 1);
+		src = string(m, a + sizeof("Uæivatel ") - 1, b - a - sizeof("Uæivatel ") + 1);
 		wstrip(src);
 	    }
  
-	    if ((a = m.find("administr√°torem")) != string::npos &&
-		    (b = m.find("ze v≈°ech m√≠stnost√≠")) != string::npos) {
-		who = string(m, a + sizeof("administr√°torem ") - 1,
-			b - a - sizeof("administr√°torem ") + 1);
+	    if ((a = m.find("administr·torem")) != string::npos &&
+		    (b = m.find("ze vπech mÌstnostÌ")) != string::npos) {
+		who = string(m, a + sizeof("administr·torem ") - 1,
+			b - a - sizeof("administr·torem ") + 1);
 		wstrip(who);
 	    } else
 		return 0;
@@ -479,7 +479,7 @@ namespace xchat {
 	    return true;
 	}
 
-	static string pat4 = "nen√≠ v ≈æ√°dn√© m√≠stnosti";
+	static string pat4 = "nenÌ v æ·dnÈ mÌstnosti";
 	if (m.find(pat4) != string::npos) {
 	    return true;
 	}
@@ -489,18 +489,18 @@ namespace xchat {
 	    return true;
 	}
 
-	static string pat6 = "Zaps√°no pro";
+	static string pat6 = "Zaps·no pro";
 	if (m.find(pat6) != string::npos) {
 	    return true;
 	}
 
-	static string pat7 = "vstoupil do m√≠stnosti";
+	static string pat7 = "vstoupil do mÌstnosti";
 	if (watch_global && m.find(pat7) != string::npos) {
 	    stopdup = true;
 	    return true;
 	}
 
-        static string pat8 = "vstoupila do m√≠stnosti";
+        static string pat8 = "vstoupila do mÌstnosti";
         if (watch_global && m.find(pat8) != string::npos) {
 	    stopdup = true;
 	    return true;

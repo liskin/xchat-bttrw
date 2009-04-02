@@ -45,7 +45,7 @@ static void parse_updateinfo(string s, string &admin, bool &locked)
  */
 static bool tryagainplease(const string &l)
 {
-    static string pat = "chvilku strpenÃ­ prosÃ­m</body></html>";
+    static string pat = "chvilku strpení prosím</body></html>";
     if (l.find(pat) != string::npos)
 	return true;
     return false;
@@ -209,7 +209,7 @@ retry2:
 			    string sex(o, pos2 + 1, pos - pos2 - 1);
 			    if (sex == "M")
 				muz = 1;
-			    else if (sex == "Å½")
+			    else if (sex == "®")
 				muz = 0;
 			    else
 				continue;
@@ -654,7 +654,7 @@ retry:
 	     * Check for 'chvilku strpeni prosim'-like error.
 	     * If we're alone, we can't check :/
 	     */
-	    static string pat = ">zaslat vÅ¡em (0)";
+	    static string pat = ">zaslat v¹em (0)";
 	    if (l.find(pat) != string::npos)
 		if (r.nicklist.size() > 1)
 		    throw runtime_error("Message was likely not posted, trying again - "

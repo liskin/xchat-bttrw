@@ -71,7 +71,7 @@ namespace net {
 		"User-Agent: TomiTCP/" PACKAGE_VERSION "\r\n"
 		"Host: %s:%i\r\n"
 		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\r\n"
-		"Accept-Charset: utf-8;q=0.7,*;q=0.7\r\n"
+		"Accept-Charset: ISO-8859-2,utf-8;q=0.7,*;q=0.7\r\n"
 		"Connection: close\r\n",
 		path.c_str(), host.c_str(), port);
 	/* cookies... */
@@ -97,7 +97,7 @@ namespace net {
 		"User-Agent: TomiTCP/" PACKAGE_VERSION "\r\n"
 		"Host: %s:%i\r\n"
 		"Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5\r\n"
-		"Accept-Charset: utf-8;q=0.7,*;q=0.7\r\n"
+		"Accept-Charset: ISO-8859-2,utf-8;q=0.7,*;q=0.7\r\n"
 		"Connection: close\r\n"
 		"Content-type: application/x-www-form-urlencoded\r\n"
 		"Content-length: %i\r\n",

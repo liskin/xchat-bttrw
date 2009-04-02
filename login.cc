@@ -16,7 +16,8 @@ namespace xchat {
 	: lastsrv(0), last_sent(0), last_recv(0), idle_delta(0),
 	idle_interval(0), recv_interval(3), convert_smiles(1),
 	really_logout(true), watch_global(true), show_history(true),
-	note_emitted(false), last_superadmins_reload(0)
+	client_charset("UTF-8"), note_emitted(false),
+	last_superadmins_reload(0)
     {
 	/*
 	 * This is here, because otherwise every forked child would have the
