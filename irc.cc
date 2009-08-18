@@ -15,7 +15,7 @@ namespace std {
 
 	if (buf[0] == ':') {
 	    p++;
-	    char* d = strchr(p,' ');
+	    const char* d = strchr(p,' ');
 	    if (d) {
 		prefix = string(p,0,(d-p));
 		p = d+1;
@@ -30,7 +30,7 @@ namespace std {
 		cmd.push_back(string(p+1));
 		p = e;
 	    } else {
-		char* d = strchr(p,' ');
+		const char* d = strchr(p,' ');
 		if (d) {
 		    string s = string(p,0,(d-p));
 		    wstrip(s);
