@@ -168,7 +168,7 @@ void welcome()
 {
     cout << "Hello, this is an IRC to xchat gateway from xchat-bttrw version " REVISION << endl;
     cout << "Coded by Tomas Janousek <tomi@nomi.cz> and others" << endl;
-    cout << "Homepage: http://wiki.nomi.cz/xchat-bttrw:start" << endl;
+    cout << "Homepage: https://github.com/liskin/xchat-bttrw" << endl;
 #ifdef WIN32
     cout << "This is a Win32 build. " << endl;
 #endif
