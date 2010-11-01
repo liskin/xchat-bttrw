@@ -278,10 +278,11 @@ void serve_client(TomiTCP *cptr)
 		    } else {
 			/*
 			 * If the user is not registered and sends some other
-			 * command, quit him.
+			 * command, ignore it completely. That's what a good
+			 * server should do to let client know that it doesn't
+			 * support the CAP extension.
 			 */
-			fprintf(*c, ":%s ERROR :Not registered\r\n", me);
-			break;
+			continue;
 		    }
 		    
 		    if (user && nick.length()) {
