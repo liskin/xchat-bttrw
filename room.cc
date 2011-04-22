@@ -77,7 +77,7 @@ namespace xchat {
 retry0:
 	try {
 	    ret = request_GET(s, SERVER_MODCHAT,
-		    "room/intro.php?_btn_enter=ENTER&disclaim=on&rid=" + rid,
+		    "room/intro.php?_btn_enter=ENTER&disclaim=1&sexwarn=1&rid=" + rid,
 		    PATH_AUTH);
 	} catch (runtime_error &e) {
 	    if (retries--) {
