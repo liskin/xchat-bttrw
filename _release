@@ -1,0 +1,25 @@
+#!/bin/bash
+URL="http://notes.lisk.in/~pytt_l/xchat-bttrw-win32/"
+NOMIDESTDIR="/var/www/nomi.cz/html/download/releases/xchat-bttrw/win32"
+
+REV=`cross-make.sh revision`
+#[ "$REV" -gt "0" ]; if [ "$?" -ne "0" ]; then exit; fi
+
+ssh nomi.cz sh - <<END
+newgrp apache || exit
+umask 0002 || exit
+cd "$NOMIDESTDIR" || exit
+mkdir -p $REV  || exit; cd $REV || exit
+mkdir -p gate-$REV  || exit; cd gate-$REV || exit
+lftp -c "open $URL; mirror" || exit
+cd .. || exit
+tar czf gate-$REV.tar.gz gate-$REV || exit
+rm -rf gate-$REV || exit
+cd .. || exit
+ln -fs $REV/gate-$REV.tar.gz gate-latest.tar.gz || exit
+END
+
+mutt -s "Win32 build - verze $REV" bttrw-announce@list.nomi.cz <<END
+Novy Win32 build je dostupny na adrese
+http://nomi.cz/download/releases/xchat-bttrw/win32/$REV/gate-$REV.tar.gz
+END

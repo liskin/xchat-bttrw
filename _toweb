@@ -1,0 +1,3 @@
+#!/bin/bash
+DESTDIR="/home/tomi/public_html/xchat-bttrw-win32"
+cross-make.sh -j 3 DESTDIR=$DESTDIR buildw32 2>&1 | tee $DESTDIR/build.log
