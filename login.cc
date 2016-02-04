@@ -60,11 +60,11 @@ retry:
 
     	    string l = s.headers["location"];
 
-	    string::size_type pos = l.find("xchat.centrum.cz/~$");
+	    string::size_type pos = l.find("www.xchat.cz/~$");
 	    if (pos == string::npos)
 		throw runtime_error("Parse error while logging in (probably bad username or password): " + l);
 
-	    stringstream ss(string(l,pos+19));
+	    stringstream ss(string(l,pos+15));
 	    getline(ss,uid,'~');
 	    getline(ss,sid,'/');
 
