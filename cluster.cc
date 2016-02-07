@@ -26,7 +26,7 @@ namespace xchat {
     /**
      * Get the list of available servers from DNS.
      * If not possible (in proxy environments for example), add
-     * "xchat.centrum.cz" (clustering and failure tracking won't work).
+     * "www.xchat.cz" (clustering and failure tracking won't work).
      */
     void XChat::makeservers()
     {
@@ -34,7 +34,7 @@ namespace xchat {
 
         {
             vector<sockaddr_uni> sockaddrs;
-            hostname = "xchat.centrum.cz";
+            hostname = "www.xchat.cz";
             try {
                 resolve(hostname, "", sockaddrs);
             } catch (...) { }
@@ -46,7 +46,7 @@ namespace xchat {
 
         {
             vector<sockaddr_uni> sockaddrs;
-            hostname = "scripts.xchat.centrum.cz";
+            hostname = "scripts.xchat.cz";
             try {
                 resolve(hostname, "", sockaddrs);
             } catch (...) { }
@@ -59,8 +59,8 @@ namespace xchat {
         if (servers.empty()) {
             server s;
             s.host.sa.sa_family = 0;
-            s.types[SERVER_MODCHAT] = "xchat.centrum.cz";
-            s.types[SERVER_SCRIPTS] = "scripts.xchat.centrum.cz";
+            s.types[SERVER_MODCHAT] = "www.xchat.cz";
+            s.types[SERVER_SCRIPTS] = "scripts.xchat.cz";
             servers.push_back(s);
         }
     }

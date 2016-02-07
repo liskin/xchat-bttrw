@@ -169,7 +169,7 @@ namespace xchat {
     /**
      * \brief Domain name of fallback server.
      */
-    const string fallback_server = "xchat.centrum.cz";
+    const string fallback_server = "www.xchat.cz";
     /**
      * \brief The number of server failures to have a rest.
      */

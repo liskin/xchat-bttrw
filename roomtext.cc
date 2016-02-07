@@ -91,7 +91,7 @@ namespace xchat {
 	    string link = "";
 
 	    {
-		static string pat = "<img src=\"http://img.",
+		static string pat = "<img src=\"http://x.ximg",
 		    pat2 = ".gif\"", pat3 = "/sm/";
 		string::size_type c, d;
 		if (!s.compare(a, pat.length(), pat) &&
@@ -437,7 +437,7 @@ namespace xchat {
 	static string pat = "<A TARGET=_blank HREF=\\\"/advert/advert.php";
 	string::size_type pos, pos2;
 	if ((pos = m.find(pat)) != string::npos) {
-	    link = "http://xchat.centrum.cz/advert/advert.php" +
+	    link = "http://www.xchat.cz/advert/advert.php" +
 		string(m, pos + pat.length());
 	    link.erase(link.find("\\\""));
 	    return 1;
