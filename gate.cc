@@ -342,7 +342,7 @@ void serve_client(TomiTCP *cptr)
 					motd.c_str());
 			}
 
-			fprintf(*c, ":%s 376 %s :Web login: %s\r\n",
+			fprintf(*c, ":%s 372 %s :Web login: %s\r\n",
 			    me, nick.c_str(),
 			    x->makepath("", PATH_STATIC).c_str());
 
