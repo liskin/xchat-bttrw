@@ -185,7 +185,7 @@ retry2:
 		throw runtime_error(string(e.what()) + " - " + lastsrv_broke());
 	}
 	while (s.getline(l)) {
-	    if (l.find("<select name=\"target\">") != string::npos) {
+	    if (l.find("<select name=\"target\" id=\"target\">") != string::npos) {
 		while (s.getline(l)) {
 		    if (l.find("</select>") != string::npos)
 			break;
